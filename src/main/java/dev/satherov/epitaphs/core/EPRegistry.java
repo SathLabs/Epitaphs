@@ -16,9 +16,9 @@ import java.util.function.Supplier;
 
 public class EPRegistry {
 
-    public static DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Epitaphs.MOD_ID);
-    public static DeferredRegister.Items ITEMS = DeferredRegister.createItems(Epitaphs.MOD_ID);
-    public static DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Epitaphs.MOD_ID);
+    public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Epitaphs.MOD_ID);
+    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Epitaphs.MOD_ID);
+    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Epitaphs.MOD_ID);
 
     public static DeferredHolder<Block, EPGraveBlock> GRAVE = register("grave", () -> new EPGraveBlock(BlockBehaviour.Properties.of()));
 
