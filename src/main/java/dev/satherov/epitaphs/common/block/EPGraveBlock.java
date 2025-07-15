@@ -22,6 +22,11 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -40,6 +45,8 @@ import java.util.Optional;
 @NothingNull
 public class EPGraveBlock extends Block implements EntityBlock, SimpleWaterloggedBlock {
 
+    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
+
     private final VoxelShape SHAPE = Shapes.or(
             box(0, 0, 0, 16, 2, 16), // Ground
             box(1, 2, 0, 15, 4, 16), // Plate
@@ -49,6 +56,17 @@ public class EPGraveBlock extends Block implements EntityBlock, SimpleWaterlogge
 
     public EPGraveBlock(Properties properties) {
         super(properties.strength(-1f, Float.MAX_VALUE));
+        this.registerDefaultState(this.defaultBlockState().setValue(WATERLOGGED, Boolean.FALSE));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(WATERLOGGED);
+    }
+
+    @Override
+    protected FluidState getFluidState(BlockState state) {
+        return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 
     @Override

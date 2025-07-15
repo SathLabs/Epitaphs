@@ -121,10 +121,7 @@ public class EPRecoverCommand {
         try {
             ServerPlayer player = ctx.getSource().getPlayerOrException();
             LinkedHashMap<Path, CompoundTag> files = EPDataHandler.loadAll(player);
-            List<Path> paths = new ArrayList<>(files.keySet());
-            for (int i = paths.size() - 1; i >= 0; i--) {
-                builder.suggest(paths.get(i).getFileName().toString());
-            }
+            files.forEach((path, tag) -> builder.suggest(path.getFileName().toString()));
         } catch (CommandSyntaxException ignored) {
         }
         return builder.buildFuture();
