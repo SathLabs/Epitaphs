@@ -106,6 +106,10 @@ dependencies {
 
     compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}:api"
     runtimeOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
+
+    runtimeOnly "curse.maven:architectury-api-419699:5786327"
+    runtimeOnly "curse.maven:octo-lib-916747:6011408"
+    runtimeOnly "curse.maven:relics-mod-445274:6444603"
 }
 
 tasks.withType(ProcessResources).configureEach {

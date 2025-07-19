@@ -1,13 +1,16 @@
 package dev.satherov.epitaphs.common.block;
 
 import dev.satherov.epitaphs.Epitaphs;
-import dev.satherov.epitaphs.common.data.EPDataHandler;
-import dev.satherov.epitaphs.common.data.EPSaveType;
-import dev.satherov.epitaphs.common.tile.EPGraveBlockEntity;
+import dev.satherov.epitaphs.common.component.EPGraveDataAttachment;
+import dev.satherov.epitaphs.common.data.BackupHandler;
+import dev.satherov.epitaphs.common.data.EBackupType;
+import dev.satherov.epitaphs.common.tile.GraveBlockEntity;
+import dev.satherov.epitaphs.core.EPRegistry;
 import dev.satherov.epitaphs.core.annotations.NothingNull;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
@@ -27,6 +30,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -43,7 +47,7 @@ import java.util.List;
 import java.util.Optional;
 
 @NothingNull
-public class EPGraveBlock extends Block implements EntityBlock, SimpleWaterloggedBlock {
+public class GraveBlock extends Block implements EntityBlock, SimpleWaterloggedBlock {
 
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
@@ -54,8 +58,8 @@ public class EPGraveBlock extends Block implements EntityBlock, SimpleWaterlogge
             box(2, 14, 0, 14, 16, 2) // Top
     );
 
-    public EPGraveBlock(Properties properties) {
-        super(properties.strength(-1f, Float.MAX_VALUE));
+    public GraveBlock(Properties properties) {
+        super(properties);
         this.registerDefaultState(this.defaultBlockState().setValue(WATERLOGGED, Boolean.FALSE));
     }
 
@@ -71,12 +75,14 @@ public class EPGraveBlock extends Block implements EntityBlock, SimpleWaterlogge
 
     @Override
     public boolean canHarvestBlock(BlockState state, BlockGetter blockGetter, BlockPos pos, Player player) {
-        return false;
+        if (!(blockGetter.getBlockEntity(pos) instanceof GraveBlockEntity grave)) return false;
+        return grave.getData(EPRegistry.GRAVE_DATA).getOwner().equals(player.getStringUUID());
     }
 
     @Override
     public float getDestroyProgress(BlockState state, Player player, BlockGetter blockGetter, BlockPos pos) {
-        return 0.0F;
+        if (!(blockGetter.getBlockEntity(pos) instanceof GraveBlockEntity grave)) return 0.0F;
+        return grave.getData(EPRegistry.GRAVE_DATA).getOwner().equals(player.getStringUUID()) ? super.getDestroyProgress(state, player, blockGetter, pos) : 0.0F;
     }
 
     @Override
@@ -96,42 +102,58 @@ public class EPGraveBlock extends Block implements EntityBlock, SimpleWaterlogge
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
-        return new EPGraveBlockEntity(blockPos, blockState);
+        return new GraveBlockEntity(blockPos, blockState);
     }
 
     @Override
     public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!(world instanceof ServerLevel level)) return;
-        if (!(level.getBlockEntity(pos) instanceof EPGraveBlockEntity grave)) return;
+        if (!(level.getBlockEntity(pos) instanceof GraveBlockEntity grave)) return;
+        MinecraftServer server = level.getServer();
 
-        CompoundTag data = grave.getData();
-        if (data.isEmpty())
-            super.onRemove(state, world, pos, newState, isMoving);
-
-        String uuid = data.getString("uuid");
-        String timestamp = data.getString("timestamp");
-        if (uuid.isBlank() || timestamp.isBlank())
-            super.onRemove(state, world, pos, newState, isMoving);
-
-        Path dir = EPDataHandler.getDirectory(level, uuid).toAbsolutePath();
-        Path src = dir.resolve(timestamp + "-death.dat");
-        Path dest = dir.resolve(timestamp + "-death.dat-old");
-        CompoundTag tag = EPDataHandler.load(level, EPSaveType.DEATH, data);
-
-        List<ItemStack> contents = EPDataHandler.loadContents(level, tag);
-        for (ItemStack stack : contents) {
-            if (stack.isEmpty()) continue;
-            ItemEntity entity = new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), stack);
-            level.addFreshEntity(entity);
-        }
-
-        try {
-            Files.move(src, dest, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            Epitaphs.LOGGER.error("Failed to rename {} to {}: {}", src, dest, e);
+        CompoundTag data = cleanup(server, grave);
+        if (!data.isEmpty()) {
+            List<ItemStack> contents = BackupHandler.getContents(server, data);
+            for (ItemStack stack : contents) {
+                if (stack.isEmpty()) continue;
+                ItemEntity entity = new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), stack);
+                level.addFreshEntity(entity);
+            }
         }
 
         super.onRemove(state, world, pos, newState, isMoving);
+    }
+
+    public CompoundTag cleanup(MinecraftServer server, GraveBlockEntity grave) {
+        CompoundTag tag = new CompoundTag();
+
+        EPGraveDataAttachment data = grave.getData(EPRegistry.GRAVE_DATA);
+
+        String uuid = data.getOwner();
+        String timestamp = data.getTimestamp();
+        if (uuid.isBlank() || timestamp.isBlank()) {
+            Epitaphs.LOGGER.debug("Grave at '{}' has incomplete data, skipping cleanup", grave.getBlockPos());
+            return tag;
+        }
+
+        Path storage = server.getWorldPath(LevelResource.ROOT)
+                .normalize()
+                .toAbsolutePath()
+                .resolve("data")
+                .resolve(Epitaphs.MOD_ID)
+                .resolve(uuid);
+
+        try {
+            Files.move(
+                    storage.resolve(timestamp + "-death.dat"),
+                    storage.resolve(timestamp + "-death.dat-old"),
+                    StandardCopyOption.REPLACE_EXISTING
+            );
+        } catch (IOException e) {
+            Epitaphs.LOGGER.error("Failed to rename old death data for '{}'", uuid, e);
+        }
+
+        return tag;
     }
 
     public static Optional<BlockPos> findSafeSpot(ServerLevel level, BlockPos grave) {

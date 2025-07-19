@@ -12,7 +12,15 @@ public enum EPLanguage implements ILangEntry {
     MESSAGE_NO_ACCESS("message", "no_access"),
     MESSAGE_GRAVE_SUCCESS("message", "grave_success"),
     MESSAGE_GRAVE_FAILED("message", "grave_failed"),
-    MESSAGE_GRAVE_ERROR("message", "grave_error")
+    MESSAGE_GRAVE_ERROR("message", "grave_error"),
+
+    COMMAND_RESTORE_SUCCESS("command", "restore_success"),
+    COMMAND_RESTORE_FAILED("command", "restore_failed"),
+
+    COMMAND_BACKUP_SUCCESS("command", "backup_success"),
+    COMMAND_BACKUP_FAILED("command", "backup_failed"),
+
+    COMMAND_NOT_FOUND("command", "not_found"),
     ;
 
     private final String key;

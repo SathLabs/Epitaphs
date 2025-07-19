@@ -18,10 +18,19 @@ public class EPLanguageProvider extends LanguageProvider {
     protected void addTranslations() {
         add(EPLanguage.CONTAINER_GRAVE, "Grave");
         add(EPLanguage.BLOCK_GRAVE, "Grave");
-        add(EPLanguage.MESSAGE_NO_ACCESS, "This grave belongs to %s");
+
+        add(EPLanguage.MESSAGE_NO_ACCESS, "This grave belongs to %s. You do not have access to it");
         add(EPLanguage.MESSAGE_GRAVE_SUCCESS, "Created a grave with your items at");
-        add(EPLanguage.MESSAGE_GRAVE_FAILED, "Found no valid position for a grave"); // You can recover your items via /epitaphs recover
+        add(EPLanguage.MESSAGE_GRAVE_FAILED, "Found no valid position for a grave");
         add(EPLanguage.MESSAGE_GRAVE_ERROR, "An error occurred trying to load this grave. Check your logs for more info");
+
+        add(EPLanguage.COMMAND_RESTORE_SUCCESS, "Restored items of player %s");
+        add(EPLanguage.COMMAND_RESTORE_FAILED, "Failed to restore items of player %s. Check your logs for more info");
+
+        add(EPLanguage.COMMAND_BACKUP_SUCCESS, "Backup complete");
+        add(EPLanguage.COMMAND_BACKUP_FAILED, "Failed to backup. Check your logs for more info");
+
+        add(EPLanguage.COMMAND_NOT_FOUND, "No grave found for for %s");
     }
 
     private void add(EPLanguage lang, String translation) {
