@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-public class EPLocationAttachment implements INBTSerializable<CompoundTag> {
+public class EPLocationAttachment implements INBTSerializable<ListTag> {
 
     private final Map<String, List<Entry<String, BlockPos>>> graveLocations = new HashMap<>();
 
@@ -86,8 +86,7 @@ public class EPLocationAttachment implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public @UnknownNullability CompoundTag serializeNBT(HolderLookup.Provider provider) {
-        CompoundTag compound = new CompoundTag();
+    public @UnknownNullability ListTag serializeNBT(HolderLookup.Provider provider) {
         ListTag dimensions = new ListTag();
         graveLocations.forEach((key, value) -> {
             CompoundTag dimension = new CompoundTag();
@@ -101,17 +100,15 @@ public class EPLocationAttachment implements INBTSerializable<CompoundTag> {
             dimension.put(key, positions);
             dimensions.add(dimension);
         });
-        compound.put("epitaphs:grave_locations", dimensions);
-        return compound;
+        return dimensions;
     }
 
     @Override
-    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, ListTag nbt) {
         Map<String, List<Entry<String, BlockPos>>> graveLocations = new HashMap<>();
 
-        ListTag dimensions = nbt.getList("epitaphs:grave_locations", Tag.TAG_COMPOUND);
-        for (int i = 0; i < dimensions.size(); i++) {
-            CompoundTag tag = dimensions.getCompound(i);
+        for (int i = 0; i < nbt.size(); i++) {
+            CompoundTag tag = nbt.getCompound(i);
             tag.getAllKeys().forEach(dimension -> {
                 ListTag positions = tag.getList(dimension, Tag.TAG_COMPOUND);
                 List<Entry<String, BlockPos>> entries = new ArrayList<>();

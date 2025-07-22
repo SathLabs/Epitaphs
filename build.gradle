@@ -107,9 +107,25 @@ dependencies {
     compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}:api"
     runtimeOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
 
+    implementation "curse.maven:architectury-api-419699:5786327"
+    implementation "curse.maven:ftb-library-forge-404465:6711324"
+    implementation "curse.maven:ftb-teams-forge-404468:6119437"
+    implementation "curse.maven:ftb-chunks-forge-314906:6504893"
+
     runtimeOnly "curse.maven:architectury-api-419699:5786327"
     runtimeOnly "curse.maven:octo-lib-916747:6011408"
     runtimeOnly "curse.maven:relics-mod-445274:6444603"
+
+    runtimeOnly "curse.maven:ender-io-64578:6363527"
+    runtimeOnly "curse.maven:geckolib-388172:6659026"
+    runtimeOnly "curse.maven:ars-nouveau-401955:6770346"
+    runtimeOnly "curse.maven:ars-elemental-561470:6784079"
+
+    runtimeOnly "curse.maven:corail-tombstone-243707:6789783"
+
+    runtimeOnly "curse.maven:placebo-283644:6751290"
+    runtimeOnly "curse.maven:apothic-attributes-898963:6751650"
+    runtimeOnly "curse.maven:apothic-enchanting-1063926:6751658"
 }
 
 tasks.withType(ProcessResources).configureEach {

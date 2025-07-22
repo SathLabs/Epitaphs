@@ -14,6 +14,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -96,6 +97,11 @@ public class GraveBlock extends Block implements EntityBlock, SimpleWaterloggedB
     }
 
     @Override
+    public boolean canEntityDestroy(BlockState state, BlockGetter level, BlockPos pos, Entity entity) {
+        return false;
+    }
+
+    @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
@@ -166,25 +172,15 @@ public class GraveBlock extends Block implements EntityBlock, SimpleWaterloggedB
         List<BlockPos> stableCandidates = new ArrayList<>();
         List<BlockPos> fallbackCandidates = new ArrayList<>();
 
-        for (int x = -1; x <= 1; x++) {
-            for (int z = -1; z <= 1; z++) {
-                BlockPos chunkPos = origin.offset(x * 16, 0, z * 16);
-                if (!level.getWorldBorder().isWithinBounds(chunkPos)) continue;
-
-                level.getChunk(chunkPos).findBlocks(
-                        state -> state.is(BlockTags.REPLACEABLE),
-                        (state, pos) -> state.is(BlockTags.REPLACEABLE),
-                        (pos, state) -> {
-                            BlockPos immutablePos = pos.immutable();
-                            boolean hasStableGround = !level.getBlockState(pos.below()).is(BlockTags.REPLACEABLE);
-
-                            if (hasStableGround) stableCandidates.add(immutablePos);
-                            else fallbackCandidates.add(immutablePos);
-
-                        }
-                );
-            }
-        }
+        level.getChunk(origin).findBlocks(
+                state -> state.is(BlockTags.REPLACEABLE),
+                (state, pos) -> state.is(BlockTags.REPLACEABLE),
+                (pos, state) -> {
+                    final BlockPos candidate = pos.immutable();
+                    if (!level.getBlockState(pos.below()).is(BlockTags.REPLACEABLE)) stableCandidates.add(candidate);
+                    else fallbackCandidates.add(candidate);
+                }
+        );
 
         Optional<BlockPos> stableResult = stableCandidates.stream().min(Comparator.comparingDouble(origin::distSqr));
         if (stableResult.isPresent()) return stableResult;

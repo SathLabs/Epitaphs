@@ -52,6 +52,7 @@ public class EPGraveDataAttachment implements INBTSerializable<CompoundTag> {
 
         ListTag stacks = new ListTag();
         for (ItemStack stack : additional) {
+            if (stack.isEmpty()) continue;
             stacks.add(stack.save(provider, new CompoundTag()));
         }
         if (!stacks.isEmpty()) data.put("additional", stacks);
@@ -70,6 +71,7 @@ public class EPGraveDataAttachment implements INBTSerializable<CompoundTag> {
             for (int i = 0; i < stacks.size(); i++) {
                 CompoundTag tag = stacks.getCompound(i);
                 ItemStack stack = ItemStack.parseOptional(provider, tag);
+                if (stack.isEmpty()) continue;
                 additional.add(stack);
             }
         }

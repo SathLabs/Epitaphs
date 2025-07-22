@@ -1,7 +1,7 @@
 {
-  "variants": {
-    "": {
-      "model": "epitaphs:block/grave"
+    "variants": {
+        "": {
+            "model": "epitaphs:block/grave"
+        }
     }
-  }
 }

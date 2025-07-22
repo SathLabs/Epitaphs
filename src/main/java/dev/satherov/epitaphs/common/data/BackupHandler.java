@@ -101,7 +101,7 @@ public class BackupHandler {
 
         if (tag.isEmpty()) {
             Epitaphs.LOGGER.error("Player '{}' has no data", player.getScoreboardName());
-            return 0;
+            return -1;
         }
 
         try {
@@ -110,6 +110,7 @@ public class BackupHandler {
 
             NbtIo.writeCompressed(tag, storage.resolve(timestamp + "-" + type.getSerializedName() + ".dat"));
             if (type == EBackupType.DEATH) {
+                CompatHandler.clearCurio(player);
                 player.getInventory().clearContent();
             }
 
@@ -219,7 +220,7 @@ public class BackupHandler {
             return data;
         }
 
-        if (timestamp.isBlank() || !FILE_PATTERN.matcher(timestamp).matches()) {
+        if (timestamp.isBlank() || !(DATE_PATTERN.matcher(timestamp).matches() || FILE_PATTERN.matcher(timestamp).matches())) {
             Epitaphs.LOGGER.error("Invalid backup timestamp '{}'", timestamp);
             return data;
         }

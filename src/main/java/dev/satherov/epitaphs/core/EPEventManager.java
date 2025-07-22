@@ -6,15 +6,20 @@ import dev.satherov.epitaphs.client.lang.EPLanguage;
 import dev.satherov.epitaphs.common.block.GraveBlock;
 import dev.satherov.epitaphs.common.command.EPCommands;
 import dev.satherov.epitaphs.common.component.EPGraveDataAttachment;
+import dev.satherov.epitaphs.common.component.EPSoulboundAttachment;
 import dev.satherov.epitaphs.common.data.BackupHandler;
+import dev.satherov.epitaphs.common.data.SoulboundHandler;
 import dev.satherov.epitaphs.common.data.EBackupType;
 import dev.satherov.epitaphs.common.tile.GraveBlockEntity;
+import dev.satherov.epitaphs.compat.CompatHandler;
 
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -23,7 +28,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -34,6 +38,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -47,7 +52,6 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,7 +61,6 @@ public class EPEventManager {
     @SubscribeEvent( priority = EventPriority.LOWEST )
     public static void onLivingDeath(LivingDeathEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        if (player.getInventory().isEmpty()) return;
 
         ServerLevel level = player.serverLevel();
 
@@ -65,6 +68,10 @@ public class EPEventManager {
                 .ofPattern("yyyy-MM-dd-HH-mm-ss")
                 .withZone(ZoneOffset.UTC)
                 .format(Instant.now());
+
+        SoulboundHandler.handleSoulbound(player);
+
+        if (player.getInventory().isEmpty() && CompatHandler.isCurioEmpty(player)) return;
 
         if (BackupHandler.save(player, timestamp, EBackupType.DEATH) != 0) return;
 
@@ -104,6 +111,11 @@ public class EPEventManager {
         player.setData(EPRegistry.LOCATION_DATA, player.getData(EPRegistry.LOCATION_DATA).addGraveLocation(player, timestamp, gravePos));
     }
 
+    @SubscribeEvent
+    private static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        SoulboundHandler.restoreSoulbound(player);
+    }
 
     @SubscribeEvent (priority = EventPriority.LOWEST)
     private static void onLootEvent(LivingDropsEvent event) {
@@ -125,6 +137,19 @@ public class EPEventManager {
         grave.setData(EPRegistry.GRAVE_DATA, graveData);
     }
 
+    @SubscribeEvent(priority=EventPriority.HIGHEST)
+    public static void onLivingExperienceDrop(LivingExperienceDropEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        EPSoulboundAttachment attachment = player.getData(EPRegistry.SOULBOUND_DATA);
+
+        int xp = SoulboundHandler.handleXpSoulbound(player);
+        if (xp > 0) {
+            int experience = player.totalExperience;
+            attachment.setExperience((experience / 4) * xp);
+            event.setDroppedExperience((int) Math.floor(event.getDroppedExperience() - ((double) event.getDroppedExperience() / 4) * xp));
+        }
+    }
+
     @SubscribeEvent
     public static void onExplosionDetonate(ExplosionEvent.Detonate event) {
         event.getAffectedBlocks().removeIf(pos -> {
@@ -139,13 +164,14 @@ public class EPEventManager {
         EPCommands.register(dispatcher);
     }
 
-    @SubscribeEvent
+    @SubscribeEvent( priority = EventPriority.HIGHEST)
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (!(event.getLevel() instanceof ServerLevel level)) return;
         if (!(level.getBlockEntity(event.getPos()) instanceof GraveBlockEntity grave)) return;
+        if (CompatHandler.preventInteraction(player, event.getPos())) return;
 
         MinecraftServer server = level.getServer();
-        ServerPlayer player = (ServerPlayer) event.getEntity();
         EPGraveDataAttachment data = grave.getData(EPRegistry.GRAVE_DATA);
         String uuid = data.getOwner();
         String timestamp = data.getTimestamp();
