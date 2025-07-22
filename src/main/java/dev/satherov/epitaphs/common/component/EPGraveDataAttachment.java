@@ -1,7 +1,5 @@
 package dev.satherov.epitaphs.common.component;
 
-import dev.satherov.epitaphs.Epitaphs;
-
 import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import net.minecraft.core.HolderLookup;

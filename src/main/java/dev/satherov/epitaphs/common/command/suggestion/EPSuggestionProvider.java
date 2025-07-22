@@ -14,5 +14,6 @@ public interface EPSuggestionProvider<S> extends SuggestionProvider<S> {
 
     default CompletableFuture<Suggestions> getSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) throws CommandSyntaxException {
         return this.getSuggestions(context, new EPSuggestionBuilder(builder.getInput(), builder.getStart()));
-    };
+    }
+
 }

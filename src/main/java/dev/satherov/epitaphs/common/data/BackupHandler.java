@@ -4,7 +4,6 @@ import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.EpitaphsConfig;
 import dev.satherov.epitaphs.compat.CompatHandler;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -16,8 +15,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.LevelResource;
-
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -237,8 +234,8 @@ public class BackupHandler {
         try (Stream<Path> files = Files.list(target)) {
 
             file = files.filter(p -> FileSystems.getDefault()
-                    .getPathMatcher("regex:" + FILE_PATTERN.pattern())
-                    .matches(p.getFileName()) && p.getFileName().toString().startsWith(timestamp))
+                            .getPathMatcher("regex:" + FILE_PATTERN.pattern())
+                            .matches(p.getFileName()) && p.getFileName().toString().startsWith(timestamp))
                     .toList()
                     .stream()
                     .findFirst()

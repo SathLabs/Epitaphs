@@ -75,12 +75,12 @@ public class EPLocationAttachment implements INBTSerializable<ListTag> {
         graveLocations.entrySet().removeIf(dimensionEntry -> {
             if (!level.dimension().location().equals(ResourceLocation.parse(dimensionEntry.getKey()))) return false;
             List<Entry<String, BlockPos>> list = dimensionEntry.getValue();
-        
+
             list.removeIf(entry -> {
                 BlockPos pos = entry.getValue();
                 return level.isLoaded(pos) && !level.getBlockState(pos).is(EPRegistry.GRAVE.get());
             });
-        
+
             return list.isEmpty();
         });
     }

@@ -19,7 +19,6 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.registries.VanillaRegistries;
 
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 @EventBusSubscriber(modid = Epitaphs.MOD_ID)

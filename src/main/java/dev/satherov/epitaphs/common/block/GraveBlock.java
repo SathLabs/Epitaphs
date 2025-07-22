@@ -3,7 +3,6 @@ package dev.satherov.epitaphs.common.block;
 import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.common.component.EPGraveDataAttachment;
 import dev.satherov.epitaphs.common.data.BackupHandler;
-import dev.satherov.epitaphs.common.data.EBackupType;
 import dev.satherov.epitaphs.common.tile.GraveBlockEntity;
 import dev.satherov.epitaphs.core.EPRegistry;
 import dev.satherov.epitaphs.core.annotations.NothingNull;

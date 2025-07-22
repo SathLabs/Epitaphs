@@ -8,8 +8,8 @@ import dev.satherov.epitaphs.common.command.EPCommands;
 import dev.satherov.epitaphs.common.component.EPGraveDataAttachment;
 import dev.satherov.epitaphs.common.component.EPSoulboundAttachment;
 import dev.satherov.epitaphs.common.data.BackupHandler;
-import dev.satherov.epitaphs.common.data.SoulboundHandler;
 import dev.satherov.epitaphs.common.data.EBackupType;
+import dev.satherov.epitaphs.common.data.SoulboundHandler;
 import dev.satherov.epitaphs.common.tile.GraveBlockEntity;
 import dev.satherov.epitaphs.compat.CompatHandler;
 
@@ -38,7 +38,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -58,7 +57,7 @@ import java.util.UUID;
 
 public class EPEventManager {
 
-    @SubscribeEvent( priority = EventPriority.LOWEST )
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingDeath(LivingDeathEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
@@ -117,7 +116,7 @@ public class EPEventManager {
         SoulboundHandler.restoreSoulbound(player);
     }
 
-    @SubscribeEvent (priority = EventPriority.LOWEST)
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     private static void onLootEvent(LivingDropsEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         ServerLevel level = player.serverLevel();
@@ -132,12 +131,12 @@ public class EPEventManager {
         List<ItemStack> saved = BackupHandler.getContents(server, graveData.getOwner(), graveData.getTimestamp());
         List<ItemStack> drops = new ArrayList<>(event.getDrops().stream().map(ItemEntity::getItem).toList());
         drops.removeAll(saved);
-        if(drops.isEmpty()) return;
+        if (drops.isEmpty()) return;
         graveData.saveAdditional(drops);
         grave.setData(EPRegistry.GRAVE_DATA, graveData);
     }
 
-    @SubscribeEvent(priority=EventPriority.HIGHEST)
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onLivingExperienceDrop(LivingExperienceDropEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         EPSoulboundAttachment attachment = player.getData(EPRegistry.SOULBOUND_DATA);
@@ -164,7 +163,7 @@ public class EPEventManager {
         EPCommands.register(dispatcher);
     }
 
-    @SubscribeEvent( priority = EventPriority.HIGHEST)
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (!(event.getLevel() instanceof ServerLevel level)) return;
@@ -238,6 +237,6 @@ public class EPEventManager {
             Epitaphs.LOGGER.info("Running player backup task");
             BackupHandler.saveAll(server);
             LAST_BACKUP = now;
-        };
+        }
     }
 }

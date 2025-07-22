@@ -2,8 +2,6 @@ package dev.satherov.epitaphs.common.command;
 
 import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.client.lang.EPLanguage;
-import dev.satherov.epitaphs.common.command.suggestion.EPSuggestionBuilder;
-import dev.satherov.epitaphs.common.command.suggestion.EPSuggestionProvider;
 import dev.satherov.epitaphs.common.data.BackupHandler;
 import dev.satherov.epitaphs.common.data.EBackupType;
 import dev.satherov.epitaphs.core.EPRegistry;
@@ -25,7 +23,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.mojang.brigadier.suggestion.Suggestions;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -34,7 +31,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 public class EPCommands {
 
@@ -58,7 +54,7 @@ public class EPCommands {
                                 .suggests(FILE_SUGGESTER)
                                 .executes(ctx -> recover(ctx, false))
                                 .then(Commands.argument("force", BoolArgumentType.bool())
-                                        .executes(ctx -> recover(ctx,  BoolArgumentType.getBool(ctx, "force"))))
+                                        .executes(ctx -> recover(ctx, BoolArgumentType.getBool(ctx, "force"))))
                         )
                 );
     }

@@ -15,7 +15,7 @@ public class SoulboundHandler {
 
     public static void handleSoulbound(ServerPlayer player) {
         EPSoulboundAttachment attachment = player.getData(EPRegistry.SOULBOUND_DATA);
-        
+
         NonNullList<ItemStack> soulboundItems = extractSoulboundItems(player.getInventory().items);
         NonNullList<ItemStack> soulboundArmor = extractSoulboundItems(player.getInventory().armor);
         NonNullList<ItemStack> soulboundOffhand = extractSoulboundItems(player.getInventory().offhand);
@@ -39,11 +39,11 @@ public class SoulboundHandler {
 
     public static void restoreSoulbound(ServerPlayer player) {
         EPSoulboundAttachment attachment = player.getData(EPRegistry.SOULBOUND_DATA);
-        
+
         restoreItemsToSlots(player, player.getInventory().items, attachment.getItems());
         restoreItemsToSlots(player, player.getInventory().armor, attachment.getArmor());
         restoreItemsToSlots(player, player.getInventory().offhand, attachment.getOffhand());
-        
+
         List<ItemStack> overFlow = CompatHandler.setCurio(player, attachment.getCurio());
         if (!overFlow.isEmpty()) {
             for (ItemStack stack : overFlow) {
@@ -64,20 +64,20 @@ public class SoulboundHandler {
     public static int handleXpSoulbound(ServerPlayer player) {
         EPSoulboundAttachment attachment = player.getData(EPRegistry.SOULBOUND_DATA);
         NonNullList<ItemStack> armor = attachment.getArmor();
-        
+
         int xpSoulboundCount = 0;
         for (ItemStack stack : armor) {
             if (!stack.isEmpty() && hasXpSoulbound(stack)) {
                 xpSoulboundCount++;
             }
         }
-        
+
         return xpSoulboundCount;
     }
 
     private static NonNullList<ItemStack> extractSoulboundItems(NonNullList<ItemStack> originalList) {
         NonNullList<ItemStack> soulboundItems = NonNullList.withSize(originalList.size(), ItemStack.EMPTY);
-        
+
         for (int i = 0; i < originalList.size(); i++) {
             ItemStack stack = originalList.get(i);
             if (hasSoulbound(stack)) {
@@ -85,7 +85,7 @@ public class SoulboundHandler {
                 originalList.set(i, ItemStack.EMPTY);
             }
         }
-        
+
         return soulboundItems;
     }
 
@@ -96,16 +96,15 @@ public class SoulboundHandler {
 
             if (targetList.get(i).isEmpty()) {
                 targetList.set(i, stack);
-            }
-            else if (!player.getInventory().add(stack)) {
+            } else if (!player.getInventory().add(stack)) {
                 player.drop(stack, false);
             }
         }
     }
 
     private static boolean hasSoulbound(ItemStack stack) {
-        return EnchantmentHelper.has(stack, EPRegistry.SOULBOUND.get()) || 
-               EnchantmentHelper.has(stack, EPRegistry.EXPERIENCE_SOULBOUND.get());
+        return EnchantmentHelper.has(stack, EPRegistry.SOULBOUND.get()) ||
+                EnchantmentHelper.has(stack, EPRegistry.EXPERIENCE_SOULBOUND.get());
     }
 
     private static boolean hasXpSoulbound(ItemStack stack) {

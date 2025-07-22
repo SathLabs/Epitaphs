@@ -15,9 +15,7 @@ import top.theillusivec4.curios.api.type.inventory.ICurioStacksHandler;
 import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CurioHandler {
@@ -40,24 +38,24 @@ public class CurioHandler {
                 if (!curioEntry.contains("Identifier") || !curioEntry.contains("StacksHandler")) {
                     continue;
                 }
-                
+
                 String identifier = curioEntry.getString("Identifier");
                 CompoundTag stacksHandler = curioEntry.getCompound("StacksHandler");
-                
+
                 ICurioStacksHandler curioHandler = handler.getCurios().get(identifier);
                 if (curioHandler == null) {
                     continue;
                 }
-                
+
 
                 if (stacksHandler.contains("Stacks")) {
                     CompoundTag stacksData = stacksHandler.getCompound("Stacks");
                     int size = stacksData.getInt("Size");
-                    
+
                     if (stacksData.contains("Items") && !stacksData.getList("Items", Tag.TAG_COMPOUND).isEmpty()) {
                         ListTag items = stacksData.getList("Items", Tag.TAG_COMPOUND);
                         IDynamicStackHandler stacks = curioHandler.getStacks();
-                        
+
                         for (int j = 0; j < Math.min(size, items.size()); j++) {
                             if (j < stacks.getSlots()) {
                                 CompoundTag itemTag = items.getCompound(j);
@@ -73,15 +71,15 @@ public class CurioHandler {
                         }
                     }
                 }
-                
+
                 if (stacksHandler.contains("Cosmetics")) {
                     CompoundTag cosmeticsData = stacksHandler.getCompound("Cosmetics");
                     int size = cosmeticsData.getInt("Size");
-                    
+
                     if (cosmeticsData.contains("Items") && !cosmeticsData.getList("Items", Tag.TAG_COMPOUND).isEmpty()) {
                         ListTag items = cosmeticsData.getList("Items", Tag.TAG_COMPOUND);
                         IDynamicStackHandler cosmetics = curioHandler.getCosmeticStacks();
-                        
+
                         for (int j = 0; j < Math.min(size, items.size()); j++) {
                             if (j < cosmetics.getSlots()) {
                                 CompoundTag itemTag = items.getCompound(j);
@@ -98,7 +96,7 @@ public class CurioHandler {
                     }
                 }
             }
-            
+
             return 0;
         }).orElse(-1);
     }
@@ -160,44 +158,44 @@ public class CurioHandler {
 
     public static NonNullList<ItemStack> getCurio(ServerPlayer player) {
         NonNullList<ItemStack> contents = NonNullList.create();
-        
+
         CuriosApi.getCuriosInventory(player).ifPresent(handler ->
-            handler.getCurios().forEach((slot, curioHandler) -> {
-                for (int i = 0; i < curioHandler.getStacks().getSlots(); i++) {
-                    contents.add(curioHandler.getStacks().getStackInSlot(i));
-                }
-                for (int i = 0; i < curioHandler.getCosmeticStacks().getSlots(); i++) {
-                    contents.add(curioHandler.getCosmeticStacks().getStackInSlot(i));
-                }
-            })
+                handler.getCurios().forEach((slot, curioHandler) -> {
+                    for (int i = 0; i < curioHandler.getStacks().getSlots(); i++) {
+                        contents.add(curioHandler.getStacks().getStackInSlot(i));
+                    }
+                    for (int i = 0; i < curioHandler.getCosmeticStacks().getSlots(); i++) {
+                        contents.add(curioHandler.getCosmeticStacks().getStackInSlot(i));
+                    }
+                })
         );
-        
+
         return contents;
     }
-    
+
     public static List<ItemStack> setCurio(ServerPlayer player, NonNullList<ItemStack> stacks) {
         List<ItemStack> overflow = new ArrayList<>();
         if (stacks.isEmpty()) return overflow;
 
         AtomicInteger stackIndex = new AtomicInteger();
 
-        CuriosApi.getCuriosInventory(player).ifPresent(handler -> 
-            handler.getCurios().forEach((slotId, curioHandler) -> {
-                restoreCurioSlots(curioHandler.getStacks(), stacks, stackIndex, overflow);
-                restoreCurioSlots(curioHandler.getCosmeticStacks(), stacks, stackIndex, overflow);
-            })
+        CuriosApi.getCuriosInventory(player).ifPresent(handler ->
+                handler.getCurios().forEach((slotId, curioHandler) -> {
+                    restoreCurioSlots(curioHandler.getStacks(), stacks, stackIndex, overflow);
+                    restoreCurioSlots(curioHandler.getCosmeticStacks(), stacks, stackIndex, overflow);
+                })
         );
-        
+
         return overflow;
     }
 
     private static void restoreCurioSlots(IDynamicStackHandler handler, NonNullList<ItemStack> stacks, AtomicInteger stackIndex, List<ItemStack> overflow) {
         for (int i = 0; i < handler.getSlots(); i++) {
             if (stackIndex.get() >= stacks.size()) break;
-            
+
             ItemStack stackToRestore = stacks.get(stackIndex.getAndIncrement());
             if (stackToRestore.isEmpty()) continue;
-            
+
             if (handler.getStackInSlot(i).isEmpty()) {
                 handler.setStackInSlot(i, stackToRestore);
             } else {
