@@ -101,6 +101,7 @@ public class EPCommands {
         return Commands.literal("list")
                 .executes(ctx -> list(ctx, ctx.getSource().getPlayerOrException()))
                 .then(Commands.argument("player", EntityArgument.player())
+                        .requires(cs -> cs.hasPermission(4))
                         .executes(ctx -> list(ctx, EntityArgument.getPlayer(ctx, "player")))
                 );
     }
@@ -134,6 +135,7 @@ public class EPCommands {
         return Commands.literal("latest")
                 .executes(ctx -> latest(ctx, ctx.getSource().getPlayerOrException()))
                 .then(Commands.argument("player", EntityArgument.player())
+                        .requires(cs -> cs.hasPermission(4))
                         .executes(ctx -> latest(ctx, EntityArgument.getPlayer(ctx, "player")))
                 );
 
