@@ -162,7 +162,7 @@ public class BackupHandler {
             CompoundTag tag = player.saveWithoutId(new CompoundTag());
 
             try {
-                Files.createDirectories(storage);
+                Files.createDirectories(target);
                 String timestamp = DateTimeFormatter
                         .ofPattern("yyyy-MM-dd-HH-mm-ss")
                         .withZone(ZoneOffset.UTC)
@@ -228,6 +228,11 @@ public class BackupHandler {
                 .resolve("data")
                 .resolve(Epitaphs.MOD_ID)
                 .resolve(player.getUUID().toString());
+        
+        if (!Files.exists(target) || !Files.isDirectory(target)) {
+            Epitaphs.LOGGER.debug("No backup directory found for player '{}'", player.getScoreboardName());
+            return data;
+        }
 
         final Path file;
 
