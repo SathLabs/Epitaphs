@@ -1,6 +1,5 @@
 package dev.satherov.epitaphs.common.command;
 
-import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.client.lang.EPLanguage;
 import dev.satherov.epitaphs.common.data.BackupHandler;
 import dev.satherov.epitaphs.common.data.EBackupType;
@@ -15,6 +14,8 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.player.Player;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
@@ -159,13 +160,9 @@ public class EPCommands {
     }
 
     private static final SuggestionProvider<CommandSourceStack> FILE_SUGGESTER = (context, builder) -> {
-        try {
-            ServerPlayer player = context.getSource().getPlayerOrException();
-            LinkedList<String> files = BackupHandler.listBackups(player);
-            files.forEach(builder::suggest);
-        } catch (CommandSyntaxException e) {
-            Epitaphs.LOGGER.warn("Failed to suggest backups", e);
-        }
+        ServerPlayer player = EntityArgument.getPlayer(context, "player");
+        LinkedList<String> files = BackupHandler.listBackups(player);
+        files.forEach(builder::suggest);
         return builder.buildFuture();
     };
 
