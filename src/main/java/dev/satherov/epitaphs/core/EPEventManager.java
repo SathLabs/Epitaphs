@@ -195,7 +195,7 @@ public class EPEventManager {
         }
 
         if (grave.getBlockState().getBlock() instanceof GraveBlock block) {
-            block.cleanup(server, grave);
+            block.cleanup(level, grave.getBlockPos());
         } else {
             Epitaphs.LOGGER.warn("Grave at '{}' is not a GraveBlock? Make sure this doesnt lead to file spam!", grave.getBlockPos());
         }

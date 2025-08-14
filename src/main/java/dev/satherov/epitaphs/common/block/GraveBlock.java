@@ -9,6 +9,7 @@ import dev.satherov.epitaphs.core.annotations.NothingNull;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -75,14 +76,12 @@ public class GraveBlock extends Block implements EntityBlock, SimpleWaterloggedB
 
     @Override
     public boolean canHarvestBlock(BlockState state, BlockGetter blockGetter, BlockPos pos, Player player) {
-        if (!(blockGetter.getBlockEntity(pos) instanceof GraveBlockEntity grave)) return false;
-        return grave.getData(EPRegistry.GRAVE_DATA).getOwner().equals(player.getStringUUID());
+        return player.isCreative();
     }
 
     @Override
     public float getDestroyProgress(BlockState state, Player player, BlockGetter blockGetter, BlockPos pos) {
-        if (!(blockGetter.getBlockEntity(pos) instanceof GraveBlockEntity grave)) return 0.0F;
-        return grave.getData(EPRegistry.GRAVE_DATA).getOwner().equals(player.getStringUUID()) ? super.getDestroyProgress(state, player, blockGetter, pos) : 0.0F;
+        return player.isCreative() ? super.getDestroyProgress(state, player, blockGetter, pos) : 0.0F;
     }
 
     @Override
@@ -113,24 +112,13 @@ public class GraveBlock extends Block implements EntityBlock, SimpleWaterloggedB
     @Override
     public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!(world instanceof ServerLevel level)) return;
-        if (!(level.getBlockEntity(pos) instanceof GraveBlockEntity grave)) return;
-        MinecraftServer server = level.getServer();
-
-        CompoundTag data = cleanup(server, grave);
-        if (!data.isEmpty()) {
-            List<ItemStack> contents = BackupHandler.getContents(server, data);
-            for (ItemStack stack : contents) {
-                if (stack.isEmpty()) continue;
-                ItemEntity entity = new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), stack);
-                level.addFreshEntity(entity);
-            }
-        }
-
+        this.cleanup(level, pos);
         super.onRemove(state, world, pos, newState, isMoving);
     }
-
-    public CompoundTag cleanup(MinecraftServer server, GraveBlockEntity grave) {
-        CompoundTag tag = new CompoundTag();
+    
+    public void cleanup(ServerLevel level, BlockPos pos) {
+        if (!(level.getBlockEntity(pos) instanceof GraveBlockEntity grave)) return;
+        MinecraftServer server = level.getServer();
 
         EPGraveDataAttachment data = grave.getData(EPRegistry.GRAVE_DATA);
 
@@ -138,7 +126,7 @@ public class GraveBlock extends Block implements EntityBlock, SimpleWaterloggedB
         String timestamp = data.getTimestamp();
         if (uuid.isBlank() || timestamp.isBlank()) {
             Epitaphs.LOGGER.debug("Grave at '{}' has incomplete data, skipping cleanup", grave.getBlockPos());
-            return tag;
+            return;
         }
 
         Path storage = server.getWorldPath(LevelResource.ROOT)
@@ -149,8 +137,9 @@ public class GraveBlock extends Block implements EntityBlock, SimpleWaterloggedB
                 .resolve(uuid);
 
         try {
+            Path death = storage.resolve(timestamp + "-death.dat");
             Files.move(
-                    storage.resolve(timestamp + "-death.dat"),
+                    death,
                     storage.resolve(timestamp + "-death.dat-old"),
                     StandardCopyOption.REPLACE_EXISTING
             );
@@ -158,7 +147,12 @@ public class GraveBlock extends Block implements EntityBlock, SimpleWaterloggedB
             Epitaphs.LOGGER.error("Failed to rename old death data for '{}'", uuid, e);
         }
 
-        return tag;
+        List<ItemStack> contents = BackupHandler.getContents(server, uuid, timestamp);
+        for (ItemStack stack : contents) {
+            if (stack.isEmpty()) continue;
+            ItemEntity entity = new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), stack);
+            level.addFreshEntity(entity);
+        }
     }
 
     public static Optional<BlockPos> findSafeSpot(ServerLevel level, BlockPos grave) {
