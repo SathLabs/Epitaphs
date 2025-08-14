@@ -41,6 +41,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -62,6 +63,8 @@ public class EPEventManager {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
         ServerLevel level = player.serverLevel();
+        
+        if (level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).get()) return;
 
         String timestamp = DateTimeFormatter
                 .ofPattern("yyyy-MM-dd-HH-mm-ss")
@@ -120,6 +123,8 @@ public class EPEventManager {
     private static void onLootEvent(LivingDropsEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         ServerLevel level = player.serverLevel();
+        if (level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).get()) return;
+        
         MinecraftServer server = level.getServer();
 
         Optional<GlobalPos> position = player.getData(EPRegistry.LOCATION_DATA).findLatestGraveLocation(level);
