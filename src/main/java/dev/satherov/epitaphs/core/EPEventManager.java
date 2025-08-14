@@ -170,7 +170,6 @@ public class EPEventManager {
         if (!(level.getBlockEntity(event.getPos()) instanceof GraveBlockEntity grave)) return;
         if (CompatHandler.preventInteraction(player, event.getPos())) return;
 
-        MinecraftServer server = level.getServer();
         EPGraveDataAttachment data = grave.getData(EPRegistry.GRAVE_DATA);
         String uuid = data.getOwner();
         String timestamp = data.getTimestamp();
@@ -195,7 +194,7 @@ public class EPEventManager {
         }
 
         if (grave.getBlockState().getBlock() instanceof GraveBlock block) {
-            block.cleanup(level, grave.getBlockPos());
+            block.cleanup(level, grave.getBlockPos(), false);
         } else {
             Epitaphs.LOGGER.warn("Grave at '{}' is not a GraveBlock? Make sure this doesnt lead to file spam!", grave.getBlockPos());
         }

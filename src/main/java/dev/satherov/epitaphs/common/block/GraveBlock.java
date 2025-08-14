@@ -112,11 +112,11 @@ public class GraveBlock extends Block implements EntityBlock, SimpleWaterloggedB
     @Override
     public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!(world instanceof ServerLevel level)) return;
-        this.cleanup(level, pos);
+        this.cleanup(level, pos, true);
         super.onRemove(state, world, pos, newState, isMoving);
     }
     
-    public void cleanup(ServerLevel level, BlockPos pos) {
+    public void cleanup(ServerLevel level, BlockPos pos, boolean drop) {
         if (!(level.getBlockEntity(pos) instanceof GraveBlockEntity grave)) return;
         MinecraftServer server = level.getServer();
 
@@ -147,11 +147,13 @@ public class GraveBlock extends Block implements EntityBlock, SimpleWaterloggedB
             Epitaphs.LOGGER.error("Failed to rename old death data for '{}'", uuid, e);
         }
 
-        List<ItemStack> contents = BackupHandler.getContents(server, uuid, timestamp);
-        for (ItemStack stack : contents) {
-            if (stack.isEmpty()) continue;
-            ItemEntity entity = new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), stack);
-            level.addFreshEntity(entity);
+        if (drop) {
+            List<ItemStack> contents = BackupHandler.getContents(server, uuid, timestamp);
+            for (ItemStack stack : contents) {
+                if (stack.isEmpty()) continue;
+                ItemEntity entity = new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), stack);
+                level.addFreshEntity(entity);
+            }
         }
     }
 
