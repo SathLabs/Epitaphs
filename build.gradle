@@ -30,13 +30,34 @@ neoForge {
         minecraftVersion = project.parchment_minecraft_version
     }
 
-    // accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
+    accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {
         client {
             client()
 
-            // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
+            programArguments.addAll('--username', 'Dev', '--uuid', '5084e6f3-8f54-43f1-8df5-1dca109e430f')
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        client2 {
+            client()
+            
+            programArguments.addAll('--username', 'Dev2', '--uuid', '929a2bb4-4786-49f6-b37e-83c0cd2fc750')
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        client3 {
+            client()
+
+            programArguments.addAll('--username', 'Dev3', '--uuid', '0745f233-9b23-4372-bf35-0f06058e3e8a')
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        client4 {
+            client()
+
+            programArguments.addAll('--username', 'Dev4', '--uuid', '294d8e40-1aff-45d4-a2b9-f33f836af8f8')
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
@@ -121,7 +142,7 @@ dependencies {
     runtimeOnly "curse.maven:ars-nouveau-401955:6770346"
     runtimeOnly "curse.maven:ars-elemental-561470:6784079"
 
-    runtimeOnly "curse.maven:corail-tombstone-243707:6789783"
+    // runtimeOnly "curse.maven:corail-tombstone-243707:6789783"
 
     runtimeOnly "curse.maven:placebo-283644:6751290"
     runtimeOnly "curse.maven:apothic-attributes-898963:6751650"

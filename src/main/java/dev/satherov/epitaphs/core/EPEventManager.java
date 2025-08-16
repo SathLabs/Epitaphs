@@ -122,13 +122,14 @@ public class EPEventManager {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     private static void onLootEvent(LivingDropsEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        if (event.getDrops().isEmpty()) return;
         ServerLevel level = player.serverLevel();
         if (level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).get()) return;
         
         MinecraftServer server = level.getServer();
 
         Optional<GlobalPos> position = player.getData(EPRegistry.LOCATION_DATA).findLatestGraveLocation(level);
-        if (position.isEmpty() || position.get().dimension().equals(level.dimension())) return;
+        if (position.isEmpty() || !position.get().dimension().equals(level.dimension())) return;
         final BlockPos gravePos = position.get().pos().immutable();
         if (!(level.getBlockEntity(gravePos) instanceof GraveBlockEntity grave)) return;
         EPGraveDataAttachment graveData = grave.getData(EPRegistry.GRAVE_DATA);
@@ -136,9 +137,16 @@ public class EPEventManager {
         List<ItemStack> saved = BackupHandler.getContents(server, graveData.getOwner(), graveData.getTimestamp());
         List<ItemStack> drops = new ArrayList<>(event.getDrops().stream().map(ItemEntity::getItem).toList());
         drops.removeAll(saved);
-        if (drops.isEmpty()) return;
+        if (drops.isEmpty()) {
+            player.captureDrops(null);
+            event.setCanceled(true);
+            return;
+        }
+        
         graveData.saveAdditional(drops);
         grave.setData(EPRegistry.GRAVE_DATA, graveData);
+        player.captureDrops(null);
+        event.setCanceled(true);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -168,25 +176,30 @@ public class EPEventManager {
         EPCommands.register(dispatcher);
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    @SubscribeEvent(priority = EventPriority.HIGHEST, receiveCanceled = true)
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (!(event.getLevel() instanceof ServerLevel level)) return;
         if (!(level.getBlockEntity(event.getPos()) instanceof GraveBlockEntity grave)) return;
-        if (CompatHandler.preventInteraction(player, event.getPos())) return;
+        if (event.isCanceled()) {
+            event.setCanceled(false);
+            Epitaphs.LOGGER.warn("Bypassing right-click event cancel");
+        }
+        
+        MinecraftServer server = level.getServer();
 
         EPGraveDataAttachment data = grave.getData(EPRegistry.GRAVE_DATA);
         String uuid = data.getOwner();
         String timestamp = data.getTimestamp();
 
         if (!player.getStringUUID().equals(uuid) && !player.hasPermissions(4)) {
-            Player owner = level.getPlayerByUUID(UUID.fromString(uuid));
+            Player owner = server.getPlayerList().getPlayer(UUID.fromString(uuid));
             String user = owner == null ? "Unknown" : owner.getName().getString();
             player.displayClientMessage(EPLanguage.MESSAGE_NO_ACCESS.translate(user).withStyle(ChatFormatting.RED), true);
             return;
         }
 
-        if (BackupHandler.restore(player, timestamp, false) != 0) {
+        if (BackupHandler.restore(player, uuid, timestamp, false) != 0) {
             player.displayClientMessage(EPLanguage.MESSAGE_GRAVE_ERROR.translateFormatted(ChatFormatting.RED), true);
             return;
         }
@@ -196,12 +209,6 @@ public class EPEventManager {
             if (player.getInventory().add(stack)) {
                 player.drop(stack, false);
             }
-        }
-
-        if (grave.getBlockState().getBlock() instanceof GraveBlock block) {
-            block.cleanup(level, grave.getBlockPos(), false);
-        } else {
-            Epitaphs.LOGGER.warn("Grave at '{}' is not a GraveBlock? Make sure this doesnt lead to file spam!", grave.getBlockPos());
         }
 
         player.inventoryMenu.broadcastChanges();

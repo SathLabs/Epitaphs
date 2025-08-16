@@ -2,21 +2,25 @@ package dev.satherov.epitaphs.common.data;
 
 import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.EpitaphsConfig;
+import dev.satherov.epitaphs.client.lang.EPLanguage;
 import dev.satherov.epitaphs.compat.CompatHandler;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.LevelResource;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -24,12 +28,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,10 +38,17 @@ public class BackupHandler {
     public static final Pattern DATE_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}");
     public static final Pattern FILE_PATTERN = Pattern.compile(DATE_PATTERN + "-(?:death|save)\\.dat(?:-old)?$");
 
-    public static LinkedList<String> listBackups(ServerPlayer player) {
-        MinecraftServer server = player.getServer();
+    public static LinkedList<String> listPlayers(MinecraftServer server) {
+        return listEntries(server, true, null);
+    }
+
+    public static LinkedList<String> listBackups(MinecraftServer server, String uuid) {
+        return listEntries(server, false, uuid);
+    }
+
+    private static LinkedList<String> listEntries(MinecraftServer server, boolean listPlayers, String uuid) {
         if (server == null) {
-            Epitaphs.LOGGER.error("Failed to list backups for player because server is unavailable.");
+            Epitaphs.LOGGER.error("Failed to list {} because server is unavailable.", listPlayers ? "players" : "backups");
             return new LinkedList<>();
         }
 
@@ -52,35 +58,50 @@ public class BackupHandler {
                 .resolve("data")
                 .resolve(Epitaphs.MOD_ID);
 
-        Path target = storage.resolve(player.getUUID().toString());
+        Path target = listPlayers ? storage : storage.resolve(uuid);
 
         if (!Files.exists(target) || !Files.isDirectory(target)) {
-            Epitaphs.LOGGER.debug("No backup directory found for player '{}'", player.getScoreboardName());
+            String entityType = listPlayers ? "backup directory" : "player directory";
+            String identifier = listPlayers ? "storage" : uuid;
+            Epitaphs.LOGGER.debug("No {} found for '{}'", entityType, identifier);
             return new LinkedList<>();
         }
 
-
         try (Stream<Path> walk = Files.walk(target, 1)) {
-            LinkedList<String> backups = walk.filter(Files::isRegularFile)
+            LinkedList<String> results = walk
+                    .filter(listPlayers ? Files::isDirectory : Files::isRegularFile)
                     .map(Path::getFileName)
                     .map(Path::toString)
-                    .filter(string -> FILE_PATTERN.matcher(string).matches())
+                    .filter(string -> listPlayers ? isValidUuid(string) : FILE_PATTERN.matcher(string).matches())
                     .sorted(Comparator.naturalOrder())
                     .collect(Collectors.toCollection(LinkedList::new))
                     .reversed();
 
-            if (backups.isEmpty()) {
-                Epitaphs.LOGGER.debug("No backup files found for player '{}'", player.getScoreboardName());
+            if (results.isEmpty()) {
+                String entityType = listPlayers ? "player directories" : "backup files";
+                String identifier = listPlayers ? "storage" : uuid;
+                Epitaphs.LOGGER.debug("No {} found for '{}'", entityType, identifier);
             }
 
-            return backups;
+            return results;
 
         } catch (IOException e) {
-            Epitaphs.LOGGER.error("Failed to list backups for player '{}'", player.getScoreboardName(), e);
+            String entityType = listPlayers ? "players" : "backups";
+            String identifier = listPlayers ? "storage" : uuid;
+            Epitaphs.LOGGER.error("Failed to list {} for '{}'", entityType, identifier, e);
         }
         return new LinkedList<>();
     }
 
+    private static boolean isValidUuid(String string) {
+        try {
+            UUID.fromString(string);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+    
     public static int save(ServerPlayer player, String timestamp, EBackupType type) {
         MinecraftServer server = player.getServer();
         if (server == null) {
@@ -196,25 +217,8 @@ public class BackupHandler {
 
     public static CompoundTag load(MinecraftServer server, String uuid, String timestamp) {
         CompoundTag data = new CompoundTag();
-        if (uuid.isBlank() || timestamp.isBlank()) {
-            Epitaphs.LOGGER.warn("Cannot load data because uuid '{}' and/or timestamp '{}' is blank", uuid, timestamp);
-            return data;
-        }
-
-        ServerPlayer player = server.getPlayerList().getPlayer(UUID.fromString(uuid));
-        if (player == null) {
-            Epitaphs.LOGGER.warn("Player '{}' not found, are they offline?", uuid);
-            return data;
-        }
-
-        return load(player, timestamp);
-    }
-
-    public static CompoundTag load(ServerPlayer player, String timestamp) {
-        CompoundTag data = new CompoundTag();
-        MinecraftServer server = player.getServer();
         if (server == null) {
-            Epitaphs.LOGGER.error("Failed to load data for player '{}' because server is unavailable", player.getScoreboardName());
+            Epitaphs.LOGGER.error("Failed to load data for player with uuid '{}' because server is unavailable", uuid);
             return data;
         }
 
@@ -228,10 +232,10 @@ public class BackupHandler {
                 .toAbsolutePath()
                 .resolve("data")
                 .resolve(Epitaphs.MOD_ID)
-                .resolve(player.getUUID().toString());
+                .resolve(uuid);
         
         if (!Files.exists(target) || !Files.isDirectory(target)) {
-            Epitaphs.LOGGER.debug("No backup directory found for player '{}'", player.getScoreboardName());
+            Epitaphs.LOGGER.debug("No backup directory found for uuid '{}'", uuid);
             return data;
         }
 
@@ -249,7 +253,7 @@ public class BackupHandler {
 
             if (file == null) throw new IOException();
         } catch (IOException e) {
-            Epitaphs.LOGGER.error("No backup file found for player '{}' at '{}'", player.getScoreboardName(), timestamp);
+            Epitaphs.LOGGER.error("No backup file found for uuid '{}' at '{}'", uuid, timestamp);
             return data;
         }
 
@@ -262,16 +266,35 @@ public class BackupHandler {
         return data;
     }
 
-    public static int restore(ServerPlayer player, String timestamp, boolean clear) {
-        return restore(player, load(player, timestamp), clear);
+    public static int restore(ServerPlayer player, String uuid, String timestamp, boolean clear) {
+        CompoundTag data = load(player.getServer(), uuid, timestamp);
+        if (data.isEmpty()) {
+            Epitaphs.LOGGER.warn("Cannot restore uuid '{}' because data is empty", uuid);
+            return -1;
+        }
+        return restoreOnline(player, data, clear);
     }
 
-    public static int restore(ServerPlayer player, CompoundTag data, boolean clear) {
+    public static int restoreCommand(MinecraftServer server, CommandSourceStack source, String uuid, String timestamp, boolean clear) {
+        
+        CompoundTag data = load(server, uuid, timestamp);
         if (data.isEmpty()) {
-            Epitaphs.LOGGER.warn("Cannot restore player '{}' because data is empty", player.getScoreboardName());
+            Epitaphs.LOGGER.warn("Cannot restore uuid '{}' because data is empty", uuid);
             return -1;
         }
 
+        ServerPlayer player = server.getPlayerList().getPlayer(UUID.fromString(uuid));
+        if (player != null) {
+            Epitaphs.LOGGER.debug("Restoring data for player '{}'", player.getScoreboardName());
+            return restoreOnline(player, data, clear);
+        } else {
+            Epitaphs.LOGGER.debug("Restoring data for offline player '{}'", uuid);
+            return restoreOffline(server, source, uuid, data, clear);
+        }
+    }
+    
+    private static int restoreOnline(ServerPlayer player, CompoundTag data, boolean clear) {
+ 
         ListTag inventory = data.getList("Inventory", Tag.TAG_COMPOUND);
 
         if (clear) player.getInventory().clearContent();
@@ -281,9 +304,9 @@ public class BackupHandler {
         if (quickLoad(player, inventory)) return 0;
 
         List<ItemStack> overflow = new ArrayList<>();
-        NonNullList<ItemStack> items = NonNullList.withSize(player.getInventory().items.size(), ItemStack.EMPTY);
-        NonNullList<ItemStack> armor = NonNullList.withSize(player.getInventory().armor.size(), ItemStack.EMPTY);
-        NonNullList<ItemStack> offhand = NonNullList.withSize(player.getInventory().offhand.size(), ItemStack.EMPTY);
+        NonNullList<ItemStack> items = NonNullList.withSize(36, ItemStack.EMPTY);
+        NonNullList<ItemStack> armor = NonNullList.withSize(4, ItemStack.EMPTY);
+        NonNullList<ItemStack> offhand = NonNullList.withSize(1, ItemStack.EMPTY);
 
         for (int i = 0; i < inventory.size(); i++) {
             CompoundTag tag = inventory.getCompound(i);
@@ -330,10 +353,115 @@ public class BackupHandler {
         }
 
         for (ItemStack stack : overflow) {
-            if (player.getInventory().add(stack)) {
+            if (!player.getInventory().add(stack)) {
                 ItemEntity item = player.drop(stack, false);
                 if (item != null) item.setNoPickUpDelay();
             }
+        }
+
+        return 0;
+    }
+    
+    private static int restoreOffline(MinecraftServer server, CommandSourceStack source, String uuid, CompoundTag data, boolean clear) {
+        File directory = server.getWorldPath(LevelResource.PLAYER_DATA_DIR).toFile();
+        File file = new File(directory, uuid + ".dat");
+
+        CompoundTag root = new CompoundTag();
+        
+        if (file.exists() && file.isFile()) {
+            try {
+                root = NbtIo.readCompressed(file.toPath(), NbtAccounter.unlimitedHeap());
+            } catch (Exception exception) {
+                Epitaphs.LOGGER.warn("Failed to access playerdata for uuid '{}'", uuid);
+                return -1;
+            }
+        }
+
+        ListTag rootInventory;
+        if (clear) {
+            root.remove("Inventory");
+            rootInventory = new ListTag();
+            root.put("Inventory", rootInventory);
+        } else {
+            rootInventory = root.getList("Inventory", Tag.TAG_COMPOUND);
+        }
+
+        ListTag inventory = data.getList("Inventory", Tag.TAG_COMPOUND);
+        List<CompoundTag> failedInserts = new ArrayList<>();
+
+        Set<Integer> occupied = new HashSet<>();
+        for (int i = 0; i < rootInventory.size(); i++) {
+            CompoundTag existing = rootInventory.getCompound(i);
+            int slot = existing.getByte("Slot") & 255;
+            occupied.add(slot);
+        }
+
+        for (int i = 0; i < inventory.size(); i++) {
+            CompoundTag itemTag = inventory.getCompound(i);
+            int slot = itemTag.getByte("Slot") & 255;
+
+            if (!occupied.contains(slot)) {
+                rootInventory.add(itemTag);
+                occupied.add(slot);
+            } else {
+                failedInserts.add(itemTag);
+            }
+        }
+
+        List<CompoundTag> failed = new ArrayList<>();
+        for (CompoundTag failedItem : failedInserts) {
+            boolean inserted = false;
+
+            for (int slot = 0; slot < 36; slot++) {
+                if (!occupied.contains(slot)) {
+                    CompoundTag newItemTag = failedItem.copy();
+                    newItemTag.putByte("Slot", (byte) slot);
+                    rootInventory.add(newItemTag);
+                    occupied.add(slot);
+                    inserted = true;
+                    break;
+                }
+            }
+
+            if (!inserted) {
+                failed.add(failedItem);
+            }
+        }
+
+ 
+        if (!failed.isEmpty()) {
+            Epitaphs.LOGGER.warn("Could not insert {} items for uuid '{}' - no empty slots available:", failed.size(), uuid);
+            
+            if (source != null && source.isPlayer()) {
+                ServerPlayer player = source.getPlayer();
+                
+                source.sendSystemMessage(EPLanguage.COMMAND_RESTORE_OVERFLOW.translate(uuid).withStyle(ChatFormatting.RED));
+                
+                for (CompoundTag tag : failed) {
+                    ItemStack stack = ItemStack.parse(server.registryAccess(), tag).orElse(ItemStack.EMPTY);
+                    if (stack.isEmpty()) continue;
+                    if (!player.getInventory().add(stack)) {
+                        player.drop(stack, false);
+                    }
+                }
+                
+            } else {
+                Epitaphs.LOGGER.error("The following items were lost:");
+                for (CompoundTag tag : failed) {
+                    int slot = tag.getByte("Slot") & 255;
+                    String item = tag.getString("id");
+                    int count = tag.getByte("count");
+                    Epitaphs.LOGGER.warn(" - {} x{} (slot: {})", item, count, slot);
+                }
+            }
+        }
+        
+        try {
+            NbtIo.writeCompressed(root, file.toPath());
+            Epitaphs.LOGGER.debug("Successfully restored items for uuid '{}'", uuid);
+        } catch (IOException e) {
+            Epitaphs.LOGGER.error("Failed to write updated playerdata for uuid '{}'", uuid, e);
+            return -1;
         }
 
         return 0;

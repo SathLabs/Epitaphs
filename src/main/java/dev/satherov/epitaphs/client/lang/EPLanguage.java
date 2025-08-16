@@ -10,6 +10,7 @@ public enum EPLanguage implements ILangEntry {
 
     COMMAND_RESTORE_SUCCESS("command", "restore_success"),
     COMMAND_RESTORE_FAILED("command", "restore_failed"),
+    COMMAND_RESTORE_OVERFLOW("command", "restore_overflow"),
     COMMAND_BACKUP_SUCCESS("command", "backup_success"),
     COMMAND_BACKUP_FAILED("command", "backup_failed"),
 

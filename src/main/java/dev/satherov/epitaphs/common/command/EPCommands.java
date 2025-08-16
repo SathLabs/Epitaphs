@@ -9,13 +9,12 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.player.Player;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
@@ -28,10 +27,7 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class EPCommands {
 
@@ -50,24 +46,50 @@ public class EPCommands {
     private static LiteralArgumentBuilder<CommandSourceStack> recoverCommand() {
         return Commands.literal("recover")
                 .requires(cs -> cs.hasPermission(4))
-                .then(Commands.argument("player", EntityArgument.player())
-                        .then(Commands.argument("timestamp", StringArgumentType.string())
-                                .suggests(FILE_SUGGESTER)
-                                .executes(ctx -> recover(ctx, false))
-                                .then(Commands.argument("force", BoolArgumentType.bool())
-                                        .executes(ctx -> recover(ctx, BoolArgumentType.getBool(ctx, "force"))))
+                .then(Commands.literal("player")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .then(Commands.argument("timestamp", StringArgumentType.string())
+                                        .suggests(FILE_SUGGESTER)
+                                        .executes(ctx -> recoverPlayer(ctx, false))
+                                        .then(Commands.argument("force", BoolArgumentType.bool())
+                                                .executes(ctx -> recoverPlayer(ctx, BoolArgumentType.getBool(ctx, "force"))))
+                                )
+                        )
+                )
+                .then(Commands.literal("uuid")
+                        .then(Commands.argument("uuid", StringArgumentType.string())
+                                .suggests(UUID_SUGGESTER)
+                                .then(Commands.argument("timestamp", StringArgumentType.string())
+                                        .suggests(FILE_SUGGESTER)
+                                        .executes(ctx -> recoverUUID(ctx, false))
+                                        .then(Commands.argument("force", BoolArgumentType.bool())
+                                                .executes(ctx -> recoverUUID(ctx, BoolArgumentType.getBool(ctx, "force"))))
+                                )
                         )
                 );
     }
 
-    private static int recover(CommandContext<CommandSourceStack> ctx, boolean force) throws CommandSyntaxException {
-        ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
+    private static int recoverUUID(CommandContext<CommandSourceStack> ctx, boolean force) throws CommandSyntaxException {
         String timestamp = StringArgumentType.getString(ctx, "timestamp");
-        int result = BackupHandler.restore(player, timestamp, force);
+        String uuid = StringArgumentType.getString(ctx, "uuid");
+        return recover(ctx, uuid, timestamp, force);
+    }
+    
+    private static int recoverPlayer(CommandContext<CommandSourceStack> ctx, boolean force) throws CommandSyntaxException {
+        String timestamp = StringArgumentType.getString(ctx, "timestamp");
+        ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
+        String uuid = player.getStringUUID();
+        return recover(ctx, uuid, timestamp, force);
+    }
+    
+    private static int recover(CommandContext<CommandSourceStack> ctx, String uuid, String timestamp, boolean force) {
+        int result = BackupHandler.restoreCommand(ctx.getSource().getServer(), ctx.getSource(), uuid, timestamp, force);
+        ServerPlayer player = ctx.getSource().getServer().getPlayerList().getPlayer(UUID.fromString(uuid));
+        String user = player == null ? uuid : player.getName().getString();
         if (result == 0) {
-            ctx.getSource().sendSystemMessage(EPLanguage.COMMAND_RESTORE_SUCCESS.translate(player.getDisplayName()));
+            ctx.getSource().sendSystemMessage(EPLanguage.COMMAND_RESTORE_SUCCESS.translate(user));
         } else {
-            ctx.getSource().sendSystemMessage(EPLanguage.COMMAND_RESTORE_FAILED.translate(player.getDisplayName()));
+            ctx.getSource().sendSystemMessage(EPLanguage.COMMAND_RESTORE_FAILED.translate(user));
         }
         return result;
     }
@@ -160,8 +182,14 @@ public class EPCommands {
     }
 
     private static final SuggestionProvider<CommandSourceStack> FILE_SUGGESTER = (context, builder) -> {
-        ServerPlayer player = EntityArgument.getPlayer(context, "player");
-        LinkedList<String> files = BackupHandler.listBackups(player);
+        String uuid = StringArgumentType.getString(context, "uuid");
+        LinkedList<String> files = BackupHandler.listBackups(context.getSource().getServer(), uuid);
+        files.forEach(builder::suggest);
+        return builder.buildFuture();
+    };
+
+    private static final SuggestionProvider<CommandSourceStack> UUID_SUGGESTER = (context, builder) -> {
+        LinkedList<String> files = BackupHandler.listPlayers(context.getSource().getServer());
         files.forEach(builder::suggest);
         return builder.buildFuture();
     };

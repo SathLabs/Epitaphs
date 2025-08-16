@@ -4,6 +4,7 @@
     "command.epitaphs.backup_success": "Backup complete",
     "command.epitaphs.not_found": "No grave found for for %s",
     "command.epitaphs.restore_failed": "Failed to restore items of player %s. Check your logs for more info",
+    "command.epitaphs.restore_overflow": "Failed to insert some items into uuid %s.",
     "command.epitaphs.restore_success": "Restored items of player %s",
     "container.epitaphs.grave": "Grave",
     "enchantment.epitaphs.experience_soulbound": "Experience Soulbound",

@@ -21,6 +21,7 @@ public class EPLanguageProvider extends LanguageProvider {
 
         add(EPLanguage.COMMAND_RESTORE_SUCCESS, "Restored items of player %s");
         add(EPLanguage.COMMAND_RESTORE_FAILED, "Failed to restore items of player %s. Check your logs for more info");
+        add(EPLanguage.COMMAND_RESTORE_OVERFLOW, "Failed to insert some items into uuid %s.");
 
         add(EPLanguage.COMMAND_BACKUP_SUCCESS, "Backup complete");
         add(EPLanguage.COMMAND_BACKUP_FAILED, "Failed to backup. Check your logs for more info");
