@@ -1,0 +1,16 @@
+{
+    "block.epitaphs.grave": "Túmulo",
+    "command.epitaphs.backup_failed": "Falha ao criar backup. Verifique seus logs para mais informações",
+    "command.epitaphs.backup_success": "Backup concluído",
+    "command.epitaphs.not_found": "Nenhum túmulo encontrado para %s",
+    "command.epitaphs.restore_failed": "Falha ao restaurar os itens do jogador %s. Verifique seus logs para mais informações",
+    "command.epitaphs.restore_overflow": "Falha ao inserir alguns itens no uuid %s.",
+    "command.epitaphs.restore_success": "Itens do jogador %s restaurados",
+    "container.epitaphs.grave": "Túmulo",
+    "enchantment.epitaphs.experience_soulbound": "Encantamento Alma Ligada à Experiência",
+    "enchantment.epitaphs.soulbound": "Alma Ligada",
+    "message.epitaphs.grave_error": "Ocorreu um erro ao tentar carregar este túmulo. Verifique seus logs para mais informações",
+    "message.epitaphs.grave_failed": "Nenhuma posição válida encontrada para um túmulo",
+    "message.epitaphs.grave_success": "Túmulo criado com seus itens em",
+    "message.epitaphs.no_access": "Este túmulo pertence a %s. Você não tem acesso a ele"
+}
