@@ -110,6 +110,10 @@ public class GraveBlock extends Block implements EntityBlock, SimpleWaterloggedB
     @Override
     public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!(world instanceof ServerLevel level)) return;
+        if (state.is(newState.getBlock())) {
+            super.onRemove(state, world, pos, newState, isMoving);
+            return;
+        }
         this.cleanup(level, pos, true);
         super.onRemove(state, world, pos, newState, isMoving);
     }
