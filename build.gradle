@@ -30,7 +30,7 @@ neoForge {
         minecraftVersion = project.parchment_minecraft_version
     }
 
-    // accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
+    // ccessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {
         client {
@@ -147,6 +147,8 @@ dependencies {
     runtimeOnly "curse.maven:placebo-283644:6751290"
     runtimeOnly "curse.maven:apothic-attributes-898963:6751650"
     runtimeOnly "curse.maven:apothic-enchanting-1063926:6751658"
+
+    implementation "curse.maven:mekanism-268560:6895130"
 }
 
 tasks.withType(ProcessResources).configureEach {

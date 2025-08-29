@@ -13,7 +13,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -35,8 +34,41 @@ import java.util.stream.Stream;
 
 public class BackupHandler {
 
+    private static final DateTimeFormatter TIMESTAMP_FMT = DateTimeFormatter
+            .ofPattern("yyyy-MM-dd-HH-mm-ss")
+            .withZone(ZoneOffset.UTC);
+
+    private static Path storageRoot(MinecraftServer server) {
+        return server.getWorldPath(LevelResource.ROOT)
+                .normalize()
+                .toAbsolutePath()
+                .resolve("data")
+                .resolve(Epitaphs.MOD_ID);
+    }
+
+    private static Path playerDir(MinecraftServer server, UUID uuid) {
+        return storageRoot(server).resolve(uuid.toString());
+    }
+
     public static final Pattern DATE_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}");
-    public static final Pattern FILE_PATTERN = Pattern.compile(DATE_PATTERN + "-(?:death|save)\\.dat(?:-old)?$");
+    public static final Pattern FILE_PATTERN = Pattern.compile(DATE_PATTERN.pattern() + "-(?:death|save)\\.dat(?:-old)?$");
+    private static final java.nio.file.PathMatcher FILE_MATCHER = FileSystems.getDefault().getPathMatcher("regex:" + FILE_PATTERN.pattern());
+
+    private static void pruneBackups(Path dir, Pattern pattern, int keep) throws IOException {
+        try (Stream<Path> walk = Files.walk(dir, 1)) {
+            List<Path> files = new ArrayList<>(
+                    walk.filter(Files::isRegularFile)
+                            .filter(path -> pattern.matcher(path.getFileName().toString()).matches())
+                            .sorted(Comparator.naturalOrder())
+                            .toList()
+            );
+            while (files.size() > keep) {
+                Path file = files.removeFirst();
+                Files.deleteIfExists(file);
+                Epitaphs.LOGGER.debug("Removed old save file '{}'", file.getFileName());
+            }
+        }
+    }
 
     public static LinkedList<String> listPlayers(MinecraftServer server) {
         return listEntries(server, true, null);
@@ -52,11 +84,7 @@ public class BackupHandler {
             return new LinkedList<>();
         }
 
-        Path storage = server.getWorldPath(LevelResource.ROOT)
-                .normalize()
-                .toAbsolutePath()
-                .resolve("data")
-                .resolve(Epitaphs.MOD_ID);
+        Path storage = storageRoot(server);
 
         Path target = listPlayers ? storage : storage.resolve(uuid);
 
@@ -73,9 +101,8 @@ public class BackupHandler {
                     .map(Path::getFileName)
                     .map(Path::toString)
                     .filter(string -> listPlayers ? isValidUuid(string) : FILE_PATTERN.matcher(string).matches())
-                    .sorted(Comparator.naturalOrder())
-                    .collect(Collectors.toCollection(LinkedList::new))
-                    .reversed();
+                    .sorted(Comparator.reverseOrder())
+                    .collect(Collectors.toCollection(LinkedList::new));
 
             if (results.isEmpty()) {
                 String entityType = listPlayers ? "player directories" : "backup files";
@@ -94,6 +121,7 @@ public class BackupHandler {
     }
 
     private static boolean isValidUuid(String string) {
+        // Allow only canonical UUID strings
         try {
             UUID.fromString(string);
             return true;
@@ -109,12 +137,7 @@ public class BackupHandler {
             return -1;
         }
 
-        Path storage = server.getWorldPath(LevelResource.ROOT)
-                .normalize()
-                .toAbsolutePath()
-                .resolve("data")
-                .resolve(Epitaphs.MOD_ID)
-                .resolve(player.getUUID().toString());
+        Path storage = playerDir(server, player.getUUID());
 
         CompoundTag tag = player.saveWithoutId(new CompoundTag());
 
@@ -143,20 +166,9 @@ public class BackupHandler {
             case SAVE -> Pattern.compile(DATE_PATTERN.pattern() + "-save\\.dat(?:-old)?$");
         };
 
-        try (Stream<Path> walk = Files.walk(storage, 1)) {
-            List<Path> files = new ArrayList<>(
-                    walk.filter(Files::isRegularFile)
-                            .filter(path -> pattern.matcher(path.getFileName().toString()).matches())
-                            .sorted(Comparator.naturalOrder())
-                            .toList()
-            );
-
-            while (files.size() >= (type == EBackupType.SAVE ? EpitaphsConfig.getMaxBackups() : EpitaphsConfig.getMaxOld())) {
-                Path file = files.removeFirst();
-                Files.deleteIfExists(file);
-                Epitaphs.LOGGER.debug("Removed old save file '{}'", file.getFileName());
-            }
-
+        try {
+            int limit = (type == EBackupType.SAVE ? EpitaphsConfig.getMaxBackups() : EpitaphsConfig.getMaxOld());
+            pruneBackups(storage, pattern, limit);
         } catch (IOException e) {
             Epitaphs.LOGGER.error("Failed to clean up old saves for player '{}'", player.getScoreboardName(), e);
             return -1;
@@ -166,11 +178,7 @@ public class BackupHandler {
     }
 
     public static boolean saveAll(MinecraftServer server) {
-        Path storage = server.getWorldPath(LevelResource.ROOT)
-                .normalize()
-                .toAbsolutePath()
-                .resolve("data")
-                .resolve(Epitaphs.MOD_ID);
+        Path storage = storageRoot(server);
 
         Pattern pattern = Pattern.compile(DATE_PATTERN.pattern() + "-save\\.dat(?:-old)?$");
         List<ServerPlayer> players = server.getPlayerList().getPlayers();
@@ -185,10 +193,7 @@ public class BackupHandler {
 
             try {
                 Files.createDirectories(target);
-                String timestamp = DateTimeFormatter
-                        .ofPattern("yyyy-MM-dd-HH-mm-ss")
-                        .withZone(ZoneOffset.UTC)
-                        .format(Instant.now());
+                String timestamp = TIMESTAMP_FMT.format(Instant.now());
 
                 NbtIo.writeCompressed(tag, target.resolve(timestamp + "-save.dat"));
             } catch (IOException e) {
@@ -196,16 +201,11 @@ public class BackupHandler {
             }
         }
 
-        try (Stream<Path> walk = Files.walk(storage, 2)) {
-            Map<Path, List<Path>> existing = walk.filter(Files::isRegularFile)
-                    .filter(path -> pattern.matcher(path.getFileName().toString()).matches())
-                    .collect(Collectors.groupingBy(Path::getParent));
-
-            for (List<Path> files : existing.values()) {
-                files.sort(Comparator.naturalOrder());
-                while (files.size() > EpitaphsConfig.getMaxBackups()) {
-                    Path file = files.removeFirst();
-                    Files.deleteIfExists(file);
+        try (Stream<Path> walk = Files.walk(storage, 1)) {
+            for (ServerPlayer player : players) {
+                Path dir = storage.resolve(player.getUUID().toString());
+                if (Files.exists(dir)) {
+                    pruneBackups(dir, pattern, EpitaphsConfig.getMaxBackups());
                 }
             }
         } catch (IOException e) {
@@ -227,12 +227,7 @@ public class BackupHandler {
             return data;
         }
 
-        Path target = server.getWorldPath(LevelResource.ROOT)
-                .normalize()
-                .toAbsolutePath()
-                .resolve("data")
-                .resolve(Epitaphs.MOD_ID)
-                .resolve(uuid);
+        Path target = playerDir(server, UUID.fromString(uuid));
         
         if (!Files.exists(target) || !Files.isDirectory(target)) {
             Epitaphs.LOGGER.debug("No backup directory found for uuid '{}'", uuid);
@@ -243,11 +238,7 @@ public class BackupHandler {
 
         try (Stream<Path> files = Files.list(target)) {
 
-            file = files.filter(p -> FileSystems.getDefault()
-                            .getPathMatcher("regex:" + FILE_PATTERN.pattern())
-                            .matches(p.getFileName()) && p.getFileName().toString().startsWith(timestamp))
-                    .toList()
-                    .stream()
+            file = files.filter(p -> FILE_MATCHER.matches(p.getFileName()) && p.getFileName().toString().startsWith(timestamp))
                     .findFirst()
                     .orElse(null);
 

@@ -3,6 +3,7 @@ package dev.satherov.epitaphs.datagen.data;
 import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.core.EPRegistry;
 
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
@@ -24,6 +25,9 @@ public class EPBlockTagsProvider extends BlockTagsProvider {
     @Override
     protected void addTags(HolderLookup.Provider provider) {
         tag(FTBChunksTags.Blocks.INTERACT_WHITELIST_TAG)
+                .add(EPRegistry.GRAVE.get());
+        
+        tag(Tags.Blocks.RELOCATION_NOT_SUPPORTED)
                 .add(EPRegistry.GRAVE.get());
     }
 }

@@ -3,12 +3,11 @@
   "package": "dev.satherov.epitaphs.core.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "MinecraftServerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "overwrites": {
     "requireAnnotations": true
-    }
+  }
 }

@@ -38,6 +38,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -76,6 +77,17 @@ public class EPEventManager {
         if (player.getInventory().isEmpty() && CompatHandler.isCurioEmpty(player)) return;
 
         if (BackupHandler.save(player, timestamp, EBackupType.DEATH) != 0) return;
+
+
+        List<ItemStack> backupContents = BackupHandler.getContents(level.getServer(), player.getStringUUID(), timestamp);
+        boolean hasItems = false;
+        for (ItemStack s : backupContents) { 
+            if (!s.isEmpty()) { 
+                hasItems = true; 
+                break; 
+            } 
+        }
+        if (!hasItems) return;
 
         Optional<BlockPos> safeSpot = GraveBlock.findSafeSpot(level, player.blockPosition());
         if (safeSpot.isEmpty()) {
@@ -137,15 +149,9 @@ public class EPEventManager {
         List<ItemStack> saved = BackupHandler.getContents(server, graveData.getOwner(), graveData.getTimestamp());
         List<ItemStack> drops = new ArrayList<>(event.getDrops().stream().map(ItemEntity::getItem).toList());
         drops.removeAll(saved);
-        if (drops.isEmpty()) {
-            player.captureDrops(null);
-            event.setCanceled(true);
-            return;
-        }
-        
+        if (drops.isEmpty()) return;
         graveData.saveAdditional(drops);
         grave.setData(EPRegistry.GRAVE_DATA, graveData);
-        player.captureDrops(null);
         event.setCanceled(true);
     }
 
@@ -206,7 +212,7 @@ public class EPEventManager {
 
         for (ItemStack stack : data.getAdditional()) {
             if (stack.isEmpty()) continue;
-            if (player.getInventory().add(stack)) {
+            if (!player.getInventory().add(stack)) {
                 player.drop(stack, false);
             }
         }
@@ -233,6 +239,7 @@ public class EPEventManager {
         player.setData(EPRegistry.LOCATION_DATA, player.getData(EPRegistry.LOCATION_DATA).removeGraveLocation(player, timestamp, grave.getBlockPos()));
         level.removeBlockEntity(event.getPos());
         level.removeBlock(event.getPos(), false);
+        event.setCancellationResult(InteractionResult.SUCCESS);
         event.setCanceled(true);
     }
 
