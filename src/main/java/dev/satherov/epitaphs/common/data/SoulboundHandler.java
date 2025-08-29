@@ -1,5 +1,6 @@
 package dev.satherov.epitaphs.common.data;
 
+import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.common.component.EPSoulboundAttachment;
 import dev.satherov.epitaphs.compat.CompatHandler;
 import dev.satherov.epitaphs.core.EPRegistry;
@@ -20,13 +21,11 @@ public class SoulboundHandler {
         NonNullList<ItemStack> soulboundArmor = extractSoulboundItems(player.getInventory().armor);
         NonNullList<ItemStack> soulboundOffhand = extractSoulboundItems(player.getInventory().offhand);
         NonNullList<ItemStack> soulboundCurios = extractSoulboundItems(CompatHandler.getCurio(player));
-
-        if (soulboundItems.isEmpty() && soulboundArmor.isEmpty() && soulboundOffhand.isEmpty() && soulboundCurios.isEmpty()) return;
-
-        attachment.setItems(soulboundItems);
-        attachment.setArmor(soulboundArmor);
-        attachment.setOffhand(soulboundOffhand);
-        attachment.setCurio(soulboundCurios);
+        
+        attachment.setItems(player, soulboundItems);
+        attachment.setArmor(player, soulboundArmor);
+        attachment.setOffhand(player, soulboundOffhand);
+        attachment.setCurio(player, soulboundCurios);
 
         for (ItemStack stack : soulboundCurios) {
             if (!stack.isEmpty()) {
@@ -80,6 +79,7 @@ public class SoulboundHandler {
 
         for (int i = 0; i < originalList.size(); i++) {
             ItemStack stack = originalList.get(i);
+            System.out.println(stack);
             if (hasSoulbound(stack)) {
                 soulboundItems.set(i, stack.copy());
                 originalList.set(i, ItemStack.EMPTY);
@@ -92,6 +92,7 @@ public class SoulboundHandler {
     private static void restoreItemsToSlots(ServerPlayer player, NonNullList<ItemStack> targetList, NonNullList<ItemStack> soulboundList) {
         for (int i = 0; i < Math.min(targetList.size(), soulboundList.size()); i++) {
             ItemStack stack = soulboundList.get(i);
+            System.out.println(stack);
             if (stack.isEmpty()) continue;
 
             if (targetList.get(i).isEmpty()) {

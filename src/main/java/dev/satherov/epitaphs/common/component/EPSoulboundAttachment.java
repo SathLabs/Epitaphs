@@ -1,5 +1,7 @@
 package dev.satherov.epitaphs.common.component;
 
+import dev.satherov.epitaphs.Epitaphs;
+
 import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import net.minecraft.core.HolderLookup;
@@ -7,6 +9,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.UnknownNullability;
@@ -39,24 +42,64 @@ public class EPSoulboundAttachment implements INBTSerializable<CompoundTag> {
         return experience;
     }
 
-    public void setItems(NonNullList<ItemStack> items) {
-        this.items = items;
+    public void setItems(ServerPlayer player, NonNullList<ItemStack> items) {
+        for (int i = 0; i < items.size(); i++) {
+            ItemStack present = this.items.get(i);
+            ItemStack stack = items.get(i);
+            if (present.isEmpty()) {
+                this.items.set(i, stack);
+            } else {
+                Epitaphs.LOGGER.warn("Soulbound item {} could not be saved to inventory because data was already occupied with {}", stack, present);
+                player.getInventory().add(stack);
+            }
+        }
     }
 
-    public void setArmor(NonNullList<ItemStack> armor) {
-        this.armor = armor;
+    public void setArmor(ServerPlayer player, NonNullList<ItemStack> armor) {
+        for (int i = 0; i < armor.size(); i++) {
+            ItemStack present = this.armor.get(i);
+            ItemStack stack = armor.get(i);
+            if (present.isEmpty()) {
+                this.armor.set(i, stack);
+            } else {
+                Epitaphs.LOGGER.warn("Soulbound item {} could not be saved to armor because data was already occupied with {}", stack, present);
+                player.getInventory().add(stack);
+            }
+        }
     }
 
-    public void setOffhand(NonNullList<ItemStack> offhand) {
-        this.offhand = offhand;
+    public void setOffhand(ServerPlayer player, NonNullList<ItemStack> offhand) {
+        for (int i = 0; i < offhand.size(); i++) {
+            ItemStack present = this.offhand.get(i);
+            ItemStack stack = offhand.get(i);
+            if (present.isEmpty()) {
+                this.offhand.set(i, stack);
+            } else {
+                Epitaphs.LOGGER.warn("Soulbound item {} could not be saved to offhand because data was already occupied with {}", stack, present);
+                player.getInventory().add(stack);
+            }
+        }
     }
 
-    public void setCurio(NonNullList<ItemStack> curio) {
-        this.curio = curio;
+    public void setCurio(ServerPlayer player, NonNullList<ItemStack> curio) {
+        for (int i = 0; i < curio.size(); i++) {
+            ItemStack present = this.curio.get(i);
+            ItemStack stack = curio.get(i);
+            if (present.isEmpty()) {
+                this.curio.set(i, stack);
+            } else {
+                Epitaphs.LOGGER.warn("Soulbound item {} could not be saved to curio because data was already occupied with {}", stack, present);
+                player.getInventory().add(stack);
+            }
+        }
     }
 
     public void setExperience(int experience) {
         this.experience = experience;
+    }
+    
+    public boolean isEmpty() {
+        return items.isEmpty() && armor.isEmpty() && offhand.isEmpty() && curio.isEmpty();
     }
 
     public void clear() {

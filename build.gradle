@@ -149,6 +149,13 @@ dependencies {
     runtimeOnly "curse.maven:apothic-enchanting-1063926:6751658"
 
     implementation "curse.maven:mekanism-268560:6895130"
+
+    implementation "curse.maven:placebo-283644:6926281"
+    implementation "curse.maven:patchouli-306770:6842247"
+    implementation "curse.maven:apothic-spawners-986583:6751589"
+    implementation "curse.maven:apothic-enchanting-1063926:6926290"
+    implementation "curse.maven:apothic-attributes-898963:6751650"
+    implementation "curse.maven:apotheosis-313970:6926309"
 }
 
 tasks.withType(ProcessResources).configureEach {

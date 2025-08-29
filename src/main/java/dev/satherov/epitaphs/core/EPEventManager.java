@@ -125,7 +125,7 @@ public class EPEventManager {
         player.setData(EPRegistry.LOCATION_DATA, player.getData(EPRegistry.LOCATION_DATA).addGraveLocation(player, timestamp, gravePos));
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     private static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         SoulboundHandler.restoreSoulbound(player);
