@@ -79,7 +79,6 @@ public class SoulboundHandler {
 
         for (int i = 0; i < originalList.size(); i++) {
             ItemStack stack = originalList.get(i);
-            System.out.println(stack);
             if (hasSoulbound(stack)) {
                 soulboundItems.set(i, stack.copy());
                 originalList.set(i, ItemStack.EMPTY);
@@ -92,7 +91,6 @@ public class SoulboundHandler {
     private static void restoreItemsToSlots(ServerPlayer player, NonNullList<ItemStack> targetList, NonNullList<ItemStack> soulboundList) {
         for (int i = 0; i < Math.min(targetList.size(), soulboundList.size()); i++) {
             ItemStack stack = soulboundList.get(i);
-            System.out.println(stack);
             if (stack.isEmpty()) continue;
 
             if (targetList.get(i).isEmpty()) {
