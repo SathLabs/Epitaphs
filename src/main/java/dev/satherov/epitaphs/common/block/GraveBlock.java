@@ -58,7 +58,7 @@ public class GraveBlock extends Block implements EntityBlock, SimpleWaterloggedB
     );
 
     public GraveBlock(Properties properties) {
-        super(properties);
+        super(properties.strength(-1f, Float.MAX_VALUE));
         this.registerDefaultState(this.defaultBlockState().setValue(WATERLOGGED, Boolean.FALSE));
     }
 

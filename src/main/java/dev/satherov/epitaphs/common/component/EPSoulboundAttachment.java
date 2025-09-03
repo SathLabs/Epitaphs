@@ -43,6 +43,10 @@ public class EPSoulboundAttachment implements INBTSerializable<CompoundTag> {
     }
 
     public void setItems(ServerPlayer player, NonNullList<ItemStack> items) {
+        if (this.items.isEmpty() || this.items.size() != items.size()) {
+            this.items = items;
+            return;
+        }
         for (int i = 0; i < items.size(); i++) {
             ItemStack present = this.items.get(i);
             ItemStack stack = items.get(i);
@@ -56,6 +60,10 @@ public class EPSoulboundAttachment implements INBTSerializable<CompoundTag> {
     }
 
     public void setArmor(ServerPlayer player, NonNullList<ItemStack> armor) {
+        if (this.armor.isEmpty() || this.armor.size() != armor.size()) {
+            this.armor = armor;
+            return;
+        }
         for (int i = 0; i < armor.size(); i++) {
             ItemStack present = this.armor.get(i);
             ItemStack stack = armor.get(i);
@@ -69,7 +77,14 @@ public class EPSoulboundAttachment implements INBTSerializable<CompoundTag> {
     }
 
     public void setOffhand(ServerPlayer player, NonNullList<ItemStack> offhand) {
+        if (this.offhand.isEmpty() || this.offhand.size() != offhand.size()) {
+            this.offhand = offhand;
+            return;
+        }
         for (int i = 0; i < offhand.size(); i++) {
+            if (i >= this.offhand.size()) {
+                this.offhand.add(ItemStack.EMPTY);
+            }
             ItemStack present = this.offhand.get(i);
             ItemStack stack = offhand.get(i);
             if (present.isEmpty()) {
@@ -82,6 +97,10 @@ public class EPSoulboundAttachment implements INBTSerializable<CompoundTag> {
     }
 
     public void setCurio(ServerPlayer player, NonNullList<ItemStack> curio) {
+        if (this.curio.isEmpty() || this.curio.size() != curio.size()) {
+            this.curio = curio;
+            return;
+        }
         for (int i = 0; i < curio.size(); i++) {
             ItemStack present = this.curio.get(i);
             ItemStack stack = curio.get(i);
