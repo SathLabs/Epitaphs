@@ -23,11 +23,14 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class EPCommands {
 
@@ -49,7 +52,7 @@ public class EPCommands {
                 .then(Commands.literal("player")
                         .then(Commands.argument("player", EntityArgument.player())
                                 .then(Commands.argument("timestamp", StringArgumentType.string())
-                                        .suggests(FILE_SUGGESTER)
+                                        .suggests(FILE_SUGGESTER_PLAYER)
                                         .executes(ctx -> recoverPlayer(ctx, false))
                                         .then(Commands.argument("force", BoolArgumentType.bool())
                                                 .executes(ctx -> recoverPlayer(ctx, BoolArgumentType.getBool(ctx, "force"))))
@@ -60,7 +63,7 @@ public class EPCommands {
                         .then(Commands.argument("uuid", StringArgumentType.string())
                                 .suggests(UUID_SUGGESTER)
                                 .then(Commands.argument("timestamp", StringArgumentType.string())
-                                        .suggests(FILE_SUGGESTER)
+                                        .suggests(FILE_SUGGESTER_UUID)
                                         .executes(ctx -> recoverUUID(ctx, false))
                                         .then(Commands.argument("force", BoolArgumentType.bool())
                                                 .executes(ctx -> recoverUUID(ctx, BoolArgumentType.getBool(ctx, "force"))))
@@ -180,9 +183,18 @@ public class EPCommands {
         });
         return 0;
     }
-
-    private static final SuggestionProvider<CommandSourceStack> FILE_SUGGESTER = (context, builder) -> {
+    
+    private static final SuggestionProvider<CommandSourceStack> FILE_SUGGESTER_PLAYER = (context, builder) -> {
+        ServerPlayer player = EntityArgument.getPlayer(context, "player");
+        return getSuggestions(player.getStringUUID(), context, builder);
+    };
+    
+    private static final SuggestionProvider<CommandSourceStack> FILE_SUGGESTER_UUID = (context, builder) -> {
         String uuid = StringArgumentType.getString(context, "uuid");
+        return getSuggestions(uuid, context, builder);
+    };
+
+    private static CompletableFuture<Suggestions> getSuggestions(String uuid, CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) throws CommandSyntaxException  {
         LinkedList<String> files = BackupHandler.listBackups(context.getSource().getServer(), uuid);
         files.forEach(builder::suggest);
         return builder.buildFuture();

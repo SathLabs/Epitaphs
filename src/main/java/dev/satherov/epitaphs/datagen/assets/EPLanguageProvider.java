@@ -35,7 +35,8 @@ public class EPLanguageProvider extends LanguageProvider {
 
         add(EPLanguage.MESSAGE_NO_ACCESS, "This grave belongs to %s. You do not have access to it");
         add(EPLanguage.MESSAGE_GRAVE_SUCCESS, "Created a grave with your items at");
-        add(EPLanguage.MESSAGE_GRAVE_FAILED, "Found no valid position for a grave");
+        add(EPLanguage.MESSAGE_GRAVE_NO_POS, "Found no valid position for a grave");
+        add(EPLanguage.MESSAGE_GRAVE_FAILED, "Something went wrong trying to create a grave. Your items are laying on the ground");
         add(EPLanguage.MESSAGE_GRAVE_ERROR, "An error occurred trying to load this grave. Check your logs for more info");
 
 

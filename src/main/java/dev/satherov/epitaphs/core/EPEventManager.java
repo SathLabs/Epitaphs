@@ -12,6 +12,7 @@ import dev.satherov.epitaphs.common.data.EBackupType;
 import dev.satherov.epitaphs.common.data.SoulboundHandler;
 import dev.satherov.epitaphs.common.tile.GraveBlockEntity;
 import dev.satherov.epitaphs.compat.CompatHandler;
+import dev.satherov.epitaphs.compat.CurioHandler;
 
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -25,9 +26,11 @@ import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -40,6 +43,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
@@ -67,62 +71,82 @@ public class EPEventManager {
         
         if (level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).get()) return;
 
-        String timestamp = DateTimeFormatter
-                .ofPattern("yyyy-MM-dd-HH-mm-ss")
-                .withZone(ZoneOffset.UTC)
-                .format(Instant.now());
-
-        SoulboundHandler.handleSoulbound(player);
-
-        if (player.getInventory().isEmpty() && CompatHandler.isCurioEmpty(player)) return;
-
-        if (BackupHandler.save(player, timestamp, EBackupType.DEATH) != 0) return;
-
-
-        List<ItemStack> backupContents = BackupHandler.getContents(level.getServer(), player.getStringUUID(), timestamp);
-        boolean hasItems = false;
-        for (ItemStack s : backupContents) { 
-            if (!s.isEmpty()) { 
-                hasItems = true; 
-                break; 
-            } 
-        }
-        if (!hasItems) return;
-
-        Optional<BlockPos> safeSpot = GraveBlock.findSafeSpot(level, player.blockPosition());
-        if (safeSpot.isEmpty()) {
-            player.displayClientMessage(EPLanguage.MESSAGE_GRAVE_FAILED.translateFormatted(ChatFormatting.RED), false);
-            return;
-        }
-
-        BlockPos pos = safeSpot.get();
-        BlockState below = level.getBlockState(pos.below());
-
-        if (below.is(BlockTags.REPLACEABLE)) {
-            if (level.getBlockState(pos.below(2)).is(BlockTags.REPLACEABLE)) {
-                level.setBlockAndUpdate(pos.below(), Blocks.DIRT.defaultBlockState());
-            } else {
-                pos = pos.below();
+        List<ItemStack> SaveState = Util.make(new ArrayList<>(), list -> {
+            Inventory inv = player.getInventory();
+            for (int i = 0; i < inv.getContainerSize(); i++) {
+                list.add(inv.getItem(i).copy());
             }
+            list.addAll(CompatHandler.run(CompatHandler.CURIOS, () -> CurioHandler.getCurio(player), NonNullList.create()));
+        });
+        
+        try {
+            
+            String timestamp = DateTimeFormatter
+                    .ofPattern("yyyy-MM-dd-HH-mm-ss")
+                    .withZone(ZoneOffset.UTC)
+                    .format(Instant.now());
+            
+            SoulboundHandler.handleSoulbound(player);
+            
+            if (player.getInventory().isEmpty() && CompatHandler.run(CompatHandler.CURIOS, () -> CurioHandler.isEmpty(player), true)) return;
+            
+            if (BackupHandler.save(player, timestamp, EBackupType.DEATH) != 0) return;
+            
+            
+            List<ItemStack> backupContents = BackupHandler.getContents(level.getServer(), player.getStringUUID(), timestamp);
+            boolean hasItems = false;
+            for (ItemStack s : backupContents) {
+                if (!s.isEmpty()) {
+                    hasItems = true;
+                    break;
+                }
+            }
+            if (!hasItems) return;
+            
+            Optional<BlockPos> safeSpot = GraveBlock.findSafeSpot(level, player.blockPosition());
+            if (safeSpot.isEmpty()) {
+                player.displayClientMessage(EPLanguage.MESSAGE_GRAVE_FAILED.translateFormatted(ChatFormatting.RED), false);
+                return;
+            }
+            
+            BlockPos pos = safeSpot.get();
+            BlockState below = level.getBlockState(pos.below());
+            
+            if (below.is(BlockTags.REPLACEABLE)) {
+                if (level.getBlockState(pos.below(2)).is(BlockTags.REPLACEABLE)) {
+                    level.setBlockAndUpdate(pos.below(), Blocks.DIRT.defaultBlockState());
+                } else {
+                    pos = pos.below();
+                }
+            }
+            
+            final BlockPos gravePos = pos.immutable();
+            
+            level.setBlockAndUpdate(gravePos, EPRegistry.GRAVE.get().defaultBlockState());
+            GraveBlockEntity grave = new GraveBlockEntity(gravePos, level.getBlockState(gravePos));
+            
+            grave.setData(EPRegistry.GRAVE_DATA, grave.getData(EPRegistry.GRAVE_DATA).create(player, timestamp));
+            level.setBlockEntity(grave);
+            
+            player.displayClientMessage(Component.empty()
+                                                 .append(EPLanguage.MESSAGE_GRAVE_SUCCESS.translate())
+                                                 .append(Component.literal(" "))
+                                                 .append(ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", gravePos.getX(), gravePos.getY(), gravePos.getZ())).withStyle(style ->
+                                                                                                                                                                                                              style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/execute in %s run tp @s %s %s %s".formatted(level.dimension().location(), gravePos.getX(), gravePos.getY(), gravePos.getZ())))
+                                                         ).withStyle(ChatFormatting.GOLD)
+                                                 ).withStyle(ChatFormatting.GRAY), false);
+            
+            player.setData(EPRegistry.LOCATION_DATA, player.getData(EPRegistry.LOCATION_DATA).addGraveLocation(player, timestamp, gravePos));
+        } catch (Exception e) {
+            Epitaphs.LOGGER.error("Failed to create grave", e);
+            player.displayClientMessage(EPLanguage.MESSAGE_GRAVE_FAILED.translateFormatted(ChatFormatting.RED), false);
+            for (ItemStack stack : SaveState) {
+                if (stack.isEmpty()) continue;
+                player.drop(stack, false);
+            }
+        } finally {
+            SaveState.clear();
         }
-
-        final BlockPos gravePos = pos.immutable();
-
-        level.setBlockAndUpdate(gravePos, EPRegistry.GRAVE.get().defaultBlockState());
-        GraveBlockEntity grave = new GraveBlockEntity(gravePos, level.getBlockState(gravePos));
-
-        grave.setData(EPRegistry.GRAVE_DATA, grave.getData(EPRegistry.GRAVE_DATA).create(player, timestamp));
-        level.setBlockEntity(grave);
-
-        player.displayClientMessage(Component.empty()
-                .append(EPLanguage.MESSAGE_GRAVE_SUCCESS.translate())
-                .append(Component.literal(" "))
-                .append(ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", gravePos.getX(), gravePos.getY(), gravePos.getZ())).withStyle(style ->
-                                style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/execute in %s run tp @s %s %s %s".formatted(level.dimension().location(), gravePos.getX(), gravePos.getY(), gravePos.getZ())))
-                        ).withStyle(ChatFormatting.GOLD)
-                ).withStyle(ChatFormatting.GRAY), false);
-
-        player.setData(EPRegistry.LOCATION_DATA, player.getData(EPRegistry.LOCATION_DATA).addGraveLocation(player, timestamp, gravePos));
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)

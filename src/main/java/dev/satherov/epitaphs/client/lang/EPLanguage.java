@@ -23,6 +23,7 @@ public enum EPLanguage implements ILangEntry {
 
     MESSAGE_NO_ACCESS("message", "no_access"),
     MESSAGE_GRAVE_SUCCESS("message", "grave_success"),
+    MESSAGE_GRAVE_NO_POS("message", "grave_no_pos"),
     MESSAGE_GRAVE_FAILED("message", "grave_failed"),
     MESSAGE_GRAVE_ERROR("message", "grave_error"),
     ;

@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
 import top.theillusivec4.curios.api.CuriosApi;
+import top.theillusivec4.curios.api.type.capability.ICuriosItemHandler;
 import top.theillusivec4.curios.api.type.inventory.ICurioStacksHandler;
 import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
 
@@ -20,140 +21,62 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class CurioHandler {
 
-    public static int loadInventory(ServerPlayer player, CompoundTag root, boolean clear) {
-        if (!root.contains("neoforge:attachments")) return -1;
-        CompoundTag neo = root.getCompound("neoforge:attachments");
-        if (!neo.contains("curios:inventory")) return -1;
-        CompoundTag curios = neo.getCompound("curios:inventory");
-        if (!curios.contains("Curios")) return -1;
-        ListTag data = curios.getList("Curios", Tag.TAG_COMPOUND);
+    private static final String NEOFORGE_ATTACHMENTS = "neoforge:attachments";
+    private static final String CURIOS_INVENTORY = "curios:inventory";
+    private static final String CURIOS_DATA = "Curios";
+    private static final String CURIO_DATA = "Curio";
+    private static final String IDENTIFIER = "Identifier";
+    private static final String STACKS_HANDLER = "StacksHandler";
+    private static final String STACKS = "Stacks";
+    private static final String COSMETICS = "Cosmetics";
+    private static final String ITEMS = "Items";
+    private static final String SIZE = "Size";
 
+    public static int loadInventory(ServerPlayer player, CompoundTag root, boolean clear) {
+        CompoundTag curioData = extractCurioData(root, CURIOS_DATA);
+        if (curioData == null) return -1;
+
+        ListTag data = curioData.getList(CURIOS_DATA, Tag.TAG_COMPOUND);
         if (data.isEmpty()) return -1;
 
         if (clear) clearCurio(player);
 
-        return CuriosApi.getCuriosInventory(player).map(handler -> {
-            for (int i = 0; i < data.size(); i++) {
-                CompoundTag curioEntry = data.getCompound(i);
-                if (!curioEntry.contains("Identifier") || !curioEntry.contains("StacksHandler")) {
-                    continue;
-                }
-
-                String identifier = curioEntry.getString("Identifier");
-                CompoundTag stacksHandler = curioEntry.getCompound("StacksHandler");
-
-                ICurioStacksHandler curioHandler = handler.getCurios().get(identifier);
-                if (curioHandler == null) {
-                    continue;
-                }
-
-
-                if (stacksHandler.contains("Stacks")) {
-                    CompoundTag stacksData = stacksHandler.getCompound("Stacks");
-                    int size = stacksData.getInt("Size");
-
-                    if (stacksData.contains("Items") && !stacksData.getList("Items", Tag.TAG_COMPOUND).isEmpty()) {
-                        ListTag items = stacksData.getList("Items", Tag.TAG_COMPOUND);
-                        IDynamicStackHandler stacks = curioHandler.getStacks();
-
-                        for (int j = 0; j < Math.min(size, items.size()); j++) {
-                            if (j < stacks.getSlots()) {
-                                CompoundTag itemTag = items.getCompound(j);
-                                ItemStack stack = ItemStack.parseOptional(player.registryAccess(), itemTag);
-                                if (stacks.getStackInSlot(j).isEmpty()) {
-                                    stacks.setStackInSlot(j, stack);
-                                    continue;
-                                }
-                                if (!player.getInventory().add(stack)) {
-                                    player.drop(stack, false);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (stacksHandler.contains("Cosmetics")) {
-                    CompoundTag cosmeticsData = stacksHandler.getCompound("Cosmetics");
-                    int size = cosmeticsData.getInt("Size");
-
-                    if (cosmeticsData.contains("Items") && !cosmeticsData.getList("Items", Tag.TAG_COMPOUND).isEmpty()) {
-                        ListTag items = cosmeticsData.getList("Items", Tag.TAG_COMPOUND);
-                        IDynamicStackHandler cosmetics = curioHandler.getCosmeticStacks();
-
-                        for (int j = 0; j < Math.min(size, items.size()); j++) {
-                            if (j < cosmetics.getSlots()) {
-                                CompoundTag itemTag = items.getCompound(j);
-                                ItemStack stack = ItemStack.parseOptional(player.registryAccess(), itemTag);
-                                if (cosmetics.getStackInSlot(j).isEmpty()) {
-                                    cosmetics.setStackInSlot(j, stack);
-                                    continue;
-                                }
-                                if (!player.getInventory().add(stack)) {
-                                    player.drop(stack, false);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return 0;
-        }).orElse(-1);
+        return CuriosApi.getCuriosInventory(player)
+                .map(handler -> {
+                    processCurioEntries(player, data, handler);
+                    return 0;
+                })
+                .orElse(-1);
     }
 
     public static List<ItemStack> loadContents(MinecraftServer server, CompoundTag root) {
         List<ItemStack> contents = new ArrayList<>();
 
-        if (!root.contains("neoforge:attachments")) return contents;
-        CompoundTag neo = root.getCompound("neoforge:attachments");
-        if (!neo.contains("curios:inventory")) return contents;
-        CompoundTag curio = neo.getCompound("curios:inventory");
-        if (!curio.contains("Curio")) return contents;
-        ListTag data = curio.getList("Curio", Tag.TAG_COMPOUND);
+        CompoundTag curioData = extractCurioData(root, CURIO_DATA);
+        if (curioData == null) return contents;
 
+        ListTag data = curioData.getList(CURIO_DATA, Tag.TAG_COMPOUND);
         if (data.isEmpty()) return contents;
 
-        ItemStackHandler loaded = new ItemStackHandler();
+        ItemStackHandler loader = new ItemStackHandler();
 
         for (int i = 0; i < data.size(); i++) {
-            CompoundTag tag = data.getCompound(i).getCompound("StacksHandler");
-
-            CompoundTag stacksData = tag.getCompound("Stacks");
-            if (!stacksData.isEmpty()) {
-                loaded.deserializeNBT(server.registryAccess(), stacksData);
-                contents.addAll(loadStacks(loaded));
-            }
-
-            stacksData = tag.getCompound("Cosmetics");
-            if (!stacksData.isEmpty()) {
-                loaded.deserializeNBT(server.registryAccess(), stacksData);
-                contents.addAll(loadStacks(loaded));
-            }
+            CompoundTag stacksHandler = data.getCompound(i).getCompound(STACKS_HANDLER);
+            
+            loadFromHandler(server, stacksHandler, STACKS, loader, contents);
+            loadFromHandler(server, stacksHandler, COSMETICS, loader, contents);
         }
 
         return contents;
     }
 
-    private static List<ItemStack> loadStacks(ItemStackHandler loaded) {
-        List<ItemStack> content = new ArrayList<>();
-        for (int j = 0; j < loaded.getSlots(); j++) {
-            ItemStack loadedStack = loaded.getStackInSlot(j);
-            content.add(loadedStack);
-        }
-        return content;
-    }
-
     public static void clearCurio(ServerPlayer player) {
-        CuriosApi.getCuriosInventory(player).ifPresent(handler -> {
-            handler.getCurios().forEach((slot, stack) -> {
-                for (int i = 0; i < stack.getStacks().getSlots(); i++) {
-                    stack.getStacks().setStackInSlot(i, ItemStack.EMPTY);
-                }
-                for (int i = 0; i < stack.getCosmeticStacks().getSlots(); i++) {
-                    stack.getCosmeticStacks().setStackInSlot(i, ItemStack.EMPTY);
-                }
-            });
-        });
+        CuriosApi.getCuriosInventory(player).ifPresent(handler ->
+                handler.getCurios().forEach((slot, curioHandler) -> {
+                    clearSlots(curioHandler.getStacks());
+                    clearSlots(curioHandler.getCosmeticStacks());
+                })
+        );
     }
 
     public static NonNullList<ItemStack> getCurio(ServerPlayer player) {
@@ -161,35 +84,134 @@ public class CurioHandler {
 
         CuriosApi.getCuriosInventory(player).ifPresent(handler ->
                 handler.getCurios().forEach((slot, curioHandler) -> {
-                    for (int i = 0; i < curioHandler.getStacks().getSlots(); i++) {
-                        contents.add(curioHandler.getStacks().getStackInSlot(i));
-                    }
-                    for (int i = 0; i < curioHandler.getCosmeticStacks().getSlots(); i++) {
-                        contents.add(curioHandler.getCosmeticStacks().getStackInSlot(i));
-                    }
+                    addFromHandler(curioHandler.getStacks(), contents);
+                    addFromHandler(curioHandler.getCosmeticStacks(), contents);
                 })
         );
 
         return contents;
     }
 
-    public static List<ItemStack> setCurio(ServerPlayer player, NonNullList<ItemStack> stacks) {
+    public static List<ItemStack> setCurio(ServerPlayer player, List<ItemStack> stacks) {
         List<ItemStack> overflow = new ArrayList<>();
         if (stacks.isEmpty()) return overflow;
 
-        AtomicInteger stackIndex = new AtomicInteger();
+        AtomicInteger index = new AtomicInteger();
 
         CuriosApi.getCuriosInventory(player).ifPresent(handler ->
                 handler.getCurios().forEach((slotId, curioHandler) -> {
-                    restoreCurioSlots(curioHandler.getStacks(), stacks, stackIndex, overflow);
-                    restoreCurioSlots(curioHandler.getCosmeticStacks(), stacks, stackIndex, overflow);
+                    restoreSlot(curioHandler.getStacks(), stacks, index, overflow);
+                    restoreSlot(curioHandler.getCosmeticStacks(), stacks, index, overflow);
                 })
         );
 
         return overflow;
     }
 
-    private static void restoreCurioSlots(IDynamicStackHandler handler, NonNullList<ItemStack> stacks, AtomicInteger stackIndex, List<ItemStack> overflow) {
+    public static void removeCurio(ServerPlayer player, ItemStack stack) {
+        CuriosApi.getCuriosInventory(player).ifPresent(handler ->
+                handler.getCurios().forEach((slot, curioHandler) -> {
+                    if(!removeFromSlots(curioHandler.getStacks(), stack)) {
+                        removeFromSlots(curioHandler.getCosmeticStacks(), stack);
+                    }
+                })
+        );
+    }
+
+    public static boolean isEmpty(ServerPlayer player) {
+        return CuriosApi.getCuriosInventory(player)
+                .map(handler -> handler.getCurios().values().stream()
+                        .allMatch(curioHandler -> 
+                                isSlotsEmpty(curioHandler.getStacks()) && 
+                                isSlotsEmpty(curioHandler.getCosmeticStacks())
+                        )
+                )
+                .orElse(true);
+    }
+    
+    private static CompoundTag extractCurioData(CompoundTag root, String dataKey) {
+        if (!root.contains(NEOFORGE_ATTACHMENTS)) return null;
+        
+        CompoundTag neo = root.getCompound(NEOFORGE_ATTACHMENTS);
+        if (!neo.contains(CURIOS_INVENTORY)) return null;
+        
+        CompoundTag curios = neo.getCompound(CURIOS_INVENTORY);
+        if (!curios.contains(dataKey)) return null;
+        
+        return curios;
+    }
+
+    private static void processCurioEntries(ServerPlayer player, ListTag data, ICuriosItemHandler handler) {
+        for (int i = 0; i < data.size(); i++) {
+            CompoundTag curioEntry = data.getCompound(i);
+            
+            if (!curioEntry.contains(IDENTIFIER) || !curioEntry.contains(STACKS_HANDLER)) {
+                continue;
+            }
+
+            String identifier = curioEntry.getString(IDENTIFIER);
+            CompoundTag stacksHandler = curioEntry.getCompound(STACKS_HANDLER);
+
+            ICurioStacksHandler curioHandler = handler.getCurios().get(identifier);
+            if (curioHandler == null) continue;
+
+            processStacksData(player, stacksHandler, STACKS, curioHandler.getStacks());
+            processStacksData(player, stacksHandler, COSMETICS, curioHandler.getCosmeticStacks());
+        }
+    }
+
+    private static void processStacksData(ServerPlayer player, CompoundTag stacksHandler, String dataType, IDynamicStackHandler targetHandler) {
+        if (!stacksHandler.contains(dataType)) return;
+
+        CompoundTag stacksData = stacksHandler.getCompound(dataType);
+        if (!stacksData.contains(ITEMS) || stacksData.getList(ITEMS, Tag.TAG_COMPOUND).isEmpty()) {
+            return;
+        }
+
+        ListTag items = stacksData.getList(ITEMS, Tag.TAG_COMPOUND);
+        int size = stacksData.getInt(SIZE);
+
+        for (int j = 0; j < Math.min(size, items.size()) && j < targetHandler.getSlots(); j++) {
+            CompoundTag itemTag = items.getCompound(j);
+            ItemStack stack = ItemStack.parseOptional(player.registryAccess(), itemTag);
+            
+            if (targetHandler.getStackInSlot(j).isEmpty()) {
+                targetHandler.setStackInSlot(j, stack);
+            } else {
+                if (!player.getInventory().add(stack)) {
+                    player.drop(stack, false);
+                }
+            }
+        }
+    }
+
+    private static void loadFromHandler(MinecraftServer server, CompoundTag stacksHandler, String dataType, ItemStackHandler loader, List<ItemStack> contents) {
+        CompoundTag stacksData = stacksHandler.getCompound(dataType);
+        if (!stacksData.isEmpty()) {
+            loader.deserializeNBT(server.registryAccess(), stacksData);
+            addFromHandler(loader, contents);
+        }
+    }
+
+    private static void addFromHandler(ItemStackHandler handler, List<ItemStack> contents) {
+        for (int j = 0; j < handler.getSlots(); j++) {
+            contents.add(handler.getStackInSlot(j));
+        }
+    }
+
+    private static void addFromHandler(IDynamicStackHandler handler, List<ItemStack> contents) {
+        for (int i = 0; i < handler.getSlots(); i++) {
+            contents.add(handler.getStackInSlot(i));
+        }
+    }
+
+    private static void clearSlots(IDynamicStackHandler handler) {
+        for (int i = 0; i < handler.getSlots(); i++) {
+            handler.setStackInSlot(i, ItemStack.EMPTY);
+        }
+    }
+
+    private static void restoreSlot(IDynamicStackHandler handler, List<ItemStack> stacks, AtomicInteger stackIndex, List<ItemStack> overflow) {
         for (int i = 0; i < handler.getSlots(); i++) {
             if (stackIndex.get() >= stacks.size()) break;
 
@@ -198,58 +220,29 @@ public class CurioHandler {
 
             if (handler.getStackInSlot(i).isEmpty()) {
                 handler.setStackInSlot(i, stackToRestore);
+                stacks.set(i, ItemStack.EMPTY);
             } else {
                 overflow.add(stackToRestore);
             }
         }
     }
 
-    public static void removeCurio(ServerPlayer player, ItemStack stack) {
-        CuriosApi.getCuriosInventory(player).ifPresent(handler -> {
-            handler.getCurios().forEach((slot, curioHandler) -> {
-                for (int i = 0; i < curioHandler.getStacks().getSlots(); i++) {
-                    if (ItemStack.isSameItem(curioHandler.getStacks().getStackInSlot(i), stack)) {
-                        curioHandler.getStacks().setStackInSlot(i, ItemStack.EMPTY);
-                        return;
-                    }
-                }
-                for (int i = 0; i < curioHandler.getCosmeticStacks().getSlots(); i++) {
-                    if (ItemStack.isSameItem(curioHandler.getCosmeticStacks().getStackInSlot(i), stack)) {
-                        curioHandler.getCosmeticStacks().setStackInSlot(i, ItemStack.EMPTY);
-                        return;
-                    }
-                }
-            });
-        });
-    }
-
-    public static boolean isEmpty(ServerPlayer player) {
-        class FoundItemException extends RuntimeException {
-            @Override
-            public synchronized Throwable fillInStackTrace() {
-                return this;
+    private static boolean removeFromSlots(IDynamicStackHandler handler, ItemStack stackToRemove) {
+        for (int i = 0; i < handler.getSlots(); i++) {
+            if (ItemStack.isSameItemSameComponents(handler.getStackInSlot(i), stackToRemove)) {
+                handler.setStackInSlot(i, ItemStack.EMPTY);
+                return true;
             }
         }
-
-        try {
-            CuriosApi.getCuriosInventory(player).ifPresent(handler ->
-                    handler.getCurios().forEach((slot, curioHandler) -> {
-                        for (int i = 0; i < curioHandler.getStacks().getSlots(); i++) {
-                            if (!curioHandler.getStacks().getStackInSlot(i).isEmpty()) {
-                                throw new FoundItemException();
-                            }
-                        }
-                        for (int i = 0; i < curioHandler.getCosmeticStacks().getSlots(); i++) {
-                            if (!curioHandler.getCosmeticStacks().getStackInSlot(i).isEmpty()) {
-                                throw new FoundItemException();
-                            }
-                        }
-                    })
-            );
-            return true;
-        } catch (FoundItemException e) {
-            return false;
-        }
+        return false;
     }
 
+    private static boolean isSlotsEmpty(IDynamicStackHandler handler) {
+        for (int i = 0; i < handler.getSlots(); i++) {
+            if (!handler.getStackInSlot(i).isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

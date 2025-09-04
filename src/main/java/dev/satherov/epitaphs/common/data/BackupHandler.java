@@ -4,6 +4,7 @@ import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.EpitaphsConfig;
 import dev.satherov.epitaphs.client.lang.EPLanguage;
 import dev.satherov.epitaphs.compat.CompatHandler;
+import dev.satherov.epitaphs.compat.CurioHandler;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -152,7 +153,7 @@ public class BackupHandler {
 
             NbtIo.writeCompressed(tag, storage.resolve(timestamp + "-" + type.getSerializedName() + ".dat"));
             if (type == EBackupType.DEATH) {
-                CompatHandler.clearCurio(player);
+                CompatHandler.run(CompatHandler.CURIOS, () -> CurioHandler.clearCurio(player));
                 player.getInventory().clearContent();
             }
 
@@ -290,7 +291,7 @@ public class BackupHandler {
 
         if (clear) player.getInventory().clearContent();
 
-        CompatHandler.loadCurioInventory(player, data, clear);
+        CompatHandler.run(CompatHandler.CURIOS, () -> CurioHandler.loadInventory(player, data, clear));
 
         if (quickLoad(player, inventory)) return 0;
 
@@ -480,7 +481,7 @@ public class BackupHandler {
             stacks.add(itemstack);
         }
 
-        stacks.addAll(CompatHandler.loadCurioContents(server, root));
+        stacks.addAll(CompatHandler.run(CompatHandler.CURIOS, () -> CurioHandler.loadContents(server, root), List.of()));
 
         return stacks;
     }

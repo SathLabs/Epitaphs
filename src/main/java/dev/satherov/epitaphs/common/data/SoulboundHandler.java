@@ -1,8 +1,8 @@
 package dev.satherov.epitaphs.common.data;
 
-import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.common.component.EPSoulboundAttachment;
 import dev.satherov.epitaphs.compat.CompatHandler;
+import dev.satherov.epitaphs.compat.CurioHandler;
 import dev.satherov.epitaphs.core.EPRegistry;
 
 import net.minecraft.core.NonNullList;
@@ -20,7 +20,7 @@ public class SoulboundHandler {
         NonNullList<ItemStack> soulboundItems = extractSoulboundItems(player.getInventory().items);
         NonNullList<ItemStack> soulboundArmor = extractSoulboundItems(player.getInventory().armor);
         NonNullList<ItemStack> soulboundOffhand = extractSoulboundItems(player.getInventory().offhand);
-        NonNullList<ItemStack> soulboundCurios = extractSoulboundItems(CompatHandler.getCurio(player));
+        NonNullList<ItemStack> soulboundCurios = extractSoulboundItems(CompatHandler.run(CompatHandler.CURIOS, () -> CurioHandler.getCurio(player), NonNullList.create()));
         
         attachment.setItems(player, soulboundItems);
         attachment.setArmor(player, soulboundArmor);
@@ -29,7 +29,7 @@ public class SoulboundHandler {
 
         for (ItemStack stack : soulboundCurios) {
             if (!stack.isEmpty()) {
-                CompatHandler.removeCurio(player, stack);
+                CompatHandler.run(CompatHandler.CURIOS, () -> CurioHandler.removeCurio(player, stack));
             }
         }
 
@@ -43,7 +43,7 @@ public class SoulboundHandler {
         restoreItemsToSlots(player, player.getInventory().armor, attachment.getArmor());
         restoreItemsToSlots(player, player.getInventory().offhand, attachment.getOffhand());
 
-        List<ItemStack> overFlow = CompatHandler.setCurio(player, attachment.getCurio());
+        List<ItemStack> overFlow = CompatHandler.run(CompatHandler.CURIOS, () -> CurioHandler.setCurio(player, attachment.getCurio()), List.of());
         if (!overFlow.isEmpty()) {
             for (ItemStack stack : overFlow) {
                 if (!player.getInventory().add(stack)) {

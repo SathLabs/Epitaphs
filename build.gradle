@@ -156,6 +156,7 @@ dependencies {
     implementation "curse.maven:apothic-enchanting-1063926:6926290"
     implementation "curse.maven:apothic-attributes-898963:6751650"
     implementation "curse.maven:apotheosis-313970:6926309"
+    implementation "curse.maven:gateways-to-eternity-417802:6926284"
 }
 
 tasks.withType(ProcessResources).configureEach {
