@@ -184,7 +184,7 @@ public class BackupHandler {
         Pattern pattern = Pattern.compile(DATE_PATTERN.pattern() + "-save\\.dat(?:-old)?$");
         List<ServerPlayer> players = server.getPlayerList().getPlayers();
         if (players.isEmpty()) {
-            Epitaphs.LOGGER.warn("No players found, skipping save");
+            Epitaphs.LOGGER.info("No players found, skipping save");
             return false;
         }
 

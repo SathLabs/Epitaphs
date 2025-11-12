@@ -6,6 +6,7 @@
     "effects": {
         "epitaphs:soulbound": false
     },
+    "exclusive_set": "minecraft:binding_curse",
     "max_cost": {
         "base": 100,
         "per_level_above_first": 0

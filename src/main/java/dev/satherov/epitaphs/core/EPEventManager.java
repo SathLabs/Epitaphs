@@ -68,6 +68,7 @@ public class EPEventManager {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
         ServerLevel level = player.serverLevel();
+        MinecraftServer server = level.getServer();
         
         if (level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).get()) return;
 
@@ -128,11 +129,12 @@ public class EPEventManager {
             grave.setData(EPRegistry.GRAVE_DATA, grave.getData(EPRegistry.GRAVE_DATA).create(player, timestamp));
             level.setBlockEntity(grave);
             
+            server.sendSystemMessage(Component.literal("Created Grave for " + player.getGameProfile().getName() + " at " + gravePos.getX() + ", " + gravePos.getY() + ", " + gravePos.getZ()));
             player.displayClientMessage(Component.empty()
                                                  .append(EPLanguage.MESSAGE_GRAVE_SUCCESS.translate())
                                                  .append(Component.literal(" "))
-                                                 .append(ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", gravePos.getX(), gravePos.getY(), gravePos.getZ())).withStyle(style ->
-                                                                                                                                                                                                              style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/execute in %s run tp @s %s %s %s".formatted(level.dimension().location(), gravePos.getX(), gravePos.getY(), gravePos.getZ())))
+                                                 .append(ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", gravePos.getX(), gravePos.getY(), gravePos.getZ())).withStyle(style -> style.withClickEvent(
+                                                         new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/execute in %s run tp @s %s %s %s".formatted(level.dimension().location(), gravePos.getX(), gravePos.getY(), gravePos.getZ())))
                                                          ).withStyle(ChatFormatting.GOLD)
                                                  ).withStyle(ChatFormatting.GRAY), false);
             

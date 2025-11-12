@@ -3,6 +3,7 @@
   "package": "dev.satherov.epitaphs.core.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "ServerLevelMixin"
   ],
   "injectors": {
     "defaultRequire": 1

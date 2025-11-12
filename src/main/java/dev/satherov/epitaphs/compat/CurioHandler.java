@@ -52,10 +52,10 @@ public class CurioHandler {
     public static List<ItemStack> loadContents(MinecraftServer server, CompoundTag root) {
         List<ItemStack> contents = new ArrayList<>();
 
-        CompoundTag curioData = extractCurioData(root, CURIO_DATA);
+        CompoundTag curioData = extractCurioData(root, CURIOS_DATA);
         if (curioData == null) return contents;
 
-        ListTag data = curioData.getList(CURIO_DATA, Tag.TAG_COMPOUND);
+        ListTag data = curioData.getList(CURIOS_DATA, Tag.TAG_COMPOUND);
         if (data.isEmpty()) return contents;
 
         ItemStackHandler loader = new ItemStackHandler();

@@ -50,10 +50,11 @@ public class EPSoulboundAttachment implements INBTSerializable<CompoundTag> {
         for (int i = 0; i < items.size(); i++) {
             ItemStack present = this.items.get(i);
             ItemStack stack = items.get(i);
+            if (stack.isEmpty()) continue;
             if (present.isEmpty()) {
                 this.items.set(i, stack);
             } else {
-                Epitaphs.LOGGER.warn("Soulbound item {} could not be saved to inventory because data was already occupied with {}", stack, present);
+                Epitaphs.LOGGER.warn("Soulbound item {} could not be saved to inventory because data was already occupied with {}. Did some mod kill us twice?", stack, present);
                 player.getInventory().add(stack);
             }
         }
@@ -67,10 +68,11 @@ public class EPSoulboundAttachment implements INBTSerializable<CompoundTag> {
         for (int i = 0; i < armor.size(); i++) {
             ItemStack present = this.armor.get(i);
             ItemStack stack = armor.get(i);
+            if (stack.isEmpty()) continue;
             if (present.isEmpty()) {
                 this.armor.set(i, stack);
             } else {
-                Epitaphs.LOGGER.warn("Soulbound item {} could not be saved to armor because data was already occupied with {}", stack, present);
+                Epitaphs.LOGGER.warn("Soulbound item {} could not be saved to armor because data was already occupied with {}. Did some mod kill us twice?", stack, present);
                 player.getInventory().add(stack);
             }
         }
@@ -87,10 +89,11 @@ public class EPSoulboundAttachment implements INBTSerializable<CompoundTag> {
             }
             ItemStack present = this.offhand.get(i);
             ItemStack stack = offhand.get(i);
+            if (stack.isEmpty()) continue;
             if (present.isEmpty()) {
                 this.offhand.set(i, stack);
             } else {
-                Epitaphs.LOGGER.warn("Soulbound item {} could not be saved to offhand because data was already occupied with {}", stack, present);
+                Epitaphs.LOGGER.warn("Soulbound item {} could not be saved to offhand because data was already occupied with {}. Did some mod kill us twice?", stack, present);
                 player.getInventory().add(stack);
             }
         }
@@ -104,10 +107,11 @@ public class EPSoulboundAttachment implements INBTSerializable<CompoundTag> {
         for (int i = 0; i < curio.size(); i++) {
             ItemStack present = this.curio.get(i);
             ItemStack stack = curio.get(i);
+            if (stack.isEmpty()) continue;
             if (present.isEmpty()) {
                 this.curio.set(i, stack);
             } else {
-                Epitaphs.LOGGER.warn("Soulbound item {} could not be saved to curio because data was already occupied with {}", stack, present);
+                Epitaphs.LOGGER.warn("Soulbound item {} could not be saved to curio because data was already occupied with {}. Did some mod kill us twice?", stack, present);
                 player.getInventory().add(stack);
             }
         }

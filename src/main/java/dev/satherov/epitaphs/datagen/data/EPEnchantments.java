@@ -4,12 +4,14 @@ import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.core.EPRegistry;
 
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
 
 public class EPEnchantments {
 
@@ -33,7 +35,9 @@ public class EPEnchantments {
                                         0,
                                         EquipmentSlotGroup.ANY
                                 )
-                        ).withSpecialEffect(EPRegistry.SOULBOUND.get(), false)
+                        )
+                        .withSpecialEffect(EPRegistry.SOULBOUND.get(), false)
+                        .exclusiveWith(HolderSet.direct(enchantmentGetter.getOrThrow(Enchantments.BINDING_CURSE)))
                         .build(SOULBOUND.location())
         );
 
@@ -50,7 +54,9 @@ public class EPEnchantments {
                                         0,
                                         EquipmentSlotGroup.ARMOR
                                 )
-                        ).withSpecialEffect(EPRegistry.EXPERIENCE_SOULBOUND.get(), false)
+                        )
+                        .withSpecialEffect(EPRegistry.EXPERIENCE_SOULBOUND.get(), false)
+                        .exclusiveWith(HolderSet.direct(enchantmentGetter.getOrThrow(Enchantments.BINDING_CURSE)))
                         .build(EXPERIENCE_SOULBOUND.location())
         );
     }
