@@ -223,7 +223,7 @@ public class BackupHandler {
             return data;
         }
 
-        if (timestamp.isBlank() || !(DATE_PATTERN.matcher(timestamp).matches() || FILE_PATTERN.matcher(timestamp).matches())) {
+        if (timestamp != null && (timestamp.isBlank() || !(DATE_PATTERN.matcher(timestamp).matches() || FILE_PATTERN.matcher(timestamp).matches()))) {
             Epitaphs.LOGGER.error("Invalid backup timestamp '{}'", timestamp);
             return data;
         }
@@ -239,9 +239,15 @@ public class BackupHandler {
 
         try (Stream<Path> files = Files.list(target)) {
 
-            file = files.filter(p -> FILE_MATCHER.matches(p.getFileName()) && p.getFileName().toString().startsWith(timestamp))
-                    .findFirst()
-                    .orElse(null);
+            if (timestamp == null) {
+                file = files.filter(p -> FILE_MATCHER.matches(p.getFileName()))
+                        .max(Comparator.naturalOrder())
+                        .orElse(null);
+            } else {
+                file = files.filter(p -> FILE_MATCHER.matches(p.getFileName()) && p.getFileName().toString().startsWith(timestamp))
+                        .findFirst()
+                        .orElse(null);
+            }
 
             if (file == null) throw new IOException();
         } catch (IOException e) {

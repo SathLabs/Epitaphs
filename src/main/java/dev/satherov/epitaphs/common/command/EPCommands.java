@@ -42,7 +42,8 @@ public class EPCommands {
                         .then(backupCommand())
                         .then(listCommand())
                         .then(latestCommand())
-
+                        .then(filesCommand())
+                        .then(uuidCommand())
         );
     }
 
@@ -53,10 +54,20 @@ public class EPCommands {
                         .then(Commands.argument("player", EntityArgument.player())
                                 .then(Commands.argument("timestamp", StringArgumentType.string())
                                         .suggests(FILE_SUGGESTER_PLAYER)
-                                        .executes(ctx -> recoverPlayer(ctx, false))
+                                        .executes(ctx -> recoverPlayer(
+                                                ctx, 
+                                                StringArgumentType.getString(ctx, "timestamp"), 
+                                                false)
+                                        )
                                         .then(Commands.argument("force", BoolArgumentType.bool())
-                                                .executes(ctx -> recoverPlayer(ctx, BoolArgumentType.getBool(ctx, "force"))))
+                                                .executes(ctx -> recoverPlayer(
+                                                        ctx, 
+                                                        StringArgumentType.getString(ctx, "timestamp"), 
+                                                        BoolArgumentType.getBool(ctx, "force"))
+                                                )
+                                        )
                                 )
+                                .executes(ctx -> recoverPlayer(ctx, null, false))
                         )
                 )
                 .then(Commands.literal("uuid")
@@ -64,25 +75,32 @@ public class EPCommands {
                                 .suggests(UUID_SUGGESTER)
                                 .then(Commands.argument("timestamp", StringArgumentType.string())
                                         .suggests(FILE_SUGGESTER_UUID)
-                                        .executes(ctx -> recoverUUID(ctx, false))
+                                        .executes(ctx -> recoverUUID(
+                                                ctx, 
+                                                StringArgumentType.getString(ctx, "timestamp"), 
+                                                false
+                                        ))
                                         .then(Commands.argument("force", BoolArgumentType.bool())
-                                                .executes(ctx -> recoverUUID(ctx, BoolArgumentType.getBool(ctx, "force"))))
+                                                .executes(ctx -> recoverUUID(
+                                                        ctx, 
+                                                        StringArgumentType.getString(ctx, "timestamp"), 
+                                                        BoolArgumentType.getBool(ctx, "force"))
+                                                )
+                                        )
                                 )
+                                .executes(ctx -> recoverUUID(ctx, null, false))
                         )
                 );
     }
 
-    private static int recoverUUID(CommandContext<CommandSourceStack> ctx, boolean force) throws CommandSyntaxException {
-        String timestamp = StringArgumentType.getString(ctx, "timestamp");
+    private static int recoverUUID(CommandContext<CommandSourceStack> ctx, String timestamp, boolean force) {
         String uuid = StringArgumentType.getString(ctx, "uuid");
         return recover(ctx, uuid, timestamp, force);
     }
     
-    private static int recoverPlayer(CommandContext<CommandSourceStack> ctx, boolean force) throws CommandSyntaxException {
-        String timestamp = StringArgumentType.getString(ctx, "timestamp");
+    private static int recoverPlayer(CommandContext<CommandSourceStack> ctx, String timestamp, boolean force) throws CommandSyntaxException {
         ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
-        String uuid = player.getStringUUID();
-        return recover(ctx, uuid, timestamp, force);
+        return recover(ctx, player.getStringUUID(), timestamp, force);
     }
     
     private static int recover(CommandContext<CommandSourceStack> ctx, String uuid, String timestamp, boolean force) {
@@ -132,7 +150,7 @@ public class EPCommands {
                 );
     }
 
-    private static int list(CommandContext<CommandSourceStack> ctx, ServerPlayer player) throws CommandSyntaxException {
+    private static int list(CommandContext<CommandSourceStack> ctx, ServerPlayer player) {
         Map<String, List<Map.Entry<String, BlockPos>>> locations = player.getData(EPRegistry.LOCATION_DATA).getGraveLocations(player.serverLevel());
         if (locations.isEmpty()) {
             ctx.getSource().sendSystemMessage(EPLanguage.COMMAND_NOT_FOUND.translate(player.getDisplayName()).withStyle(ChatFormatting.RED));
@@ -167,7 +185,7 @@ public class EPCommands {
 
     }
 
-    private static int latest(CommandContext<CommandSourceStack> ctx, ServerPlayer player) throws CommandSyntaxException {
+    private static int latest(CommandContext<CommandSourceStack> ctx, ServerPlayer player) {
         player.getData(EPRegistry.LOCATION_DATA).findLatestGraveLocation(player.serverLevel()).ifPresentOrElse(entry -> {
             final BlockPos pos = entry.pos().immutable();
             ctx.getSource().sendSystemMessage(Component.empty()
@@ -184,6 +202,48 @@ public class EPCommands {
         return 0;
     }
     
+    private static LiteralArgumentBuilder<CommandSourceStack> filesCommand() {
+        return Commands.literal("files")
+                .requires(ctx -> ctx.hasPermission(2))
+                .then(Commands.literal("player")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .executes(ctx -> files(ctx, EntityArgument.getPlayer(ctx, "player").getStringUUID()))
+                        )
+                )
+                .then(Commands.literal("uuid")
+                        .then(Commands.argument("uuid", StringArgumentType.string())
+                                .suggests(UUID_SUGGESTER)
+                                .executes(ctx -> files(ctx, StringArgumentType.getString(ctx, "uuid")))
+                        )
+                );
+    }
+    
+    private static int files(CommandContext<CommandSourceStack> ctx, String player) {
+        List<String> files = BackupHandler.listBackups(ctx.getSource().getServer(), player);
+        ctx.getSource().sendSystemMessage(Component.literal("Available backups for ").append(Component.literal(player).withStyle(ChatFormatting.GREEN)));
+        files.forEach(file -> ctx.getSource().sendSystemMessage(Component.literal("- ").append(Component.literal(file).withStyle(ChatFormatting.GRAY))));
+        return 0;
+    }
+    
+    private static LiteralArgumentBuilder<CommandSourceStack> uuidCommand() {
+        return Commands.literal("uuid")
+                .then(Commands.argument("player", EntityArgument.player())
+                        .executes(ctx -> uuid(ctx, EntityArgument.getPlayer(ctx, "player")))
+                )
+                .executes(ctx -> uuid(ctx, ctx.getSource().getPlayerOrException()));
+    }
+    
+    private static int uuid(CommandContext<CommandSourceStack> ctx, ServerPlayer player) throws CommandSyntaxException {
+        ctx.getSource().sendSystemMessage(
+                Component.literal(String.format("%s has the UUID: ", player.getGameProfile().getName()))
+                        .append(Component.literal(player.getStringUUID())
+                                .withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, player.getStringUUID())))
+                                .withStyle(ChatFormatting.GREEN)
+                        ).withStyle(ChatFormatting.GRAY)
+        );
+        return 0;
+    }
+    
     private static final SuggestionProvider<CommandSourceStack> FILE_SUGGESTER_PLAYER = (context, builder) -> {
         ServerPlayer player = EntityArgument.getPlayer(context, "player");
         return getSuggestions(player.getStringUUID(), context, builder);
@@ -194,7 +254,7 @@ public class EPCommands {
         return getSuggestions(uuid, context, builder);
     };
 
-    private static CompletableFuture<Suggestions> getSuggestions(String uuid, CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) throws CommandSyntaxException  {
+    private static CompletableFuture<Suggestions> getSuggestions(String uuid, CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
         LinkedList<String> files = BackupHandler.listBackups(context.getSource().getServer(), uuid);
         files.forEach(builder::suggest);
         return builder.buildFuture();
