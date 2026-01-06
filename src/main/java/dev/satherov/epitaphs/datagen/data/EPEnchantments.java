@@ -28,7 +28,7 @@ public class EPEnchantments {
                                 Enchantment.definition(
                                         holderGetter.getOrThrow(EPRegistry.SOULBOUND_ENCHANTABLE),
                                         holderGetter.getOrThrow(EPRegistry.SOULBOUND_ENCHANTABLE),
-                                        12,
+                                        6,
                                         1,
                                         Enchantment.dynamicCost(1, 0),
                                         Enchantment.dynamicCost(100, 0),
@@ -47,7 +47,7 @@ public class EPEnchantments {
                                 Enchantment.definition(
                                         holderGetter.getOrThrow(EPRegistry.EXPERIENCE_SOULBOUND_ENCHANTABLE),
                                         holderGetter.getOrThrow(EPRegistry.EXPERIENCE_SOULBOUND_ENCHANTABLE),
-                                        6,
+                                        2,
                                         1,
                                         Enchantment.dynamicCost(1, 0),
                                         Enchantment.dynamicCost(100, 0),
