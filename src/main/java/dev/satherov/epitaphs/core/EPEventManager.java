@@ -184,6 +184,10 @@ public class EPEventManager {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onLivingExperienceDrop(LivingExperienceDropEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        
+        ServerLevel level = player.serverLevel();
+        if (level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).get()) return;
+        
         EPSoulboundAttachment attachment = player.getData(EPRegistry.SOULBOUND_DATA);
 
         int xp = SoulboundHandler.handleXpSoulbound(player);
