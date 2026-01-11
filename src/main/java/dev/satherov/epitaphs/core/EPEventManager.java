@@ -30,7 +30,6 @@ import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -52,6 +51,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import com.mojang.brigadier.CommandDispatcher;
 
+import oshi.util.tuples.Pair;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -62,22 +63,24 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class EPEventManager {
-
+    
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingDeath(LivingDeathEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
-
+        
         ServerLevel level = player.serverLevel();
         MinecraftServer server = level.getServer();
         
         if (level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).get()) return;
-
+        
         List<ItemStack> SaveState = Util.make(new ArrayList<>(), list -> {
             Inventory inv = player.getInventory();
             for (int i = 0; i < inv.getContainerSize(); i++) {
                 list.add(inv.getItem(i).copy());
             }
-            list.addAll(CompatHandler.run(CompatHandler.CURIOS, () -> CurioHandler.getCurio(player), NonNullList.create()));
+            Pair<List<ItemStack>, List<ItemStack>> pair = CompatHandler.run(CompatHandler.CURIOS, () -> CurioHandler.getCurio(player), new Pair<>(new ArrayList<>(), new ArrayList<>()));
+            list.addAll(pair.getA());
+            list.addAll(pair.getB());
         });
         
         try {
@@ -131,12 +134,12 @@ public class EPEventManager {
             
             server.sendSystemMessage(Component.literal("Created Grave for " + player.getGameProfile().getName() + " at " + gravePos.getX() + ", " + gravePos.getY() + ", " + gravePos.getZ()));
             player.displayClientMessage(Component.empty()
-                                                 .append(EPLanguage.MESSAGE_GRAVE_SUCCESS.translate())
-                                                 .append(Component.literal(" "))
-                                                 .append(ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", gravePos.getX(), gravePos.getY(), gravePos.getZ())).withStyle(style -> style.withClickEvent(
-                                                         new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/execute in %s run tp @s %s %s %s".formatted(level.dimension().location(), gravePos.getX(), gravePos.getY(), gravePos.getZ())))
-                                                         ).withStyle(ChatFormatting.GOLD)
-                                                 ).withStyle(ChatFormatting.GRAY), false);
+                    .append(EPLanguage.MESSAGE_GRAVE_SUCCESS.translate())
+                    .append(Component.literal(" "))
+                    .append(ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", gravePos.getX(), gravePos.getY(), gravePos.getZ())).withStyle(style -> style.withClickEvent(
+                                    new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/execute in %s run tp @s %s %s %s".formatted(level.dimension().location(), gravePos.getX(), gravePos.getY(), gravePos.getZ())))
+                            ).withStyle(ChatFormatting.GOLD)
+                    ).withStyle(ChatFormatting.GRAY), false);
             
             player.setData(EPRegistry.LOCATION_DATA, player.getData(EPRegistry.LOCATION_DATA).addGraveLocation(player, timestamp, gravePos));
         } catch (Exception e) {
@@ -150,13 +153,13 @@ public class EPEventManager {
             SaveState.clear();
         }
     }
-
+    
     @SubscribeEvent(priority = EventPriority.LOWEST)
     private static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         SoulboundHandler.restoreSoulbound(player);
     }
-
+    
     @SubscribeEvent(priority = EventPriority.LOWEST)
     private static void onLootEvent(LivingDropsEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
@@ -165,13 +168,13 @@ public class EPEventManager {
         if (level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).get()) return;
         
         MinecraftServer server = level.getServer();
-
+        
         Optional<GlobalPos> position = player.getData(EPRegistry.LOCATION_DATA).findLatestGraveLocation(level);
         if (position.isEmpty() || !position.get().dimension().equals(level.dimension())) return;
         final BlockPos gravePos = position.get().pos().immutable();
         if (!(level.getBlockEntity(gravePos) instanceof GraveBlockEntity grave)) return;
         EPGraveDataAttachment graveData = grave.getData(EPRegistry.GRAVE_DATA);
-
+        
         List<ItemStack> saved = BackupHandler.getContents(server, graveData.getOwner(), graveData.getTimestamp());
         List<ItemStack> drops = new ArrayList<>(event.getDrops().stream().map(ItemEntity::getItem).toList());
         drops.removeAll(saved);
@@ -180,7 +183,7 @@ public class EPEventManager {
         grave.setData(EPRegistry.GRAVE_DATA, graveData);
         event.setCanceled(true);
     }
-
+    
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onLivingExperienceDrop(LivingExperienceDropEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
@@ -189,7 +192,7 @@ public class EPEventManager {
         if (level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).get()) return;
         
         EPSoulboundAttachment attachment = player.getData(EPRegistry.SOULBOUND_DATA);
-
+        
         int xp = SoulboundHandler.handleXpSoulbound(player);
         if (xp > 0) {
             int experience = player.totalExperience;
@@ -197,7 +200,7 @@ public class EPEventManager {
             event.setDroppedExperience((int) Math.floor(event.getDroppedExperience() - ((double) event.getDroppedExperience() / 4) * xp));
         }
     }
-
+    
     @SubscribeEvent
     public static void onExplosionDetonate(ExplosionEvent.Detonate event) {
         event.getAffectedBlocks().removeIf(pos -> {
@@ -205,13 +208,13 @@ public class EPEventManager {
             return state.is(EPRegistry.GRAVE.get());
         });
     }
-
+    
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
         EPCommands.register(dispatcher);
     }
-
+    
     @SubscribeEvent(priority = EventPriority.HIGHEST, receiveCanceled = true)
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
@@ -223,30 +226,30 @@ public class EPEventManager {
         }
         
         MinecraftServer server = level.getServer();
-
+        
         EPGraveDataAttachment data = grave.getData(EPRegistry.GRAVE_DATA);
         String uuid = data.getOwner();
         String timestamp = data.getTimestamp();
-
+        
         if (!player.getStringUUID().equals(uuid) && !player.hasPermissions(4)) {
             Player owner = server.getPlayerList().getPlayer(UUID.fromString(uuid));
             String user = owner == null ? "Unknown" : owner.getName().getString();
             player.displayClientMessage(EPLanguage.MESSAGE_NO_ACCESS.translate(user).withStyle(ChatFormatting.RED), true);
             return;
         }
-
+        
         if (BackupHandler.restore(player, uuid, timestamp, false) != 0) {
             player.displayClientMessage(EPLanguage.MESSAGE_GRAVE_ERROR.translateFormatted(ChatFormatting.RED), true);
             return;
         }
-
+        
         for (ItemStack stack : data.getAdditional()) {
             if (stack.isEmpty()) continue;
             if (!player.getInventory().add(stack)) {
                 player.drop(stack, false);
             }
         }
-
+        
         player.inventoryMenu.broadcastChanges();
         player.connection.send(new ClientboundContainerSetContentPacket(
                 player.inventoryMenu.containerId,
@@ -254,7 +257,7 @@ public class EPEventManager {
                 player.inventoryMenu.getItems(),
                 player.inventoryMenu.getCarried()
         ));
-
+        
         level.playSound(
                 null,
                 player.getX(),
@@ -265,22 +268,22 @@ public class EPEventManager {
                 0.4F,
                 ((player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F
         );
-
+        
         player.setData(EPRegistry.LOCATION_DATA, player.getData(EPRegistry.LOCATION_DATA).removeGraveLocation(player, timestamp, grave.getBlockPos()));
         level.removeBlockEntity(event.getPos());
         level.removeBlock(event.getPos(), false);
         event.setCancellationResult(InteractionResult.SUCCESS);
         event.setCanceled(true);
     }
-
+    
     private static Instant LAST_BACKUP = Instant.MIN;
-
+    
     @SubscribeEvent
     private static void scheduleBackup(ServerTickEvent.Post event) {
         MinecraftServer server = event.getServer();
         Instant now = Instant.now();
         Duration interval = Duration.ofMinutes(EpitaphsConfig.getBackupInterval());
-
+        
         if (now.isAfter(LAST_BACKUP.plus(interval))) {
             Epitaphs.LOGGER.info("Running player backup task");
             BackupHandler.saveAll(server);
