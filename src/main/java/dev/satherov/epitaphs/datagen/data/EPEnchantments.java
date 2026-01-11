@@ -14,14 +14,14 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 
 public class EPEnchantments {
-
+    
     public static final ResourceKey<Enchantment> SOULBOUND = createKey("soulbound");
     public static final ResourceKey<Enchantment> EXPERIENCE_SOULBOUND = createKey("experience_soulbound");
-
+    
     public static void bootstrap(BootstrapContext<Enchantment> context) {
         HolderGetter<Item> holderGetter = context.lookup(Registries.ITEM);
         HolderGetter<Enchantment> enchantmentGetter = context.lookup(Registries.ENCHANTMENT);
-
+        
         context.register(
                 SOULBOUND,
                 Enchantment.enchantment(
@@ -40,7 +40,7 @@ public class EPEnchantments {
                         .exclusiveWith(HolderSet.direct(enchantmentGetter.getOrThrow(Enchantments.BINDING_CURSE)))
                         .build(SOULBOUND.location())
         );
-
+        
         context.register(
                 EXPERIENCE_SOULBOUND,
                 Enchantment.enchantment(
@@ -60,7 +60,7 @@ public class EPEnchantments {
                         .build(EXPERIENCE_SOULBOUND.location())
         );
     }
-
+    
     private static ResourceKey<Enchantment> createKey(String name) {
         return ResourceKey.create(Registries.ENCHANTMENT, Epitaphs.rl(name));
     }

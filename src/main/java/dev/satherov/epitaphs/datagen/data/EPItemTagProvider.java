@@ -19,7 +19,7 @@ import top.theillusivec4.curios.api.CuriosTags;
 import java.util.concurrent.CompletableFuture;
 
 public class EPItemTagProvider extends ItemTagsProvider {
-
+    
     public EPItemTagProvider(
             PackOutput output,
             CompletableFuture<HolderLookup.Provider> lookupProvider,
@@ -28,10 +28,10 @@ public class EPItemTagProvider extends ItemTagsProvider {
     ) {
         super(output, lookupProvider, blockTags, Epitaphs.MOD_ID, existingFileHelper);
     }
-
+    
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-
+        
         tag(EPRegistry.SOULBOUND_ENCHANTABLE)
                 .addTag(Tags.Items.ENCHANTABLES)
                 .addTag(Tags.Items.TOOLS)
@@ -46,7 +46,7 @@ public class EPItemTagProvider extends ItemTagsProvider {
                 .addOptionalTag(CuriosTags.HEAD)
                 .addOptionalTag(CuriosTags.NECKLACE)
                 .addOptionalTag(CuriosTags.RING);
-
+        
         tag(EPRegistry.EXPERIENCE_SOULBOUND_ENCHANTABLE)
                 .addTag(Tags.Items.ARMORS);
     }

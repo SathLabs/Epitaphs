@@ -9,7 +9,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -29,13 +28,17 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class EPCommands {
-
+    
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-
+        
         dispatcher.register(
                 Commands.literal("epitaphs")
                         .then(recoverCommand())
@@ -46,7 +49,7 @@ public class EPCommands {
                         .then(uuidCommand())
         );
     }
-
+    
     private static LiteralArgumentBuilder<CommandSourceStack> recoverCommand() {
         return Commands.literal("recover")
                 .requires(cs -> cs.hasPermission(4))
@@ -55,14 +58,14 @@ public class EPCommands {
                                 .then(Commands.argument("timestamp", StringArgumentType.string())
                                         .suggests(FILE_SUGGESTER_PLAYER)
                                         .executes(ctx -> recoverPlayer(
-                                                ctx, 
-                                                StringArgumentType.getString(ctx, "timestamp"), 
+                                                ctx,
+                                                StringArgumentType.getString(ctx, "timestamp"),
                                                 false)
                                         )
                                         .then(Commands.argument("force", BoolArgumentType.bool())
                                                 .executes(ctx -> recoverPlayer(
-                                                        ctx, 
-                                                        StringArgumentType.getString(ctx, "timestamp"), 
+                                                        ctx,
+                                                        StringArgumentType.getString(ctx, "timestamp"),
                                                         BoolArgumentType.getBool(ctx, "force"))
                                                 )
                                         )
@@ -76,14 +79,14 @@ public class EPCommands {
                                 .then(Commands.argument("timestamp", StringArgumentType.string())
                                         .suggests(FILE_SUGGESTER_UUID)
                                         .executes(ctx -> recoverUUID(
-                                                ctx, 
-                                                StringArgumentType.getString(ctx, "timestamp"), 
+                                                ctx,
+                                                StringArgumentType.getString(ctx, "timestamp"),
                                                 false
                                         ))
                                         .then(Commands.argument("force", BoolArgumentType.bool())
                                                 .executes(ctx -> recoverUUID(
-                                                        ctx, 
-                                                        StringArgumentType.getString(ctx, "timestamp"), 
+                                                        ctx,
+                                                        StringArgumentType.getString(ctx, "timestamp"),
                                                         BoolArgumentType.getBool(ctx, "force"))
                                                 )
                                         )
@@ -92,7 +95,7 @@ public class EPCommands {
                         )
                 );
     }
-
+    
     private static int recoverUUID(CommandContext<CommandSourceStack> ctx, String timestamp, boolean force) {
         String uuid = StringArgumentType.getString(ctx, "uuid");
         return recover(ctx, uuid, timestamp, force);
@@ -114,14 +117,14 @@ public class EPCommands {
         }
         return result;
     }
-
+    
     private static LiteralArgumentBuilder<CommandSourceStack> backupCommand() {
         return Commands.literal("save")
                 .requires(cs -> cs.hasPermission(4))
                 .then(Commands.argument("players", EntityArgument.players())
                         .executes(EPCommands::save));
     }
-
+    
     private static int save(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         Collection<ServerPlayer> players = EntityArgument.getPlayers(ctx, "players");
         for (ServerPlayer player : players) {
@@ -140,7 +143,7 @@ public class EPCommands {
         ctx.getSource().sendSystemMessage(EPLanguage.COMMAND_BACKUP_SUCCESS.translate());
         return 0;
     }
-
+    
     private static LiteralArgumentBuilder<CommandSourceStack> listCommand() {
         return Commands.literal("list")
                 .executes(ctx -> list(ctx, ctx.getSource().getPlayerOrException()))
@@ -149,14 +152,14 @@ public class EPCommands {
                         .executes(ctx -> list(ctx, EntityArgument.getPlayer(ctx, "player")))
                 );
     }
-
+    
     private static int list(CommandContext<CommandSourceStack> ctx, ServerPlayer player) {
         Map<String, List<Map.Entry<String, BlockPos>>> locations = player.getData(EPRegistry.LOCATION_DATA).getGraveLocations(player.serverLevel());
         if (locations.isEmpty()) {
             ctx.getSource().sendSystemMessage(EPLanguage.COMMAND_NOT_FOUND.translate(player.getDisplayName()).withStyle(ChatFormatting.RED));
             return 0;
         }
-
+        
         locations.forEach((dimension, list) -> {
             ctx.getSource().sendSystemMessage(Component.literal(dimension).append(":").withStyle(ChatFormatting.GOLD));
             list.forEach(entry -> {
@@ -174,7 +177,7 @@ public class EPCommands {
         });
         return 0;
     }
-
+    
     private static LiteralArgumentBuilder<CommandSourceStack> latestCommand() {
         return Commands.literal("latest")
                 .executes(ctx -> latest(ctx, ctx.getSource().getPlayerOrException()))
@@ -182,9 +185,9 @@ public class EPCommands {
                         .requires(cs -> cs.hasPermission(4))
                         .executes(ctx -> latest(ctx, EntityArgument.getPlayer(ctx, "player")))
                 );
-
+        
     }
-
+    
     private static int latest(CommandContext<CommandSourceStack> ctx, ServerPlayer player) {
         player.getData(EPRegistry.LOCATION_DATA).findLatestGraveLocation(player.serverLevel()).ifPresentOrElse(entry -> {
             final BlockPos pos = entry.pos().immutable();
@@ -253,17 +256,17 @@ public class EPCommands {
         String uuid = StringArgumentType.getString(context, "uuid");
         return getSuggestions(uuid, context, builder);
     };
-
+    
     private static CompletableFuture<Suggestions> getSuggestions(String uuid, CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
         LinkedList<String> files = BackupHandler.listBackups(context.getSource().getServer(), uuid);
         files.forEach(builder::suggest);
         return builder.buildFuture();
-    };
-
+    }
+    
     private static final SuggestionProvider<CommandSourceStack> UUID_SUGGESTER = (context, builder) -> {
         LinkedList<String> files = BackupHandler.listPlayers(context.getSource().getServer());
         files.forEach(builder::suggest);
         return builder.buildFuture();
     };
-
+    
 }

@@ -12,24 +12,24 @@ import java.util.List;
 import java.util.Set;
 
 public class EPSuggestions extends Suggestions {
-
+    
     private static final EPSuggestions EMPTY = new EPSuggestions(StringRange.at(0), new ArrayList<>());
-
+    
     public EPSuggestions(StringRange range, List<Suggestion> suggestions) {
         super(range, suggestions);
     }
-
+    
     public EPSuggestions reverse() {
         List<Suggestion> reversedSuggestions = new ArrayList<>(this.getList());
         Collections.reverse(reversedSuggestions);
         return new EPSuggestions(this.getRange(), reversedSuggestions);
     }
-
+    
     public static EPSuggestions create(final String command, final Collection<Suggestion> suggestions) {
         if (suggestions.isEmpty()) {
             return new EPSuggestions(StringRange.at(0), new ArrayList<>());
         }
-
+        
         int start = Integer.MAX_VALUE;
         int end = Integer.MIN_VALUE;
         for (final Suggestion suggestion : suggestions) {
@@ -45,5 +45,5 @@ public class EPSuggestions extends Suggestions {
         sorted.sort(Suggestion::compareToIgnoreCase);
         return new EPSuggestions(range, sorted);
     }
-
+    
 }

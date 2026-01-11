@@ -28,33 +28,33 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 public class EPLocationAttachment implements INBTSerializable<ListTag> {
-
+    
     private final Map<String, List<Entry<String, BlockPos>>> graveLocations = new HashMap<>();
-
+    
     public Map<String, List<Entry<String, BlockPos>>> getGraveLocations(ServerLevel level) {
         clearMissing(level);
         return graveLocations;
     }
-
+    
     public EPLocationAttachment addGraveLocation(ServerPlayer player, String timestamp, BlockPos pos) {
         graveLocations.computeIfAbsent(player.level().dimension().location().toString(), k -> new ArrayList<>())
                 .add(new AbstractMap.SimpleEntry<>(timestamp, pos.immutable()));
         clearMissing(player.serverLevel());
         return this;
     }
-
+    
     public EPLocationAttachment removeGraveLocation(String timestamp, ResourceKey<Level> dimension, BlockPos pos) {
         graveLocations.computeIfAbsent(dimension.location().toString(), k -> new ArrayList<>())
                 .removeIf(entry -> entry.getKey().equals(timestamp) && entry.getValue().equals(pos.immutable()));
         return this;
     }
-
+    
     public EPLocationAttachment removeGraveLocation(ServerPlayer player, String timestamp, BlockPos pos) {
         removeGraveLocation(timestamp, player.level().dimension(), pos);
         clearMissing(player.serverLevel());
         return this;
     }
-
+    
     public Optional<GlobalPos> findLatestGraveLocation(ServerLevel level) {
         clearMissing(level);
         return graveLocations.entrySet().stream()
@@ -70,21 +70,21 @@ public class EPLocationAttachment implements INBTSerializable<ListTag> {
                 .max(Entry.comparingByKey())
                 .map(Entry::getValue);
     }
-
+    
     private void clearMissing(ServerLevel level) {
         graveLocations.entrySet().removeIf(dimensionEntry -> {
             if (!level.dimension().location().equals(ResourceLocation.parse(dimensionEntry.getKey()))) return false;
             List<Entry<String, BlockPos>> list = dimensionEntry.getValue();
-
+            
             list.removeIf(entry -> {
                 BlockPos pos = entry.getValue();
                 return level.isLoaded(pos) && !level.getBlockState(pos).is(EPRegistry.GRAVE.get());
             });
-
+            
             return list.isEmpty();
         });
     }
-
+    
     @Override
     public @UnknownNullability ListTag serializeNBT(HolderLookup.Provider provider) {
         ListTag dimensions = new ListTag();
@@ -102,11 +102,11 @@ public class EPLocationAttachment implements INBTSerializable<ListTag> {
         });
         return dimensions;
     }
-
+    
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, ListTag nbt) {
         Map<String, List<Entry<String, BlockPos>>> graveLocations = new HashMap<>();
-
+        
         for (int i = 0; i < nbt.size(); i++) {
             CompoundTag tag = nbt.getCompound(i);
             tag.getAllKeys().forEach(dimension -> {

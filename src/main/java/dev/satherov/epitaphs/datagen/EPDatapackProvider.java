@@ -14,10 +14,10 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class EPDatapackProvider extends DatapackBuiltinEntriesProvider {
-
+    
     private static final RegistrySetBuilder BUILDER = new RegistrySetBuilder()
             .add(Registries.ENCHANTMENT, EPEnchantments::bootstrap);
-
+    
     public EPDatapackProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         super(output, registries, BUILDER, Set.of(Epitaphs.MOD_ID));
     }

@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 @NothingNull
 public class GraveBlockEntity extends BlockEntity {
-
+    
     public GraveBlockEntity(BlockPos pos, BlockState blockState) {
         super(EPRegistry.GRAVE_BLOCK_ENTITY.get(), pos, blockState);
     }

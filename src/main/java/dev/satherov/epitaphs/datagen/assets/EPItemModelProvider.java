@@ -10,14 +10,14 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.ItemDisplayContext;
 
 public class EPItemModelProvider extends ItemModelProvider {
-
+    
     public EPItemModelProvider(PackOutput output, ExistingFileHelper existingFileHelper) {
         super(output, Epitaphs.MOD_ID, existingFileHelper);
     }
-
+    
     @Override
     protected void registerModels() {
-
+        
         String path = EPRegistry.GRAVE.getId().getPath();
         getBuilder(path)
                 .parent(getExistingFile(modLoc("block/" + path)))
@@ -44,7 +44,7 @@ public class EPItemModelProvider extends ItemModelProvider {
                 .scale(0.5f)
                 .end()
                 .end();
-
+        
     }
 }
 

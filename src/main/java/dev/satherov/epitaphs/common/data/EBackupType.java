@@ -8,7 +8,7 @@ import net.minecraft.util.StringRepresentable;
 public enum EBackupType implements StringRepresentable {
     DEATH,
     SAVE;
-
+    
     @Override
     public String getSerializedName() {
         return this.name().toLowerCase();

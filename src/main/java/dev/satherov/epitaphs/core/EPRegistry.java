@@ -27,21 +27,21 @@ import com.mojang.serialization.Codec;
 import java.util.function.Supplier;
 
 public class EPRegistry {
-
+    
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Epitaphs.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Epitaphs.MOD_ID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Epitaphs.MOD_ID);
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, Epitaphs.MOD_ID);
     public static final DeferredRegister<DataComponentType<?>> ENCHANTMENT_DATA_COMPONENTS = DeferredRegister.create(BuiltInRegistries.ENCHANTMENT_EFFECT_COMPONENT_TYPE, Epitaphs.MOD_ID);
-
+    
     public static final DeferredHolder<Block, GraveBlock> GRAVE = register("grave", () -> new GraveBlock(BlockBehaviour.Properties.of()));
-
+    
     public static <T extends Block> DeferredHolder<Block, T> register(String name, Supplier<? extends T> block) {
         DeferredHolder<Block, T> blockHolder = BLOCKS.register(name, block);
         ITEMS.registerSimpleBlockItem(blockHolder);
         return blockHolder;
     }
-
+    
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GraveBlockEntity>> GRAVE_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register(
             "grave_tile",
             () -> BlockEntityType.Builder.of(
@@ -49,7 +49,7 @@ public class EPRegistry {
                     GRAVE.get()
             ).build(null)
     );
-
+    
     public static final Supplier<AttachmentType<EPLocationAttachment>> LOCATION_DATA = ATTACHMENT_TYPES.register(
             "grave_locations",
             () -> AttachmentType
@@ -57,14 +57,14 @@ public class EPRegistry {
                     .copyOnDeath()
                     .build()
     );
-
+    
     public static final Supplier<AttachmentType<EPGraveDataAttachment>> GRAVE_DATA = ATTACHMENT_TYPES.register(
             "grave_data",
             () -> AttachmentType
                     .serializable(EPGraveDataAttachment::new)
                     .build()
     );
-
+    
     public static final Supplier<AttachmentType<EPSoulboundAttachment>> SOULBOUND_DATA = ATTACHMENT_TYPES.register(
             "soulbound_data",
             () -> AttachmentType
@@ -72,7 +72,7 @@ public class EPRegistry {
                     .copyOnDeath()
                     .build()
     );
-
+    
     public static final Supplier<DataComponentType<Boolean>> SOULBOUND = ENCHANTMENT_DATA_COMPONENTS.register(
             "soulbound",
             () -> DataComponentType.<Boolean>builder()
@@ -80,7 +80,7 @@ public class EPRegistry {
                     .persistent(Codec.BOOL)
                     .build()
     );
-
+    
     public static final Supplier<DataComponentType<Boolean>> EXPERIENCE_SOULBOUND = ENCHANTMENT_DATA_COMPONENTS.register(
             "experience_soulbound",
             () -> DataComponentType.<Boolean>builder()
@@ -88,7 +88,7 @@ public class EPRegistry {
                     .persistent(Codec.BOOL)
                     .build()
     );
-
+    
     public static final TagKey<Item> SOULBOUND_ENCHANTABLE = TagKey.create(Registries.ITEM, Epitaphs.neo("enchantable/soulbound"));
     public static final TagKey<Item> EXPERIENCE_SOULBOUND_ENCHANTABLE = TagKey.create(Registries.ITEM, Epitaphs.neo("enchantable/experience_soulbound"));
 }

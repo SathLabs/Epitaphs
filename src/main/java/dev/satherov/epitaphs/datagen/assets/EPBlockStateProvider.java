@@ -9,11 +9,11 @@ import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.minecraft.data.PackOutput;
 
 public class EPBlockStateProvider extends BlockStateProvider {
-
+    
     public EPBlockStateProvider(PackOutput output, ExistingFileHelper exFileHelper) {
         super(output, Epitaphs.MOD_ID, exFileHelper);
     }
-
+    
     @Override
     protected void registerStatesAndModels() {
         simpleBlock(EPRegistry.GRAVE.get(), models().getExistingFile(modLoc("block/grave")));

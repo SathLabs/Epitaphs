@@ -17,11 +17,11 @@ import dev.ftb.mods.ftbchunks.api.FTBChunksTags;
 import java.util.concurrent.CompletableFuture;
 
 public class EPBlockTagsProvider extends BlockTagsProvider {
-
+    
     public EPBlockTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper existingFileHelper) {
         super(output, lookupProvider, Epitaphs.MOD_ID, existingFileHelper);
     }
-
+    
     @Override
     protected void addTags(HolderLookup.Provider provider) {
         tag(FTBChunksTags.Blocks.INTERACT_WHITELIST_TAG)

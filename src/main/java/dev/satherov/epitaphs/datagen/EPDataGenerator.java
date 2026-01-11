@@ -23,27 +23,27 @@ import java.util.concurrent.CompletableFuture;
 
 @EventBusSubscriber(modid = Epitaphs.MOD_ID)
 public class EPDataGenerator {
-
+    
     @SubscribeEvent
     public static void gatherData(GatherDataEvent event) {
-
+        
         DataGenerator generator = event.getGenerator();
         PackOutput packOutput = generator.getPackOutput();
         ExistingFileHelper fileHelper = event.getExistingFileHelper();
         CompletableFuture<HolderLookup.Provider> lookupProvider = CompletableFuture.supplyAsync(VanillaRegistries::createLookup, Util.backgroundExecutor());
-
+        
         EPDataProvider provider = new EPDataProvider();
-
+        
         provider.addSubProvider(event.includeClient(), new EPBlockStateProvider(packOutput, fileHelper));
         provider.addSubProvider(event.includeClient(), new EPItemModelProvider(packOutput, fileHelper));
         provider.addSubProvider(event.includeClient(), new EPLanguageProvider(packOutput));
-
+        
         EPBlockTagsProvider blockTagsProvider = new EPBlockTagsProvider(packOutput, lookupProvider, fileHelper);
         provider.addSubProvider(event.includeServer(), blockTagsProvider);
         provider.addSubProvider(event.includeServer(), new EPItemTagProvider(packOutput, lookupProvider, blockTagsProvider.contentsGetter(), fileHelper));
         provider.addSubProvider(event.includeServer(), new EPEnchantmentTagsProvider(packOutput, lookupProvider, fileHelper));
         provider.addSubProvider(event.includeServer(), new EPDatapackProvider(packOutput, lookupProvider));
-
+        
         generator.addProvider(true, provider);
     }
 }
