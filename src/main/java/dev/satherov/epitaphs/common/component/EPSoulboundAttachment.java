@@ -108,33 +108,35 @@ public class EPSoulboundAttachment implements INBTSerializable<CompoundTag> {
     }
     
     public void setCurio(ServerPlayer player, List<ItemStack> curio, List<ItemStack> cosmetics) {
-        if ((this.curio.isEmpty() || this.curio.size() != curio.size()) && (this.cosmetics.isEmpty() || this.cosmetics.size() != cosmetics.size())) {
+        if (this.curio.isEmpty() || this.curio.size() != curio.size()) {
             this.curio = curio;
-            this.cosmetics = cosmetics;
-            return;
-        }
-        
-        for (int i = 0; i < curio.size(); i++) {
-            ItemStack present = this.curio.get(i);
-            ItemStack stack = curio.get(i);
-            if (stack.isEmpty()) continue;
-            if (present.isEmpty()) {
-                this.curio.set(i, stack);
-            } else {
-                Epitaphs.LOGGER.warn("Soulbound item {} could not be saved to curio because data was already occupied with {}. Did some mod kill us twice?", stack, present);
-                player.getInventory().add(stack);
+        } else {
+            for (int i = 0; i < curio.size(); i++) {
+                ItemStack present = this.curio.get(i);
+                ItemStack stack = curio.get(i);
+                if (stack.isEmpty()) continue;
+                if (present.isEmpty()) {
+                    this.curio.set(i, stack);
+                } else {
+                    Epitaphs.LOGGER.warn("Soulbound item {} could not be saved to curio because data was already occupied with {}. Did some mod kill us twice?", stack, present);
+                    player.getInventory().add(stack);
+                }
             }
         }
         
-        for (int i = 0; i < cosmetics.size(); i++) {
-            ItemStack present = this.cosmetics.get(i);
-            ItemStack stack = cosmetics.get(i);
-            if (stack.isEmpty()) continue;
-            if (present.isEmpty()) {
-                this.cosmetics.set(i, stack);
-            } else {
-                Epitaphs.LOGGER.warn("Soulbound item {} could not be saved to cosmetics because data was already occupied with {}. Did some mod kill us twice?", stack, present);
-                player.getInventory().add(stack);
+        if (this.cosmetics.isEmpty() || this.cosmetics.size() != cosmetics.size()) {
+            this.cosmetics = cosmetics;
+        } else {
+            for (int i = 0; i < cosmetics.size(); i++) {
+                ItemStack present = this.cosmetics.get(i);
+                ItemStack stack = cosmetics.get(i);
+                if (stack.isEmpty()) continue;
+                if (present.isEmpty()) {
+                    this.cosmetics.set(i, stack);
+                } else {
+                    Epitaphs.LOGGER.warn("Soulbound item {} could not be saved to cosmetics because data was already occupied with {}. Did some mod kill us twice?", stack, present);
+                    player.getInventory().add(stack);
+                }
             }
         }
     }
