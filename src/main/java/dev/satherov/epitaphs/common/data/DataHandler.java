@@ -3,7 +3,6 @@ package dev.satherov.epitaphs.common.data;
 import lombok.experimental.UtilityClass;
 
 import dev.satherov.epitaphs.Epitaphs;
-import dev.satherov.epitaphs.common.container.InventoryContainer;
 import dev.satherov.epitaphs.common.container.PlayerContainer;
 import dev.satherov.epitaphs.util.StringUtils;
 
