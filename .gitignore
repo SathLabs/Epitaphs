@@ -1,0 +1,695 @@
+### Gradle ###
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/**/build/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/**/out/
+
+.run/
+
+### Eclipse ###
+.apt_generated
+.classpath
+.eclipse/
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/**/bin/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Minecraft Modding ###
+run/
+!**/src/**/run/
+**/src/generated/**/.cache/
+repo/
+!**/src/**/repo/
+/runs/client/config/apotheosis/apotheosis.cfg
+/runs/client/config/apotheosis/apothic_attributes.cfg
+/runs/client/config/apotheosis/apothic_enchanting.cfg
+/runs/client/config/apotheosis/enchantments.cfg
+/runs/client/config/apotheosis/name_generation.cfg
+/runs/client/config/ars_elemental/glyph_aerial_filter.toml
+/runs/client/config/ars_elemental/glyph_aquatic_filter.toml
+/runs/client/config/ars_elemental/glyph_arc_projectile.toml
+/runs/client/config/ars_elemental/glyph_bubble_shield.toml
+/runs/client/config/ars_elemental/glyph_charm.toml
+/runs/client/config/ars_elemental/glyph_conflagrate.toml
+/runs/client/config/ars_elemental/glyph_conjure_terrain.toml
+/runs/client/config/ars_elemental/glyph_discharge.toml
+/runs/client/config/ars_elemental/glyph_envenom.toml
+/runs/client/config/ars_elemental/glyph_fiery_filter.toml
+/runs/client/config/ars_elemental/glyph_homing_projectile.toml
+/runs/client/config/ars_elemental/glyph_insect_filter.toml
+/runs/client/config/ars_elemental/glyph_life_link.toml
+/runs/client/config/ars_elemental/glyph_not_aerial_filter.toml
+/runs/client/config/ars_elemental/glyph_not_aquatic_filter.toml
+/runs/client/config/ars_elemental/glyph_not_fiery_filter.toml
+/runs/client/config/ars_elemental/glyph_not_insect_filter.toml
+/runs/client/config/ars_elemental/glyph_not_summon_filter.toml
+/runs/client/config/ars_elemental/glyph_not_undead_filter.toml
+/runs/client/config/ars_elemental/glyph_nullify_defense.toml
+/runs/client/config/ars_elemental/glyph_phantom_grasp.toml
+/runs/client/config/ars_elemental/glyph_poison_spores.toml
+/runs/client/config/ars_elemental/glyph_propagator_arc.toml
+/runs/client/config/ars_elemental/glyph_propagator_homing.toml
+/runs/client/config/ars_elemental/glyph_spark.toml
+/runs/client/config/ars_elemental/glyph_spike.toml
+/runs/client/config/ars_elemental/glyph_summon_filter.toml
+/runs/client/config/ars_elemental/glyph_undead_filter.toml
+/runs/client/config/ars_elemental/glyph_watery_grave.toml
+/runs/client/config/ars_nouveau/search_index/_1z.cfe
+/runs/client/config/ars_nouveau/search_index/_1z.cfs
+/runs/client/config/ars_nouveau/search_index/_1z.si
+/runs/client/config/ars_nouveau/search_index/segments_20
+/runs/client/config/ars_nouveau/search_index/write.lock
+/runs/client/config/ars_nouveau/doc_data.json
+/runs/client/config/ars_nouveau/glyph_accelerate.toml
+/runs/client/config/ars_nouveau/glyph_amplify.toml
+/runs/client/config/ars_nouveau/glyph_animate_block.toml
+/runs/client/config/ars_nouveau/glyph_aoe.toml
+/runs/client/config/ars_nouveau/glyph_blink.toml
+/runs/client/config/ars_nouveau/glyph_bounce.toml
+/runs/client/config/ars_nouveau/glyph_break.toml
+/runs/client/config/ars_nouveau/glyph_bubble.toml
+/runs/client/config/ars_nouveau/glyph_burst.toml
+/runs/client/config/ars_nouveau/glyph_cold_snap.toml
+/runs/client/config/ars_nouveau/glyph_conjure_water.toml
+/runs/client/config/ars_nouveau/glyph_craft.toml
+/runs/client/config/ars_nouveau/glyph_crush.toml
+/runs/client/config/ars_nouveau/glyph_cut.toml
+/runs/client/config/ars_nouveau/glyph_dampen.toml
+/runs/client/config/ars_nouveau/glyph_decelerate.toml
+/runs/client/config/ars_nouveau/glyph_delay.toml
+/runs/client/config/ars_nouveau/glyph_dispel.toml
+/runs/client/config/ars_nouveau/glyph_duration_down.toml
+/runs/client/config/ars_nouveau/glyph_ender_inventory.toml
+/runs/client/config/ars_nouveau/glyph_evaporate.toml
+/runs/client/config/ars_nouveau/glyph_exchange.toml
+/runs/client/config/ars_nouveau/glyph_explosion.toml
+/runs/client/config/ars_nouveau/glyph_extend_time.toml
+/runs/client/config/ars_nouveau/glyph_extract.toml
+/runs/client/config/ars_nouveau/glyph_fangs.toml
+/runs/client/config/ars_nouveau/glyph_fell.toml
+/runs/client/config/ars_nouveau/glyph_firework.toml
+/runs/client/config/ars_nouveau/glyph_flare.toml
+/runs/client/config/ars_nouveau/glyph_fortune.toml
+/runs/client/config/ars_nouveau/glyph_freeze.toml
+/runs/client/config/ars_nouveau/glyph_glide.toml
+/runs/client/config/ars_nouveau/glyph_gravity.toml
+/runs/client/config/ars_nouveau/glyph_grow.toml
+/runs/client/config/ars_nouveau/glyph_gust.toml
+/runs/client/config/ars_nouveau/glyph_harm.toml
+/runs/client/config/ars_nouveau/glyph_harvest.toml
+/runs/client/config/ars_nouveau/glyph_heal.toml
+/runs/client/config/ars_nouveau/glyph_hex.toml
+/runs/client/config/ars_nouveau/glyph_ignite.toml
+/runs/client/config/ars_nouveau/glyph_infuse.toml
+/runs/client/config/ars_nouveau/glyph_intangible.toml
+/runs/client/config/ars_nouveau/glyph_interact.toml
+/runs/client/config/ars_nouveau/glyph_invisibility.toml
+/runs/client/config/ars_nouveau/glyph_launch.toml
+/runs/client/config/ars_nouveau/glyph_leap.toml
+/runs/client/config/ars_nouveau/glyph_light.toml
+/runs/client/config/ars_nouveau/glyph_lightning.toml
+/runs/client/config/ars_nouveau/glyph_linger.toml
+/runs/client/config/ars_nouveau/glyph_name.toml
+/runs/client/config/ars_nouveau/glyph_orbit.toml
+/runs/client/config/ars_nouveau/glyph_pantomime.toml
+/runs/client/config/ars_nouveau/glyph_phantom_block.toml
+/runs/client/config/ars_nouveau/glyph_pickup.toml
+/runs/client/config/ars_nouveau/glyph_pierce.toml
+/runs/client/config/ars_nouveau/glyph_place_block.toml
+/runs/client/config/ars_nouveau/glyph_prestidigitation.toml
+/runs/client/config/ars_nouveau/glyph_projectile.toml
+/runs/client/config/ars_nouveau/glyph_pull.toml
+/runs/client/config/ars_nouveau/glyph_randomize.toml
+/runs/client/config/ars_nouveau/glyph_redstone_signal.toml
+/runs/client/config/ars_nouveau/glyph_rotate.toml
+/runs/client/config/ars_nouveau/glyph_rune.toml
+/runs/client/config/ars_nouveau/glyph_self.toml
+/runs/client/config/ars_nouveau/glyph_sense_magic.toml
+/runs/client/config/ars_nouveau/glyph_sensitive.toml
+/runs/client/config/ars_nouveau/glyph_slowfall.toml
+/runs/client/config/ars_nouveau/glyph_smelt.toml
+/runs/client/config/ars_nouveau/glyph_snare.toml
+/runs/client/config/ars_nouveau/glyph_split.toml
+/runs/client/config/ars_nouveau/glyph_summon_decoy.toml
+/runs/client/config/ars_nouveau/glyph_summon_steed.toml
+/runs/client/config/ars_nouveau/glyph_summon_undead.toml
+/runs/client/config/ars_nouveau/glyph_summon_vex.toml
+/runs/client/config/ars_nouveau/glyph_summon_wolves.toml
+/runs/client/config/ars_nouveau/glyph_toss.toml
+/runs/client/config/ars_nouveau/glyph_touch.toml
+/runs/client/config/ars_nouveau/glyph_underfoot.toml
+/runs/client/config/ars_nouveau/glyph_wall.toml
+/runs/client/config/ars_nouveau/glyph_wind_burst.toml
+/runs/client/config/ars_nouveau/glyph_wind_shear.toml
+/runs/client/config/ars_nouveau/glyph_wither.toml
+/runs/client/config/ars_nouveau/reset.toml
+/runs/client/config/ars_nouveau/rewind.toml
+/runs/client/config/ars_nouveau/wololo.toml
+/runs/client/config/enderio/armory-common.toml
+/runs/client/config/enderio/base-client.toml
+/runs/client/config/enderio/base-common.toml
+/runs/client/config/enderio/machines-client.toml
+/runs/client/config/enderio/machines-common.toml
+/runs/client/config/epitaphs/epitaphs-client.toml
+/runs/client/config/epitaphs/epitaphs-server.toml
+/runs/client/config/epitaphs/epitaphs-server-1.toml.bak
+/runs/client/config/Mekanism/client.toml
+/runs/client/config/Mekanism/common.toml
+/runs/client/config/Mekanism/gear.toml
+/runs/client/config/Mekanism/general.toml
+/runs/client/config/Mekanism/machine-storage.toml
+/runs/client/config/Mekanism/machine-usage.toml
+/runs/client/config/Mekanism/startup.toml
+/runs/client/config/Mekanism/tiers.toml
+/runs/client/config/Mekanism/world.toml
+/runs/client/config/apothic_spawners.cfg
+/runs/client/config/ars_elemental-client.toml
+/runs/client/config/ars_elemental-common.toml
+/runs/client/config/ars_nouveau-client.toml
+/runs/client/config/ars_nouveau-common.toml
+/runs/client/config/ars_nouveau-server.toml
+/runs/client/config/ars_nouveau-startup.toml
+/runs/client/config/curios-client.toml
+/runs/client/config/curios-common.toml
+/runs/client/config/curios-server.toml
+/runs/client/config/fml.toml
+/runs/client/config/ftbchunks-client.snbt
+/runs/client/config/ftbchunks-world.snbt
+/runs/client/config/ftblibrary-client.snbt
+/runs/client/config/ftblibrary-server.snbt
+/runs/client/config/ftblibrary-startup.snbt
+/runs/client/config/neoforge-client.toml
+/runs/client/config/neoforge-common.toml
+/runs/client/config/neoforge-server.toml
+/runs/client/config/patchouli-client.toml
+/runs/client/config/placebo.cfg
+/runs/client/config/relics.yaml
+/runs/client/crash-reports/crash-2026-04-13_23.08.44-client.txt
+/runs/client/crash-reports/crash-2026-04-14_18.41.13-client.txt
+/runs/client/crash-reports/crash-2026-04-14_18.45.04-client.txt
+/runs/client/crash-reports/crash-2026-04-15_00.36.21-fml.txt
+/runs/client/crash-reports/crash-2026-04-15_00.37.52-fml.txt
+/runs/client/crash-reports/crash-2026-04-15_00.41.48-fml.txt
+/runs/client/downloads/log.json
+/runs/client/local/ftbchunks/data/7e24b62c-a4cf-4ac1-9aec-67b3f61e1446/minecraft_overworld/0EA5F-0EA5F.zip
+/runs/client/local/ftbchunks/data/7e24b62c-a4cf-4ac1-9aec-67b3f61e1446/minecraft_overworld/0EA5F-0EA60.zip
+/runs/client/local/ftbchunks/data/7e24b62c-a4cf-4ac1-9aec-67b3f61e1446/minecraft_overworld/0EA60-0EA5F.zip
+/runs/client/local/ftbchunks/data/7e24b62c-a4cf-4ac1-9aec-67b3f61e1446/minecraft_overworld/0EA60-0EA60.zip
+/runs/client/local/ftbchunks/data/7e24b62c-a4cf-4ac1-9aec-67b3f61e1446/minecraft_overworld/dimension.regions
+/runs/client/local/ftbchunks/data/7e24b62c-a4cf-4ac1-9aec-67b3f61e1446/minecraft_overworld/waypoints.json
+/runs/client/local/ftbchunks/data/7e24b62c-a4cf-4ac1-9aec-67b3f61e1446/biome_map.txt
+/runs/client/local/ftbchunks/data/7e24b62c-a4cf-4ac1-9aec-67b3f61e1446/block_map.txt
+/runs/client/local/ftbchunks/data/7e24b62c-a4cf-4ac1-9aec-67b3f61e1446/dimensions.txt
+/runs/client/local/ftbchunks/data/6281a3b6-d0e9-4910-8f7e-62b9927a35eb/minecraft_overworld/0EA5F-0EA5F.zip
+/runs/client/local/ftbchunks/data/6281a3b6-d0e9-4910-8f7e-62b9927a35eb/minecraft_overworld/0EA5F-0EA60.zip
+/runs/client/local/ftbchunks/data/6281a3b6-d0e9-4910-8f7e-62b9927a35eb/minecraft_overworld/0EA60-0EA5F.zip
+/runs/client/local/ftbchunks/data/6281a3b6-d0e9-4910-8f7e-62b9927a35eb/minecraft_overworld/0EA60-0EA60.zip
+/runs/client/local/ftbchunks/data/6281a3b6-d0e9-4910-8f7e-62b9927a35eb/minecraft_overworld/dimension.regions
+/runs/client/local/ftbchunks/data/6281a3b6-d0e9-4910-8f7e-62b9927a35eb/minecraft_overworld/waypoints.json
+/runs/client/local/ftbchunks/data/6281a3b6-d0e9-4910-8f7e-62b9927a35eb/minecraft_the_nether/0EA5F-0EA5F.zip
+/runs/client/local/ftbchunks/data/6281a3b6-d0e9-4910-8f7e-62b9927a35eb/minecraft_the_nether/0EA5F-0EA60.zip
+/runs/client/local/ftbchunks/data/6281a3b6-d0e9-4910-8f7e-62b9927a35eb/minecraft_the_nether/0EA60-0EA5F.zip
+/runs/client/local/ftbchunks/data/6281a3b6-d0e9-4910-8f7e-62b9927a35eb/minecraft_the_nether/0EA60-0EA60.zip
+/runs/client/local/ftbchunks/data/6281a3b6-d0e9-4910-8f7e-62b9927a35eb/minecraft_the_nether/dimension.regions
+/runs/client/local/ftbchunks/data/6281a3b6-d0e9-4910-8f7e-62b9927a35eb/minecraft_the_nether/waypoints.json
+/runs/client/local/ftbchunks/data/6281a3b6-d0e9-4910-8f7e-62b9927a35eb/biome_map.txt
+/runs/client/local/ftbchunks/data/6281a3b6-d0e9-4910-8f7e-62b9927a35eb/block_map.txt
+/runs/client/local/ftbchunks/data/6281a3b6-d0e9-4910-8f7e-62b9927a35eb/dimensions.txt
+/runs/client/local/ftbchunks/data/8680d381-19bf-480d-8714-70e17650825c/minecraft_overworld/0EA5F-0EA5F.zip
+/runs/client/local/ftbchunks/data/8680d381-19bf-480d-8714-70e17650825c/minecraft_overworld/0EA5F-0EA60.zip
+/runs/client/local/ftbchunks/data/8680d381-19bf-480d-8714-70e17650825c/minecraft_overworld/0EA60-0EA5F.zip
+/runs/client/local/ftbchunks/data/8680d381-19bf-480d-8714-70e17650825c/minecraft_overworld/0EA60-0EA60.zip
+/runs/client/local/ftbchunks/data/8680d381-19bf-480d-8714-70e17650825c/minecraft_overworld/dimension.regions
+/runs/client/local/ftbchunks/data/8680d381-19bf-480d-8714-70e17650825c/minecraft_overworld/waypoints.json
+/runs/client/local/ftbchunks/data/8680d381-19bf-480d-8714-70e17650825c/minecraft_the_nether/0EA5F-0EA5F.zip
+/runs/client/local/ftbchunks/data/8680d381-19bf-480d-8714-70e17650825c/minecraft_the_nether/0EA5F-0EA60.zip
+/runs/client/local/ftbchunks/data/8680d381-19bf-480d-8714-70e17650825c/minecraft_the_nether/0EA60-0EA5F.zip
+/runs/client/local/ftbchunks/data/8680d381-19bf-480d-8714-70e17650825c/minecraft_the_nether/0EA60-0EA60.zip
+/runs/client/local/ftbchunks/data/8680d381-19bf-480d-8714-70e17650825c/minecraft_the_nether/dimension.regions
+/runs/client/local/ftbchunks/data/8680d381-19bf-480d-8714-70e17650825c/minecraft_the_nether/waypoints.json
+/runs/client/local/ftbchunks/data/8680d381-19bf-480d-8714-70e17650825c/biome_map.txt
+/runs/client/local/ftbchunks/data/8680d381-19bf-480d-8714-70e17650825c/block_map.txt
+/runs/client/local/ftbchunks/data/8680d381-19bf-480d-8714-70e17650825c/dimensions.txt
+/runs/client/logs/2026-04-13-2.log.gz
+/runs/client/logs/2026-04-13-3.log.gz
+/runs/client/logs/2026-04-13-4.log.gz
+/runs/client/logs/2026-04-13-5.log.gz
+/runs/client/logs/2026-04-13-6.log.gz
+/runs/client/logs/2026-04-13-7.log.gz
+/runs/client/logs/2026-04-13-8.log.gz
+/runs/client/logs/2026-04-13-9.log.gz
+/runs/client/logs/2026-04-13-10.log.gz
+/runs/client/logs/2026-04-13-11.log.gz
+/runs/client/logs/2026-04-13-12.log.gz
+/runs/client/logs/2026-04-13-13.log.gz
+/runs/client/logs/2026-04-13-14.log.gz
+/runs/client/logs/2026-04-13-15.log.gz
+/runs/client/logs/2026-04-13-16.log.gz
+/runs/client/logs/2026-04-13-17.log.gz
+/runs/client/logs/2026-04-13-18.log.gz
+/runs/client/logs/2026-04-13-19.log.gz
+/runs/client/logs/2026-04-13-20.log.gz
+/runs/client/logs/2026-04-13-21.log.gz
+/runs/client/logs/2026-04-13-22.log.gz
+/runs/client/logs/2026-04-14-2.log.gz
+/runs/client/logs/2026-04-14-3.log.gz
+/runs/client/logs/2026-04-14-4.log.gz
+/runs/client/logs/2026-04-14-5.log.gz
+/runs/client/logs/2026-04-14-6.log.gz
+/runs/client/logs/2026-04-14-7.log.gz
+/runs/client/logs/2026-04-14-8.log.gz
+/runs/client/logs/2026-04-14-9.log.gz
+/runs/client/logs/2026-04-14-10.log.gz
+/runs/client/logs/2026-04-14-11.log.gz
+/runs/client/logs/2026-04-14-12.log.gz
+/runs/client/logs/2026-04-14-13.log.gz
+/runs/client/logs/2026-04-14-14.log.gz
+/runs/client/logs/2026-04-14-15.log.gz
+/runs/client/logs/2026-04-15-1.log.gz
+/runs/client/logs/2026-04-15-2.log.gz
+/runs/client/logs/2026-04-15-3.log.gz
+/runs/client/logs/2026-04-15-4.log.gz
+/runs/client/logs/2026-04-15-5.log.gz
+/runs/client/logs/2026-04-15-6.log.gz
+/runs/client/logs/2026-04-15-7.log.gz
+/runs/client/logs/2026-04-15-8.log.gz
+/runs/client/logs/2026-04-15-9.log.gz
+/runs/client/logs/2026-04-15-10.log.gz
+/runs/client/logs/2026-04-15-11.log.gz
+/runs/client/logs/2026-04-15-12.log.gz
+/runs/client/logs/2026-04-15-13.log.gz
+/runs/client/logs/2026-04-15-14.log.gz
+/runs/client/logs/2026-04-15-15.log.gz
+/runs/client/logs/2026-04-15-16.log.gz
+/runs/client/logs/2026-04-15-17.log.gz
+/runs/client/logs/2026-04-15-18.log.gz
+/runs/client/logs/2026-04-15-19.log.gz
+/runs/client/logs/2026-04-15-20.log.gz
+/runs/client/logs/2026-04-15-21.log.gz
+/runs/client/logs/2026-04-15-22.log.gz
+/runs/client/logs/2026-04-15-23.log.gz
+/runs/client/logs/2026-04-15-24.log.gz
+/runs/client/logs/2026-04-15-25.log.gz
+/runs/client/logs/2026-04-15-26.log.gz
+/runs/client/logs/2026-04-15-27.log.gz
+/runs/client/logs/2026-04-15-28.log.gz
+/runs/client/logs/2026-04-15-29.log.gz
+/runs/client/logs/2026-04-15-30.log.gz
+/runs/client/logs/2026-04-15-31.log.gz
+/runs/client/logs/2026-04-15-32.log.gz
+/runs/client/logs/2026-04-15-33.log.gz
+/runs/client/logs/2026-04-15-34.log.gz
+/runs/client/logs/2026-04-15-35.log.gz
+/runs/client/logs/2026-04-15-36.log.gz
+/runs/client/logs/2026-04-15-37.log.gz
+/runs/client/logs/2026-04-15-38.log.gz
+/runs/client/logs/2026-04-15-39.log.gz
+/runs/client/logs/2026-04-15-40.log.gz
+/runs/client/logs/2026-04-15-41.log.gz
+/runs/client/logs/2026-04-15-42.log.gz
+/runs/client/logs/2026-04-15-43.log.gz
+/runs/client/logs/2026-04-15-44.log.gz
+/runs/client/logs/2026-04-15-45.log.gz
+/runs/client/logs/2026-04-15-46.log.gz
+/runs/client/logs/2026-04-15-47.log.gz
+/runs/client/logs/2026-04-15-48.log.gz
+/runs/client/logs/2026-04-15-49.log.gz
+/runs/client/logs/2026-04-15-50.log.gz
+/runs/client/logs/debug.log
+/runs/client/logs/debug-1.log.gz
+/runs/client/logs/debug-2.log.gz
+/runs/client/logs/debug-3.log.gz
+/runs/client/logs/debug-4.log.gz
+/runs/client/logs/debug-5.log.gz
+/runs/client/logs/latest.log
+/runs/client/saves/New World/advancements/380df991-f603-344c-a090-369bad2a924a.json
+/runs/client/saves/New World/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-00-22-46-death.dat
+/runs/client/saves/New World/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-00-23-00-save.dat
+/runs/client/saves/New World/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-00-28-04-death.dat
+/runs/client/saves/New World/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-00-33-00-save.dat
+/runs/client/saves/New World/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-08-09-43-save.dat
+/runs/client/saves/New World/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-08-16-52-death.dat
+/runs/client/saves/New World/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-08-18-17-death.dat
+/runs/client/saves/New World/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-08-18-26-death.dat
+/runs/client/saves/New World/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-08-26-02-save.dat
+/runs/client/saves/New World/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-08-28-28-death.dat
+/runs/client/saves/New World/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-08-31-13-death.dat
+/runs/client/saves/New World/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-08-35-23-death.dat
+/runs/client/saves/New World/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-08-52-13-save.dat
+/runs/client/saves/New World/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-08-52-29-death.dat
+/runs/client/saves/New World/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-08-52-50-death.dat
+/runs/client/saves/New World/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-09-02-13-save.dat
+/runs/client/saves/New World/data/an_redstone_signals.dat
+/runs/client/saves/New World/data/enderio_conduit_network.dat
+/runs/client/saves/New World/data/enderio_traveldata.dat
+/runs/client/saves/New World/data/neoforge_data_attachments.dat
+/runs/client/saves/New World/data/raids.dat
+/runs/client/saves/New World/data/random_sequences.dat
+/runs/client/saves/New World/DIM1/data/an_redstone_signals.dat
+/runs/client/saves/New World/DIM1/data/enderio_conduit_network.dat
+/runs/client/saves/New World/DIM1/data/neoforge_data_attachments.dat
+/runs/client/saves/New World/DIM1/data/raids_end.dat
+/runs/client/saves/New World/DIM-1/data/an_redstone_signals.dat
+/runs/client/saves/New World/DIM-1/data/enderio_conduit_network.dat
+/runs/client/saves/New World/DIM-1/data/enderio_traveldata.dat
+/runs/client/saves/New World/DIM-1/data/neoforge_data_attachments.dat
+/runs/client/saves/New World/DIM-1/data/raids.dat
+/runs/client/saves/New World/DIM-1/entities/r.0.0.mca
+/runs/client/saves/New World/DIM-1/entities/r.0.-1.mca
+/runs/client/saves/New World/DIM-1/entities/r.-1.0.mca
+/runs/client/saves/New World/DIM-1/entities/r.-1.-1.mca
+/runs/client/saves/New World/DIM-1/poi/r.0.0.mca
+/runs/client/saves/New World/DIM-1/poi/r.0.-1.mca
+/runs/client/saves/New World/DIM-1/poi/r.-1.0.mca
+/runs/client/saves/New World/DIM-1/poi/r.-1.-1.mca
+/runs/client/saves/New World/DIM-1/region/r.0.0.mca
+/runs/client/saves/New World/DIM-1/region/r.0.-1.mca
+/runs/client/saves/New World/DIM-1/region/r.-1.0.mca
+/runs/client/saves/New World/DIM-1/region/r.-1.-1.mca
+/runs/client/saves/New World/entities/r.0.0.mca
+/runs/client/saves/New World/entities/r.0.-1.mca
+/runs/client/saves/New World/entities/r.-1.0.mca
+/runs/client/saves/New World/entities/r.-1.-1.mca
+/runs/client/saves/New World/ftbchunks/380df991-f603-344c-a090-369bad2a924a.snbt
+/runs/client/saves/New World/ftbteams/player/380df991-f603-344c-a090-369bad2a924a.snbt
+/runs/client/saves/New World/ftbteams/ftbteams.snbt
+/runs/client/saves/New World/playerdata/380df991-f603-344c-a090-369bad2a924a.dat
+/runs/client/saves/New World/playerdata/380df991-f603-344c-a090-369bad2a924a.dat_old
+/runs/client/saves/New World/poi/r.0.0.mca
+/runs/client/saves/New World/poi/r.0.-1.mca
+/runs/client/saves/New World/poi/r.-1.0.mca
+/runs/client/saves/New World/poi/r.-1.-1.mca
+/runs/client/saves/New World/region/r.0.0.mca
+/runs/client/saves/New World/region/r.0.-1.mca
+/runs/client/saves/New World/region/r.-1.0.mca
+/runs/client/saves/New World/region/r.-1.-1.mca
+/runs/client/saves/New World/region/r.-2.0.mca
+/runs/client/saves/New World/region/r.-2.-1.mca
+/runs/client/saves/New World/serverconfig/readme.txt
+/runs/client/saves/New World/stats/380df991-f603-344c-a090-369bad2a924a.json
+/runs/client/saves/New World/icon.png
+/runs/client/saves/New World/level.dat
+/runs/client/saves/New World/level.dat_old
+/runs/client/saves/New World/session.lock
+/runs/client/command_history.txt
+/runs/client/ops.json
+/runs/client/options.txt
+/runs/client/patchouli_data.json
+/runs/client/servers.dat
+/runs/client/servers.dat_old
+/runs/client/usercache.json
+/runs/client/usernamecache.json
+/runs/data/config/Mekanism/startup.toml
+/runs/data/config/ars_nouveau-startup.toml
+/runs/data/config/fml.toml
+/runs/data/config/ftblibrary-startup.snbt
+/runs/data/config/placebo.cfg
+/runs/data/logs/2026-04-13-2.log.gz
+/runs/data/logs/2026-04-13-3.log.gz
+/runs/data/logs/2026-04-15-1.log.gz
+/runs/data/logs/2026-04-15-2.log.gz
+/runs/data/logs/2026-04-15-3.log.gz
+/runs/data/logs/debug.log
+/runs/data/logs/debug-1.log.gz
+/runs/data/logs/debug-2.log.gz
+/runs/data/logs/debug-3.log.gz
+/runs/data/logs/debug-4.log.gz
+/runs/data/logs/debug-5.log.gz
+/runs/data/logs/latest.log
+/runs/server/config/apotheosis/apotheosis.cfg
+/runs/server/config/apotheosis/apothic_attributes.cfg
+/runs/server/config/apotheosis/apothic_enchanting.cfg
+/runs/server/config/apotheosis/enchantments.cfg
+/runs/server/config/apotheosis/name_generation.cfg
+/runs/server/config/ars_elemental/glyph_aerial_filter.toml
+/runs/server/config/ars_elemental/glyph_aquatic_filter.toml
+/runs/server/config/ars_elemental/glyph_arc_projectile.toml
+/runs/server/config/ars_elemental/glyph_bubble_shield.toml
+/runs/server/config/ars_elemental/glyph_charm.toml
+/runs/server/config/ars_elemental/glyph_conflagrate.toml
+/runs/server/config/ars_elemental/glyph_conjure_terrain.toml
+/runs/server/config/ars_elemental/glyph_discharge.toml
+/runs/server/config/ars_elemental/glyph_envenom.toml
+/runs/server/config/ars_elemental/glyph_fiery_filter.toml
+/runs/server/config/ars_elemental/glyph_homing_projectile.toml
+/runs/server/config/ars_elemental/glyph_insect_filter.toml
+/runs/server/config/ars_elemental/glyph_life_link.toml
+/runs/server/config/ars_elemental/glyph_not_aerial_filter.toml
+/runs/server/config/ars_elemental/glyph_not_aquatic_filter.toml
+/runs/server/config/ars_elemental/glyph_not_fiery_filter.toml
+/runs/server/config/ars_elemental/glyph_not_insect_filter.toml
+/runs/server/config/ars_elemental/glyph_not_summon_filter.toml
+/runs/server/config/ars_elemental/glyph_not_undead_filter.toml
+/runs/server/config/ars_elemental/glyph_nullify_defense.toml
+/runs/server/config/ars_elemental/glyph_phantom_grasp.toml
+/runs/server/config/ars_elemental/glyph_poison_spores.toml
+/runs/server/config/ars_elemental/glyph_propagator_arc.toml
+/runs/server/config/ars_elemental/glyph_propagator_homing.toml
+/runs/server/config/ars_elemental/glyph_spark.toml
+/runs/server/config/ars_elemental/glyph_spike.toml
+/runs/server/config/ars_elemental/glyph_summon_filter.toml
+/runs/server/config/ars_elemental/glyph_undead_filter.toml
+/runs/server/config/ars_elemental/glyph_watery_grave.toml
+/runs/server/config/ars_nouveau/glyph_accelerate.toml
+/runs/server/config/ars_nouveau/glyph_amplify.toml
+/runs/server/config/ars_nouveau/glyph_animate_block.toml
+/runs/server/config/ars_nouveau/glyph_aoe.toml
+/runs/server/config/ars_nouveau/glyph_blink.toml
+/runs/server/config/ars_nouveau/glyph_bounce.toml
+/runs/server/config/ars_nouveau/glyph_break.toml
+/runs/server/config/ars_nouveau/glyph_bubble.toml
+/runs/server/config/ars_nouveau/glyph_burst.toml
+/runs/server/config/ars_nouveau/glyph_cold_snap.toml
+/runs/server/config/ars_nouveau/glyph_conjure_water.toml
+/runs/server/config/ars_nouveau/glyph_craft.toml
+/runs/server/config/ars_nouveau/glyph_crush.toml
+/runs/server/config/ars_nouveau/glyph_cut.toml
+/runs/server/config/ars_nouveau/glyph_dampen.toml
+/runs/server/config/ars_nouveau/glyph_decelerate.toml
+/runs/server/config/ars_nouveau/glyph_delay.toml
+/runs/server/config/ars_nouveau/glyph_dispel.toml
+/runs/server/config/ars_nouveau/glyph_duration_down.toml
+/runs/server/config/ars_nouveau/glyph_ender_inventory.toml
+/runs/server/config/ars_nouveau/glyph_evaporate.toml
+/runs/server/config/ars_nouveau/glyph_exchange.toml
+/runs/server/config/ars_nouveau/glyph_explosion.toml
+/runs/server/config/ars_nouveau/glyph_extend_time.toml
+/runs/server/config/ars_nouveau/glyph_extract.toml
+/runs/server/config/ars_nouveau/glyph_fangs.toml
+/runs/server/config/ars_nouveau/glyph_fell.toml
+/runs/server/config/ars_nouveau/glyph_firework.toml
+/runs/server/config/ars_nouveau/glyph_flare.toml
+/runs/server/config/ars_nouveau/glyph_fortune.toml
+/runs/server/config/ars_nouveau/glyph_freeze.toml
+/runs/server/config/ars_nouveau/glyph_glide.toml
+/runs/server/config/ars_nouveau/glyph_gravity.toml
+/runs/server/config/ars_nouveau/glyph_grow.toml
+/runs/server/config/ars_nouveau/glyph_gust.toml
+/runs/server/config/ars_nouveau/glyph_harm.toml
+/runs/server/config/ars_nouveau/glyph_harvest.toml
+/runs/server/config/ars_nouveau/glyph_heal.toml
+/runs/server/config/ars_nouveau/glyph_hex.toml
+/runs/server/config/ars_nouveau/glyph_ignite.toml
+/runs/server/config/ars_nouveau/glyph_infuse.toml
+/runs/server/config/ars_nouveau/glyph_intangible.toml
+/runs/server/config/ars_nouveau/glyph_interact.toml
+/runs/server/config/ars_nouveau/glyph_invisibility.toml
+/runs/server/config/ars_nouveau/glyph_launch.toml
+/runs/server/config/ars_nouveau/glyph_leap.toml
+/runs/server/config/ars_nouveau/glyph_light.toml
+/runs/server/config/ars_nouveau/glyph_lightning.toml
+/runs/server/config/ars_nouveau/glyph_linger.toml
+/runs/server/config/ars_nouveau/glyph_name.toml
+/runs/server/config/ars_nouveau/glyph_orbit.toml
+/runs/server/config/ars_nouveau/glyph_pantomime.toml
+/runs/server/config/ars_nouveau/glyph_phantom_block.toml
+/runs/server/config/ars_nouveau/glyph_pickup.toml
+/runs/server/config/ars_nouveau/glyph_pierce.toml
+/runs/server/config/ars_nouveau/glyph_place_block.toml
+/runs/server/config/ars_nouveau/glyph_prestidigitation.toml
+/runs/server/config/ars_nouveau/glyph_projectile.toml
+/runs/server/config/ars_nouveau/glyph_pull.toml
+/runs/server/config/ars_nouveau/glyph_randomize.toml
+/runs/server/config/ars_nouveau/glyph_redstone_signal.toml
+/runs/server/config/ars_nouveau/glyph_rotate.toml
+/runs/server/config/ars_nouveau/glyph_rune.toml
+/runs/server/config/ars_nouveau/glyph_self.toml
+/runs/server/config/ars_nouveau/glyph_sense_magic.toml
+/runs/server/config/ars_nouveau/glyph_sensitive.toml
+/runs/server/config/ars_nouveau/glyph_slowfall.toml
+/runs/server/config/ars_nouveau/glyph_smelt.toml
+/runs/server/config/ars_nouveau/glyph_snare.toml
+/runs/server/config/ars_nouveau/glyph_split.toml
+/runs/server/config/ars_nouveau/glyph_summon_decoy.toml
+/runs/server/config/ars_nouveau/glyph_summon_steed.toml
+/runs/server/config/ars_nouveau/glyph_summon_undead.toml
+/runs/server/config/ars_nouveau/glyph_summon_vex.toml
+/runs/server/config/ars_nouveau/glyph_summon_wolves.toml
+/runs/server/config/ars_nouveau/glyph_toss.toml
+/runs/server/config/ars_nouveau/glyph_touch.toml
+/runs/server/config/ars_nouveau/glyph_underfoot.toml
+/runs/server/config/ars_nouveau/glyph_wall.toml
+/runs/server/config/ars_nouveau/glyph_wind_burst.toml
+/runs/server/config/ars_nouveau/glyph_wind_shear.toml
+/runs/server/config/ars_nouveau/glyph_wither.toml
+/runs/server/config/ars_nouveau/reset.toml
+/runs/server/config/ars_nouveau/rewind.toml
+/runs/server/config/ars_nouveau/wololo.toml
+/runs/server/config/enderio/armory-common.toml
+/runs/server/config/enderio/base-common.toml
+/runs/server/config/enderio/machines-common.toml
+/runs/server/config/epitaphs/epitaphs-server.toml
+/runs/server/config/Mekanism/common.toml
+/runs/server/config/Mekanism/gear.toml
+/runs/server/config/Mekanism/general.toml
+/runs/server/config/Mekanism/machine-storage.toml
+/runs/server/config/Mekanism/machine-usage.toml
+/runs/server/config/Mekanism/startup.toml
+/runs/server/config/Mekanism/tiers.toml
+/runs/server/config/Mekanism/world.toml
+/runs/server/config/apothic_spawners.cfg
+/runs/server/config/ars_elemental-common.toml
+/runs/server/config/ars_nouveau-common.toml
+/runs/server/config/ars_nouveau-server.toml
+/runs/server/config/ars_nouveau-startup.toml
+/runs/server/config/curios-common.toml
+/runs/server/config/curios-server.toml
+/runs/server/config/fml.toml
+/runs/server/config/ftbchunks-world.snbt
+/runs/server/config/ftblibrary-server.snbt
+/runs/server/config/ftblibrary-startup.snbt
+/runs/server/config/neoforge-common.toml
+/runs/server/config/neoforge-server.toml
+/runs/server/config/placebo.cfg
+/runs/server/config/relics.yaml
+/runs/server/logs/2026-04-15-1.log.gz
+/runs/server/logs/2026-04-15-2.log.gz
+/runs/server/logs/2026-04-15-3.log.gz
+/runs/server/logs/2026-04-15-4.log.gz
+/runs/server/logs/2026-04-15-5.log.gz
+/runs/server/logs/2026-04-15-6.log.gz
+/runs/server/logs/2026-04-15-7.log.gz
+/runs/server/logs/2026-04-15-8.log.gz
+/runs/server/logs/2026-04-15-9.log.gz
+/runs/server/logs/2026-04-15-10.log.gz
+/runs/server/logs/2026-04-15-11.log.gz
+/runs/server/logs/debug.log
+/runs/server/logs/debug-1.log.gz
+/runs/server/logs/debug-2.log.gz
+/runs/server/logs/debug-3.log.gz
+/runs/server/logs/debug-4.log.gz
+/runs/server/logs/debug-5.log.gz
+/runs/server/logs/latest.log
+/runs/server/world/advancements/21cc3e25-481e-3cfa-8770-c5693a3e93a4.json
+/runs/server/world/advancements/380df991-f603-344c-a090-369bad2a924a.json
+/runs/server/world/data/epitaphs/21cc3e25-481e-3cfa-8770-c5693a3e93a4/2026-04-15-17-49-01-save.dat
+/runs/server/world/data/epitaphs/21cc3e25-481e-3cfa-8770-c5693a3e93a4/2026-04-15-17-50-12-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-01-32-save.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-01-37-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-01-43-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-01-48-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-01-52-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-01-58-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-11-49-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-13-05-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-13-13-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-13-30-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-13-42-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-13-59-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-14-04-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-14-07-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-14-12-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-14-17-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-14-55-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-15-20-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-15-27-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-18-06-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-14-23-20-48-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-09-10-49-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-11-31-15-save.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-11-41-15-save.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-11-51-15-save.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-14-21-09-save.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-17-29-43-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-17-33-22-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-17-45-08-death.dat
+/runs/server/world/data/epitaphs/380df991-f603-344c-a090-369bad2a924a/2026-04-15-17-49-01-save.dat
+/runs/server/world/data/an_redstone_signals.dat
+/runs/server/world/data/enderio_conduit_network.dat
+/runs/server/world/data/enderio_traveldata.dat
+/runs/server/world/data/neoforge_data_attachments.dat
+/runs/server/world/data/raids.dat
+/runs/server/world/data/random_sequences.dat
+/runs/server/world/DIM1/data/an_redstone_signals.dat
+/runs/server/world/DIM1/data/enderio_conduit_network.dat
+/runs/server/world/DIM1/data/neoforge_data_attachments.dat
+/runs/server/world/DIM1/data/raids_end.dat
+/runs/server/world/DIM-1/data/an_redstone_signals.dat
+/runs/server/world/DIM-1/data/enderio_conduit_network.dat
+/runs/server/world/DIM-1/data/enderio_traveldata.dat
+/runs/server/world/DIM-1/data/neoforge_data_attachments.dat
+/runs/server/world/DIM-1/data/raids.dat
+/runs/server/world/DIM-1/entities/r.0.0.mca
+/runs/server/world/DIM-1/entities/r.0.-1.mca
+/runs/server/world/DIM-1/entities/r.-1.0.mca
+/runs/server/world/DIM-1/entities/r.-1.-1.mca
+/runs/server/world/DIM-1/poi/r.0.0.mca
+/runs/server/world/DIM-1/poi/r.0.-1.mca
+/runs/server/world/DIM-1/poi/r.-1.0.mca
+/runs/server/world/DIM-1/poi/r.-1.-1.mca
+/runs/server/world/DIM-1/region/r.0.0.mca
+/runs/server/world/DIM-1/region/r.0.-1.mca
+/runs/server/world/DIM-1/region/r.-1.0.mca
+/runs/server/world/DIM-1/region/r.-1.-1.mca
+/runs/server/world/entities/r.0.0.mca
+/runs/server/world/entities/r.0.-1.mca
+/runs/server/world/entities/r.-1.0.mca
+/runs/server/world/entities/r.-1.-1.mca
+/runs/server/world/ftbchunks/21cc3e25-481e-3cfa-8770-c5693a3e93a4.snbt
+/runs/server/world/ftbchunks/380df991-f603-344c-a090-369bad2a924a.snbt
+/runs/server/world/ftbteams/player/21cc3e25-481e-3cfa-8770-c5693a3e93a4.snbt
+/runs/server/world/ftbteams/player/380df991-f603-344c-a090-369bad2a924a.snbt
+/runs/server/world/ftbteams/ftbteams.snbt
+/runs/server/world/playerdata/21cc3e25-481e-3cfa-8770-c5693a3e93a4.dat
+/runs/server/world/playerdata/21cc3e25-481e-3cfa-8770-c5693a3e93a4.dat_old
+/runs/server/world/playerdata/380df991-f603-344c-a090-369bad2a924a.dat
+/runs/server/world/playerdata/380df991-f603-344c-a090-369bad2a924a.dat_old
+/runs/server/world/poi/r.0.0.mca
+/runs/server/world/poi/r.0.-1.mca
+/runs/server/world/poi/r.-1.0.mca
+/runs/server/world/poi/r.-1.-1.mca
+/runs/server/world/region/r.0.0.mca
+/runs/server/world/region/r.0.-1.mca
+/runs/server/world/region/r.-1.0.mca
+/runs/server/world/region/r.-1.-1.mca
+/runs/server/world/serverconfig/readme.txt
+/runs/server/world/stats/21cc3e25-481e-3cfa-8770-c5693a3e93a4.json
+/runs/server/world/stats/380df991-f603-344c-a090-369bad2a924a.json
+/runs/server/world/level.dat
+/runs/server/world/level.dat_old
+/runs/server/world/session.lock
+/runs/server/banned-ips.json
+/runs/server/banned-players.json
+/runs/server/ops.json
+/runs/server/server.properties
+/runs/server/usercache.json
+/runs/server/usernamecache.json
+/runs/server/whitelist.json
