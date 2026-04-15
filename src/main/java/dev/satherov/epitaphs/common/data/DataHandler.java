@@ -236,15 +236,14 @@ public class DataHandler {
             CompoundTag backup = NbtIo.readCompressed(file, NbtAccounter.unlimitedHeap());
             
             PlayerContainer backupContainer = PlayerContainer.create(player.registryAccess(), backup);
-            InventoryContainer inventory = InventoryContainer.create(player);
-            List<ItemStack> overflow = inventory.merge(backupContainer.inventory());
-            List<ItemStack> dropped = inventory.insert(overflow);
+            PlayerContainer playerContainer = PlayerContainer.create(player);
+            List<ItemStack> overflow = playerContainer.merge(backupContainer);
+            List<ItemStack> dropped = playerContainer.inventory().insert(overflow);
             Epitaphs.log.debug("Merged {} with {} for {}", file.getFileName(), player.getUUID(), player.getGameProfile().getName());
             
             if (!dropped.isEmpty()) for (ItemStack stack : dropped) player.drop(stack, false);
             
-            inventory.write(player);
-            backupContainer.curios().write(player);
+            playerContainer.write(player);
             Epitaphs.log.debug("Loaded data for {} from {}", player.getUUID(), file.getFileName());
             return 1;
             
