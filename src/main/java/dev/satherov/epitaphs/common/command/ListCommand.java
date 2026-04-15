@@ -17,7 +17,6 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -119,7 +118,7 @@ public class ListCommand {
         try {
             CompoundTag data = NbtIo.readCompressed(playerData, NbtAccounter.unlimitedHeap());
             CompoundTag attachments = data.getCompound("neoforge:attachments");
-            LocationData locations = LocationData.CODEC.decode(NbtOps.INSTANCE, attachments).getOrThrow().getFirst();
+            LocationData locations = LocationData.fromAttachments(attachments);
             return ListCommand.execute(ctx, profile, locations.getAll(server));
         } catch (IOException | IllegalStateException e) {
             source.sendFailure(EPLanguage.COMMAND_LIST_FAILURE_FILE.text(EPCommands.formatPlayer(profile)).withStyle(ChatFormatting.RED));

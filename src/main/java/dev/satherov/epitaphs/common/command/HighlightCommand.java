@@ -19,7 +19,6 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -164,7 +163,7 @@ public class HighlightCommand {
         try {
             CompoundTag data = NbtIo.readCompressed(playerData, NbtAccounter.unlimitedHeap());
             CompoundTag attachments = data.getCompound("neoforge:attachments");
-            LocationData locations = LocationData.CODEC.decode(NbtOps.INSTANCE, attachments).getOrThrow().getFirst();
+            LocationData locations = LocationData.fromAttachments(attachments);
             final TreeMap<Instant, GlobalPos> positions = locations.getAll(server);
             if (positions.isEmpty()) {
                 source.sendFailure(EPLanguage.COMMAND_LIST_EMPTY.text(EPCommands.formatPlayer(player.getGameProfile())).withStyle(ChatFormatting.RED));

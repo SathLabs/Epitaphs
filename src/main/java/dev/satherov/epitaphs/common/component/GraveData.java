@@ -22,7 +22,7 @@ import java.util.UUID;
 public record GraveData(UUID owner, Instant timestamp, String name) {
     
     public static GraveData empty() {
-        return new GraveData(UUID.nameUUIDFromBytes(new byte[0]), Instant.EPOCH, "Unknown");
+        return new GraveData(AttachmentMigration.EMPTY_UUID, Instant.EPOCH, "Unknown");
     }
     
     public GraveData(ServerPlayer player, Instant timestamp) {
@@ -30,8 +30,8 @@ public record GraveData(UUID owner, Instant timestamp, String name) {
     }
     
     public static final Codec<GraveData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.STRING.fieldOf("uuid").xmap(UUID::fromString, UUID::toString).forGetter(GraveData::owner),
-            Codec.STRING.fieldOf("timestamp").xmap(Instant::parse, Instant::toString).forGetter(GraveData::timestamp),
+            AttachmentMigration.UUID_CODEC.fieldOf("uuid").forGetter(GraveData::owner),
+            AttachmentMigration.TIMESTAMP_CODEC.fieldOf("timestamp").forGetter(GraveData::timestamp),
             Codec.STRING.optionalFieldOf("name", "Unknown").forGetter(GraveData::name)
     ).apply(instance, GraveData::new));
     

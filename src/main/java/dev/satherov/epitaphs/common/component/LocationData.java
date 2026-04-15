@@ -1,10 +1,14 @@
 package dev.satherov.epitaphs.common.component;
 
+import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.core.EPRegistry;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
@@ -36,16 +40,23 @@ import java.util.function.Function;
 /// @param positions A map of timestamps to the position of the grave.
 ///
 public record LocationData(TreeMap<Instant, GlobalPos> positions) {
+    private static final String ATTACHMENT_ID = Epitaphs.id("grave_locations").toString();
     
     public static LocationData empty() {
         return new LocationData(new TreeMap<>());
+    }
+    
+    public static LocationData fromAttachments(CompoundTag attachments) {
+        final Tag tag = attachments.get(LocationData.ATTACHMENT_ID);
+        if (tag == null) return LocationData.empty();
+        return LocationData.CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow(IllegalStateException::new);
     }
     
     ///
     /// The actual codec. TODO: Rename this to CODEC after 1.21.1
     ///
     private static final Codec<LocationData> NEW = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.unboundedMap(Codec.STRING.xmap(Instant::parse, Instant::toString), GlobalPos.CODEC)
+            Codec.unboundedMap(AttachmentMigration.TIMESTAMP_CODEC, GlobalPos.CODEC)
                     .xmap(TreeMap::new, Function.identity())
                     .fieldOf("positions")
                     .forGetter(LocationData::positions)
@@ -83,14 +94,14 @@ public record LocationData(TreeMap<Instant, GlobalPos> positions) {
                                             T position = posMap.get("position");
                                             
                                             if (timestamp != null && position != null) {
-                                                ops.getStringValue(timestamp).result().ifPresent(instant -> {
-                                                    ops.getNumberValue(position).result().ifPresent(val -> {
-                                                        positions.put(
-                                                                Instant.parse(instant),
-                                                                GlobalPos.of(dimension, BlockPos.of(val.longValue()))
-                                                        );
-                                                    });
-                                                });
+                                                ops.getStringValue(timestamp).result()
+                                                        .flatMap(instant -> AttachmentMigration.readTimestamp(instant).result())
+                                                        .ifPresent(instant -> ops.getNumberValue(position).result().ifPresent(val -> {
+                                                            positions.put(
+                                                                    instant,
+                                                                    GlobalPos.of(dimension, BlockPos.of(val.longValue()))
+                                                            );
+                                                        }));
                                             }
                                         });
                                     }

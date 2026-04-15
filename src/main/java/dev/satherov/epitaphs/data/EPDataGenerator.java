@@ -22,6 +22,7 @@ public class EPDataGenerator {
         EPDataProvider provider = EPDataProvider.create(event);
         
         provider.add(EPLanguageProvider::new);
+        provider.add(EPItemTagProvider::new);
         provider.add(EPBlockStateProvider::new);
         
         provider.add(EPBlockTagsProvider::new);
