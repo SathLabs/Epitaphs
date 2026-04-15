@@ -1,0 +1,16 @@
+{
+  "block.epitaphs.grave": "墓碑",
+  "command.epitaphs.backup_failed": "备份失败。查看日志以获取更多信息",
+  "command.epitaphs.backup_success": "备份完成",
+  "command.epitaphs.not_found": "未找到%s的墓碑",
+  "command.epitaphs.restore_failed": "未能恢复玩家%s的物品。查看日志以获取更多信息",
+  "command.epitaphs.restore_overflow": "部分物品未能放入玩家物品栏（UUID：%s）。",
+  "command.epitaphs.restore_success": "已恢复玩家%s的物品",
+  "container.epitaphs.grave": "墓碑",
+  "enchantment.epitaphs.experience_soulbound": "经验灵魂绑定",
+  "enchantment.epitaphs.soulbound": "灵魂绑定",
+  "message.epitaphs.grave_error": "加载此墓碑时发生错误。查看日志以获取更多信息",
+  "message.epitaphs.grave_failed": "未能找到可以生成墓碑的有效位置",
+  "message.epitaphs.grave_success": "已在以下位置生成包含你物品的墓碑：",
+  "message.epitaphs.no_access": "此墓碑属于%s。你无权访问它"
+}
