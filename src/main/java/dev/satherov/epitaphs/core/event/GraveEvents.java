@@ -141,7 +141,7 @@ public class GraveEvents {
         }
         
         @SubscribeEvent
-        public static void onRenderGuiOverlay(final RenderGuiEvent.Post event) {
+        public static void onRenderGuiOverlay(final RenderGuiEvent.Pre event) {
             final Minecraft mc = Minecraft.getInstance();
             final HitResult result = mc.hitResult;
             if (!(result instanceof BlockHitResult hit)) return;
