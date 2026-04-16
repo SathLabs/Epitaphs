@@ -9,6 +9,7 @@ import dev.satherov.epitaphs.core.EPRegistry;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.javafmlmod.FMLModContainer;
+import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -27,7 +28,9 @@ public class Epitaphs {
         EPRegistry.register(bus);
         
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> {
+            if (FMLLoader.isProduction()) return;
             MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+            if (server == null) return;
             server.getPlayerList().op(event.getEntity().getGameProfile());
         });
     }
