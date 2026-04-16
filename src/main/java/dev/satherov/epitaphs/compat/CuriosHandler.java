@@ -1,5 +1,7 @@
 package dev.satherov.epitaphs.compat;
 
+import dev.satherov.epitaphs.Epitaphs;
+
 import net.neoforged.fml.ModList;
 
 import net.minecraft.server.level.ServerPlayer;
@@ -15,11 +17,11 @@ public class CuriosHandler {
     }
     
     public static void clearAll(ServerPlayer player) {
-        CuriosApi.getCuriosInventory(player).ifPresent(curio -> curio.getCurios().forEach((identifier, handler) -> {
+        CuriosApi.getCuriosInventory(player).ifPresentOrElse(curio -> curio.getCurios().forEach((identifier, handler) -> {
             IDynamicStackHandler stacks = handler.getStacks();
             for (int i = 0; i < stacks.getSlots(); i++) stacks.setStackInSlot(i, ItemStack.EMPTY);
             IDynamicStackHandler cosmetic = handler.getCosmeticStacks();
             for (int i = 0; i < cosmetic.getSlots(); i++) cosmetic.setStackInSlot(i, ItemStack.EMPTY);
-        }));
+        }), () -> Epitaphs.log.warn("No curios capability found on player {} - {}", player.getGameProfile().getName(), player.getStringUUID()));
     }
 }

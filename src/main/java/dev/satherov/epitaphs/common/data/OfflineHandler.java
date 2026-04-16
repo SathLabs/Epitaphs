@@ -65,8 +65,8 @@ public final class OfflineHandler {
                 OfflineHandler.drop(server, playerDataTag, dropped);
             }
             
-            CompoundTag updatedTag = playerContainer.write(access, playerDataTag);
-            NbtIo.writeCompressed(updatedTag, playerData);
+            playerContainer.write(access, playerDataTag);
+            NbtIo.writeCompressed(playerDataTag, playerData);
             Epitaphs.log.debug("Wrote offline data from {} for {}", backupFile.getFileName(), uuid);
             return 1;
             

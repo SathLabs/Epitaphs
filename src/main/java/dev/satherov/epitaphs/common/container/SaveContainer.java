@@ -11,7 +11,7 @@ public interface SaveContainer<T extends SaveContainer<T>> {
     
     void write(ServerPlayer player);
     
-    CompoundTag write(HolderLookup.Provider provider, CompoundTag data);
+    void write(HolderLookup.Provider provider, CompoundTag data);
     
     List<ItemStack> merge(T other);
     

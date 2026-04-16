@@ -152,7 +152,7 @@ public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemS
     }
     
     @Override
-    public CompoundTag write(HolderLookup.Provider provider, CompoundTag data) {
+    public void write(HolderLookup.Provider provider, CompoundTag data) {
         Epitaphs.log.debug("Writing inventory container to data");
         final ListTag inventory = new ListTag();
         
@@ -178,7 +178,6 @@ public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemS
         }
         
         data.put("Inventory", inventory);
-        return data;
     }
     
     // ==================== OTHER ====================

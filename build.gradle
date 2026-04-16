@@ -154,6 +154,7 @@ dependencies {
     runtimeOnly "curse.maven:apotheosis-313970:6926309"
     runtimeOnly "curse.maven:gateways-to-eternity-417802:6926284"
 
+    runtimeOnly "org.sinytra.forgified-fabric-api:fabric-api-base:0.4.42+d1308dedd1"
     runtimeOnly "curse.maven:kotlin-for-forge-351264:7471280"
     runtimeOnly "curse.maven:fzzy-config-1005914:7568897"
     runtimeOnly "curse.maven:accessorify-1169634:7366899"

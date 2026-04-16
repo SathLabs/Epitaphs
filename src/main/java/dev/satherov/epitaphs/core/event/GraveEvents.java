@@ -15,6 +15,7 @@ import dev.satherov.epitaphs.common.data.BackupType;
 import dev.satherov.epitaphs.common.data.DataHandler;
 import dev.satherov.epitaphs.common.data.OnlineHandler;
 import dev.satherov.epitaphs.common.data.SoulboundHandler;
+import dev.satherov.epitaphs.compat.AccessoriesHandler;
 import dev.satherov.epitaphs.compat.CuriosHandler;
 import dev.satherov.epitaphs.core.EPRegistry;
 import dev.satherov.epitaphs.util.StringUtils;
@@ -247,6 +248,7 @@ public class GraveEvents {
             
             player.getInventory().clearContent();
             if (CuriosHandler.isLoaded()) CuriosHandler.clearAll(player);
+            if (AccessoriesHandler.isLoaded()) AccessoriesHandler.clearAll(player);
         }
         
         @SubscribeEvent(priority = EventPriority.LOWEST)

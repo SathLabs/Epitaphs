@@ -4,9 +4,11 @@ import lombok.experimental.UtilityClass;
 
 import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.common.component.SoulboundData;
+import dev.satherov.epitaphs.common.container.AccessoriesContainer;
 import dev.satherov.epitaphs.common.container.CuriosContainer;
 import dev.satherov.epitaphs.common.container.InventoryContainer;
 import dev.satherov.epitaphs.common.container.PlayerContainer;
+import dev.satherov.epitaphs.compat.AccessoriesHandler;
 import dev.satherov.epitaphs.compat.CuriosHandler;
 import dev.satherov.epitaphs.core.EPRegistry;
 import dev.satherov.epitaphs.util.MathUtils;
@@ -37,7 +39,8 @@ public class SoulboundHandler {
         final int experience = SoulboundHandler.extractExperience(player);
         final InventoryContainer inventory = InventoryContainer.createSoulbound(player);
         final CuriosContainer curios = CuriosHandler.isLoaded() ? CuriosContainer.createSoulbound(player) : CuriosContainer.empty();
-        final PlayerContainer container = new PlayerContainer(uuid, inventory, curios);
+        final AccessoriesContainer accessories = AccessoriesHandler.isLoaded() ? AccessoriesContainer.createSoulbound(player) : AccessoriesContainer.empty();
+        final PlayerContainer container = new PlayerContainer(uuid, inventory, curios, accessories);
         
         final SoulboundData data = new SoulboundData(container, experience);
         player.setData(EPRegistry.SOULBOUND_DATA, data);
