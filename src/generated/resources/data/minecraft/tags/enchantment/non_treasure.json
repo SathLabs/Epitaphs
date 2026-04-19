@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "epitaphs:soulbound",
+      "required": false
+    },
+    {
+      "id": "epitaphs:experience_soulbound",
+      "required": false
+    }
+  ]
+}

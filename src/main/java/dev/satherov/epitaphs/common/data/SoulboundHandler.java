@@ -1,0 +1,121 @@
+package dev.satherov.epitaphs.common.data;
+
+import lombok.experimental.UtilityClass;
+
+import dev.satherov.epitaphs.Epitaphs;
+import dev.satherov.epitaphs.common.component.SoulboundData;
+import dev.satherov.epitaphs.common.container.CuriosContainer;
+import dev.satherov.epitaphs.common.container.InventoryContainer;
+import dev.satherov.epitaphs.common.container.PlayerContainer;
+import dev.satherov.epitaphs.compat.CuriosHandler;
+import dev.satherov.epitaphs.core.EPRegistry;
+import dev.satherov.sathlib.util.SLExperienceUtil;
+import dev.satherov.sathlib.util.SLMathUtils;
+
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+
+import java.util.List;
+import java.util.UUID;
+
+@UtilityClass
+public class SoulboundHandler {
+    
+    ///
+    /// Writes the soulbound data for the given player to be restored after respawn
+    ///
+    /// @param player the player to write the soulbound data for
+    ///
+    public static void saveData(ServerPlayer player) {
+        if (!player.getData(EPRegistry.SOULBOUND_DATA).isEmpty()) {
+            Epitaphs.log.warn("Soulbound data has already been saved. Did some mod kill us a second time?");
+            return;
+        }
+        
+        final UUID uuid = player.getUUID();
+        final int experience = SoulboundHandler.extractExperience(player);
+        final InventoryContainer inventory = InventoryContainer.createSoulbound(player);
+        final CuriosContainer curios = CuriosHandler.isLoaded() ? CuriosContainer.createSoulbound(player) : CuriosContainer.empty();
+        final PlayerContainer container = new PlayerContainer(uuid, inventory, curios);
+        
+        final SoulboundData data = new SoulboundData(container, experience);
+        player.setData(EPRegistry.SOULBOUND_DATA, data);
+        Epitaphs.log.debug("Stored Soulbound data");
+    }
+    
+    ///
+    /// Extracts the experience points to be saved for the given Player.
+    ///
+    /// Counts the number of armor pieces with the xp bound enchantment and then splits
+    /// the total experience into 4 equal parts, recombining n parts for n armor pieces
+    /// with the enchantment
+    ///
+    /// @param player the player to extract experience from
+    ///
+    /// @return amount of experience to save
+    ///
+    private int extractExperience(ServerPlayer player) {
+        final int experience = player.totalExperience;
+        int count = 0;
+        for (EquipmentSlot slot : List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET)) {
+            if (SoulboundHandler.isXPBound(player.getItemBySlot(slot))) count++;
+        }
+        
+        // Split the total experiences into 4 pieces
+        final int[] parts = SLMathUtils.split(experience, 4);
+        int result = 0;
+        
+        // recombine n parts of the total xp for n armor pieces with the xp bound enchantment
+        for (int index = 0; index < count; index++) {
+            int part = parts[index];
+            result += part;
+            SLExperienceUtil.addExperiencePoints(player, -part, false);
+        }
+        
+        return result;
+    }
+    
+    ///
+    /// Restores the player from the currently save {@link EPRegistry#SOULBOUND_DATA}.
+    /// Does nothing if the data is empty
+    ///
+    /// @param player the Player to restore
+    ///
+    public static void restorePlayer(ServerPlayer player) {
+        final SoulboundData data = player.getData(EPRegistry.SOULBOUND_DATA);
+        if (data.isEmpty()) return;
+        
+        final int experience = data.experience();
+        final PlayerContainer container = data.container();
+        
+        player.giveExperiencePoints(experience);
+        container.write(player);
+        
+        player.removeData(EPRegistry.SOULBOUND_DATA);
+        Epitaphs.log.debug("Restored soulbound data");
+    }
+    
+    ///
+    /// Checks if the given {@link ItemStack} has either the {@link EPRegistry#SOULBOUND} or {@link EPRegistry#EXPERIENCE_SOULBOUND} enchantment.
+    ///
+    /// @param stack {@link ItemStack} to check.
+    ///
+    /// @return {@code true} if the {@link ItemStack} has either the {@link EPRegistry#SOULBOUND} or {@link EPRegistry#EXPERIENCE_SOULBOUND} enchantment.
+    ///
+    public static boolean isSoulbound(ItemStack stack) {
+        return EnchantmentHelper.has(stack, EPRegistry.SOULBOUND.get()) || EnchantmentHelper.has(stack, EPRegistry.EXPERIENCE_SOULBOUND.get());
+    }
+    
+    ///
+    /// Checks if the given {@link ItemStack} has the {@link EPRegistry#SOULBOUND} enchantment.
+    ///
+    /// @param stack {@link ItemStack} to check.
+    ///
+    /// @return {@code true} if the {@link ItemStack} has the {@link EPRegistry#SOULBOUND} enchantment.
+    ///
+    public static boolean isXPBound(ItemStack stack) {
+        return EnchantmentHelper.has(stack, EPRegistry.EXPERIENCE_SOULBOUND.get());
+    }
+}

@@ -81,21 +81,46 @@ configurations {
 repositories {
     mavenLocal()
     mavenCentral()
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
     maven { // JEI
-        name = "Jared's maven"
-        url = "https://maven.blamejared.com/"
+        url "https://maven.blamejared.com/"
     }
     maven { // Jade
-        name = "Modrinth Maven"
-        url = "https://api.modrinth.com/maven"
+        url "https://api.modrinth.com/maven"
+    }
+    maven { // Curios
+        url 'https://maven.theillusivec4.top/'
+    }
+    maven { // Sathlib
+        url 'https://maven.satherov.dev/releases'
     }
 }
 
 dependencies {
-    jarJar(implementation "dev.satherov.sathlib:sathlib:1.0.0")
+    jarJar(implementation "dev.satherov.sathlib:sathlib:${sathlib_version}+26.1.2")
     
     compileOnly "mezz.jei:jei-26.1.2-neoforge-api:${jei_version}"
     runtimeOnly "mezz.jei:jei-26.1.2-neoforge:${jei_version}"
+
+    implementation "maven.modrinth:jade:${jade_version}+neoforge"
+
+    compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}+26.1.2:api"
+    implementation "top.theillusivec4.curios:curios-neoforge:${curios_version}+26.1.2"
+
+    runtimeOnly "curse.maven:travelers-backpack-321117:7937291"
+}
+
+tasks.withType(ProcessResources).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.named('sourcesJar', Jar).configure {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
@@ -128,7 +153,21 @@ publishing {
     }
     repositories {
         maven {
-            url "file://${project.projectDir}/repo"
+            name = 'reposilite'
+
+            def isSnapshot = project.version.toString().endsWith('-SNAPSHOT')
+            def repoUrl = isSnapshot ? 'https://maven.satherov.dev/snapshots' : 'https://maven.satherov.dev/releases'
+
+            url = uri(repoUrl)
+
+            credentials {
+                username = System.getenv('REPOSILITE_USERNAME')
+                password = System.getenv('REPOSILITE_TOKEN')
+            }
+
+            authentication {
+                basic(BasicAuthentication)
+            }
         }
     }
 }
