@@ -8,9 +8,13 @@ import dev.satherov.epitaphs.util.StringUtils;
 
 import com.google.common.base.Supplier;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 ///
 /// Defines the type of backup.
@@ -56,7 +60,7 @@ public enum BackupType {
     }
     
     ///
-    /// Gets the pattern used to purge backup files
+    /// Gets the pattern used to purge backup files.
     ///
     public Pattern purgePattern() {
         return this.purgePattern.get();
@@ -70,13 +74,29 @@ public enum BackupType {
     }
     
     ///
-    /// Resolves the path to a backup file from the given parent folder and timestamp.
+    /// Resolves the path to an existing backup file in the given parent folder for the given timestamp.
     ///
     /// @param parent Parent folder path. Should be a player's uuid.
     /// @param now    Timestamp of the backup.
     ///
-    public Path resolve(Path parent, Instant now) {
+    public Path resolve(Path parent, Instant now) throws IOException {
         String timestamp = DataHandler.FORMATTER.format(now);
-        return parent.resolve(timestamp + "-" + StringUtils.lower(this.name()) + ".dat");
+        Pattern pattern = this.pattern();
+        String prefix = timestamp + "-";
+        
+        try (Stream<Path> paths = Files.list(parent)) {
+            return paths
+                    .filter(Files::isRegularFile)
+                    .filter(path -> {
+                        String name = path.getFileName().toString();
+                        return name.startsWith(prefix) && pattern.matcher(name).matches();
+                    })
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException(
+                            "No backup of type " + this.name() + " found for timestamp " + timestamp + " in " + parent
+                    ));
+        } catch (IOException exception) {
+            throw new IOException("Failed to resolve backup in " + parent, exception);
+        }
     }
 }

@@ -21,7 +21,9 @@ import com.mojang.brigadier.context.CommandContext;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
 import java.util.UUID;
+import java.util.regex.Matcher;
 
 @UtilityClass
 public class RecoverCommand {
@@ -56,12 +58,15 @@ public class RecoverCommand {
         final CommandSourceStack source = ctx.getSource();
         final MinecraftServer server = source.getServer();
         final String timestamp = StringArgumentType.getString(ctx, "timestamp");
-        final Instant instant = LocalDateTime.parse(timestamp, DataHandler.FORMATTER).atZone(ZoneOffset.UTC).toInstant();
+        final Matcher matcher = DataHandler.DATE_PATTERN.matcher(timestamp);
+        if (!matcher.find()) throw new DateTimeParseException("Could not parse '" + timestamp +"' to a valid save file", timestamp, 0);
+        
+        final Instant instant = LocalDateTime.parse(matcher.group(), DataHandler.FORMATTER).atZone(ZoneOffset.UTC).toInstant();
         final GameProfile profile = EPCommands.getProfile(server, uuid);
         int result = DataHandler.restore(server, uuid, instant, BackupType.ANY);
         
         if (result < 1) {
-            source.sendFailure(EPLanguage.COMMAND_RECOVER_SUCCESS.text(EPCommands.formatPlayer(profile), timestamp).withStyle(ChatFormatting.RED));
+            source.sendFailure(EPLanguage.COMMAND_RECOVER_FAILURE.text(EPCommands.formatPlayer(profile), timestamp).withStyle(ChatFormatting.RED));
             return 0;
         } else {
             source.sendSuccess(() -> EPLanguage.COMMAND_RECOVER_SUCCESS.text(EPCommands.formatPlayer(profile), timestamp).withStyle(ChatFormatting.GREEN), true);

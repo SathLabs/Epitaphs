@@ -35,15 +35,14 @@ public final class OnlineHandler {
     ///
     public static int restore(ServerPlayer player, Instant now, BackupType type) {
         Path playerDirectory = DataHandler.getFileStorage(player.getServer()).resolve(player.getStringUUID());
-        Path file = type.resolve(playerDirectory, now);
         
         try {
+            Path file = type.resolve(playerDirectory, now);
             CompoundTag backup = NbtIo.readCompressed(file, NbtAccounter.unlimitedHeap());
             
             PlayerContainer playerContainer = PlayerContainer.create(player);
             PlayerContainer backupContainer = PlayerContainer.create(player.registryAccess(), backup);
             List<ItemStack> overflow = playerContainer.merge(backupContainer);
-            // CHECK THIS BECAUSE WE DUPE CURIO
             List<ItemStack> dropped = playerContainer.inventory().insert(overflow);
             Epitaphs.log.debug("Merged {} with {} for {}", file.getFileName(), player.getUUID(), player.getGameProfile().getName());
             
@@ -54,7 +53,7 @@ public final class OnlineHandler {
             return 1;
             
         } catch (IOException e) {
-            Epitaphs.log.error("Failed to restore {} with {}", player.getUUID(), file.getFileName(), e);
+            Epitaphs.log.error("Failed to restore {} at {}", player.getUUID(), now.toString(), e);
             return 0;
         }
     }
@@ -72,15 +71,16 @@ public final class OnlineHandler {
     ///
     public static List<ItemStack> gather(ServerPlayer player, Instant now, BackupType type) {
         Path storage = DataHandler.getFileStorage(player.getServer()).resolve(player.getStringUUID());
-        Path file = type.resolve(storage, now);
         
         try {
+            Path file = type.resolve(storage, now);
+            
             CompoundTag backup = NbtIo.readCompressed(file, NbtAccounter.unlimitedHeap());
             PlayerContainer container = PlayerContainer.create(player.registryAccess(), backup);
             Epitaphs.log.debug("Loaded {} for {}", file.getFileName(), player.getStringUUID());
             return container.gather();
         } catch (IOException e) {
-            Epitaphs.log.error("Failed to load {} for {}", file.getFileName(), player.getStringUUID(), e);
+            Epitaphs.log.error("Failed to load {} at {}", now.toString(), player.getStringUUID(), e);
             return new ArrayList<>();
         }
     }
