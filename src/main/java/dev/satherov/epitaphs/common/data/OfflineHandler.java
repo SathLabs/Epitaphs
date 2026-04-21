@@ -50,9 +50,10 @@ public final class OfflineHandler {
     public static int restore(MinecraftServer server, UUID uuid, Instant now, BackupType type) {
         Path playerData = DataHandler.getPlayerDataStorage(server).resolve(uuid + ".dat");
         Path playerDirectory = DataHandler.getFileStorage(server).resolve(uuid.toString());
-        Path backupFile = type.resolve(playerDirectory, now);
         
         try {
+            Path backupFile = type.resolve(playerDirectory, now);
+            
             RegistryAccess access = server.registryAccess();
             CompoundTag playerDataTag = NbtIo.readCompressed(playerData, NbtAccounter.unlimitedHeap());
             CompoundTag backupTag = NbtIo.readCompressed(backupFile, NbtAccounter.unlimitedHeap());
@@ -86,7 +87,7 @@ public final class OfflineHandler {
             return 1;
             
         } catch (IOException e) {
-            Epitaphs.log.error("Failed to restore offline data at {} for {}", backupFile.getFileName(), uuid, e);
+            Epitaphs.log.error("Failed to restore offline data at {} at {}", now.toString(), uuid, e);
             return 0;
         }
     }
@@ -105,9 +106,10 @@ public final class OfflineHandler {
     ///
     public static List<ItemStack> gather(MinecraftServer server, UUID uuid, Instant now, BackupType type) {
         Path playerDirectory = DataHandler.getFileStorage(server).resolve(uuid.toString());
-        Path backupFile = type.resolve(playerDirectory, now);
         
         try {
+            Path backupFile = type.resolve(playerDirectory, now);
+            
             CompoundTag backup = NbtIo.readCompressed(backupFile, NbtAccounter.unlimitedHeap());
             final PlayerContainer container;
             try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(Epitaphs.log)) {
@@ -116,7 +118,7 @@ public final class OfflineHandler {
             Epitaphs.log.debug("Loaded {} for {}", backupFile.getFileName(), uuid);
             return container.gather();
         } catch (IOException e) {
-            Epitaphs.log.error("Failed to load {} for {}", backupFile.getFileName(), uuid, e);
+            Epitaphs.log.error("Failed to load {} at {}", now.toString(), uuid, e);
             return new ArrayList<>();
         }
     }

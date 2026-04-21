@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -47,7 +48,7 @@ public class DataHandler {
     private static final Locale SYS_LOCALE = Locale.getDefault(Locale.Category.FORMAT);
     private static final String DATE_FORMATTER = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, null, IsoChronology.INSTANCE, DataHandler.SYS_LOCALE);
     public static final DateTimeFormatter SYSTEM_FORMATTER = DateTimeFormatter.ofPattern(DataHandler.DATE_FORMATTER + " HH:mm:ss", DataHandler.SYS_LOCALE).withZone(ZoneId.systemDefault());
-    public static final DateTimeFormatter ISO8601_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss").withZone(ZoneOffset.UTC);
+    public static final DateTimeFormatter ISO8601_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneOffset.UTC);
     public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss").withZone(ZoneOffset.UTC);
     public static final Pattern DATE_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}");
     
@@ -212,7 +213,7 @@ public class DataHandler {
         
         try {
             Files.createDirectories(storage);
-            Path file = type.resolve(storage, now);
+            Path file = type.create(storage, now);
             NbtIo.writeCompressed(data, file);
             Epitaphs.log.debug("Saved player data for {} at {}", uuid, file.getFileName());
         } catch (IOException e) {
@@ -237,9 +238,9 @@ public class DataHandler {
     @SuppressWarnings("DuplicatedCode")
     public static int load(ServerPlayer player, UUID uuid, Instant now, BackupType type) {
         Path playerDirectory = DataHandler.getFileStorage(player.level().getServer()).resolve(uuid.toString());
-        Path file = type.resolve(playerDirectory, now);
         
         try {
+            Path file = type.resolve(playerDirectory, now);
             CompoundTag backup = NbtIo.readCompressed(file, NbtAccounter.unlimitedHeap());
             
             final PlayerContainer backupContainer;
@@ -258,7 +259,7 @@ public class DataHandler {
             return 1;
             
         } catch (IOException e) {
-            Epitaphs.log.error("Failed to load data for {} from {}", player.getUUID(), file.getFileName(), e);
+            Epitaphs.log.error("Failed to load data for {} at {}", player.getUUID(), now.toString(), e);
             return 0;
         }
     }
@@ -338,5 +339,25 @@ public class DataHandler {
         final ServerPlayer player = server.getPlayerList().getPlayer(uuid);
         if (player == null) return OfflineHandler.gather(server, uuid, now, type);
         else return OnlineHandler.gather(player, now, type);
+    }
+    
+    ///
+    /// Invalidates the current grave data
+    ///
+    /// @param server The server instance
+    /// @param uuid   The player UUID
+    /// @param now    The timestamp of the backup
+    ///
+    public static void invalidate(MinecraftServer server, UUID uuid, Instant now) {
+        Path playerDirectory = DataHandler.getFileStorage(server).resolve(uuid.toString());
+        
+        try {
+            Path file = BackupType.DEATH.resolve(playerDirectory, now);
+            String timestamp = DataHandler.FORMATTER.format(now);
+            Path old = playerDirectory.resolve(timestamp + "-death.dat-old");
+            Files.move(file, old, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException e) {
+            Epitaphs.log.warn("Failed to invalidate death data for {} at {}", uuid, now.toString(), e);
+        }
     }
 }

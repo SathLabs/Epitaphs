@@ -114,6 +114,7 @@ public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterlogge
         Instant timestamp = data.timestamp();
         List<ItemStack> items = DataHandler.gather(server, uuid, timestamp, BackupType.DEATH);
         items.forEach(stack -> Block.popResource(level, pos, stack));
+        DataHandler.invalidate(server, uuid, timestamp);
     }
     
     ///

@@ -38,8 +38,10 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.regex.Matcher;
 
 @SuppressWarnings("DuplicatedCode")
 @UtilityClass
@@ -137,7 +139,10 @@ public class HighlightCommand {
             return 0;
         }
         
-        final Instant instant = LocalDateTime.parse(timestamp, DataHandler.FORMATTER).atZone(ZoneOffset.UTC).toInstant();
+        final Matcher matcher = DataHandler.DATE_PATTERN.matcher(timestamp);
+        if (!matcher.find()) throw new DateTimeParseException("Could not parse '" + timestamp + "' to a valid save file", timestamp, 0);
+        
+        final Instant instant = LocalDateTime.parse(matcher.group(), DataHandler.FORMATTER).atZone(ZoneOffset.UTC).toInstant();
         final GlobalPos global = positions.get(instant);
         if (global == null) {
             source.sendFailure(EPCommandLang.COMMAND_HIGHLIGHT_INVALID.translate(timestamp).style(ChatFormatting.RED));
@@ -173,7 +178,10 @@ public class HighlightCommand {
                 return 0;
             }
             
-            final Instant instant = LocalDateTime.parse(timestamp, DataHandler.FORMATTER).atZone(ZoneOffset.UTC).toInstant();
+            final Matcher matcher = DataHandler.DATE_PATTERN.matcher(timestamp);
+            if (!matcher.find()) throw new DateTimeParseException("Could not parse '" + timestamp + "' to a valid save file", timestamp, 0);
+            
+            final Instant instant = LocalDateTime.parse(matcher.group(), DataHandler.FORMATTER).atZone(ZoneOffset.UTC).toInstant();
             final GlobalPos global = positions.get(instant);
             if (global == null) {
                 source.sendFailure(EPCommandLang.COMMAND_HIGHLIGHT_INVALID.translate(timestamp).style(ChatFormatting.RED));
