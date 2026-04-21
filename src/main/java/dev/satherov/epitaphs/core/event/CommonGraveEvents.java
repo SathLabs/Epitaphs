@@ -198,6 +198,7 @@ public class CommonGraveEvents {
         
         level.removeBlockEntity(pos);
         level.removeBlock(pos, false);
+        DataHandler.invalidate(server, uuid, timestamp);
         Epitaphs.log.debug("Removed grave for {} - {} at {} in {}", name, uuid, pos, level.dimension().identifier());
         
         event.setCancellationResult(InteractionResult.SUCCESS);
