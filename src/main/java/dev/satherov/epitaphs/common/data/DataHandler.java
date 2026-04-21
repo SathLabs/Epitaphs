@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -204,7 +205,7 @@ public class DataHandler {
         
         try {
             Files.createDirectories(storage);
-            Path file = type.resolve(storage, now);
+            Path file = type.create(storage, now);
             NbtIo.writeCompressed(data, file);
             Epitaphs.log.debug("Saved player data for {} at {}", uuid, file.getFileName());
         } catch (IOException e) {
@@ -323,5 +324,25 @@ public class DataHandler {
         final ServerPlayer player = server.getPlayerList().getPlayer(uuid);
         if (player == null) return OfflineHandler.gather(server, uuid, now, type);
         else return OnlineHandler.gather(player, now, type);
+    }
+    
+    ///
+    /// Invalidates the current grave data
+    ///
+    /// @param server The server instance
+    /// @param uuid   The player UUID
+    /// @param now    The timestamp of the backup
+    ///
+    public static void invalidate(MinecraftServer server, UUID uuid, Instant now) {
+        Path playerDirectory = DataHandler.getFileStorage(server).resolve(uuid.toString());
+        
+        try {
+            Path file = BackupType.DEATH.resolve(playerDirectory, now);
+            String timestamp = DataHandler.FORMATTER.format(now);
+            Path old = playerDirectory.resolve(timestamp + "-death.dat-old");
+            Files.move(file, old, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException e) {
+            Epitaphs.log.warn("Failed to invalidate death data for {} at {}", uuid, now.toString(), e);
+        }
     }
 }

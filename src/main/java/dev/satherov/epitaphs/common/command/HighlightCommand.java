@@ -138,7 +138,7 @@ public class HighlightCommand {
         }
         
         final Matcher matcher = DataHandler.DATE_PATTERN.matcher(timestamp);
-        if (!matcher.find()) throw new DateTimeParseException("Could not parse '" + timestamp +"' to a valid save file", timestamp, 0);
+        if (!matcher.find()) throw new DateTimeParseException("Could not parse '" + timestamp + "' to a valid save file", timestamp, 0);
         
         final Instant instant = LocalDateTime.parse(matcher.group(), DataHandler.FORMATTER).atZone(ZoneOffset.UTC).toInstant();
         final GlobalPos global = positions.get(instant);
@@ -176,7 +176,7 @@ public class HighlightCommand {
             }
             
             final Matcher matcher = DataHandler.DATE_PATTERN.matcher(timestamp);
-            if (!matcher.find()) throw new DateTimeParseException("Could not parse '" + timestamp +"' to a valid save file", timestamp, 0);
+            if (!matcher.find()) throw new DateTimeParseException("Could not parse '" + timestamp + "' to a valid save file", timestamp, 0);
             
             final Instant instant = LocalDateTime.parse(matcher.group(), DataHandler.FORMATTER).atZone(ZoneOffset.UTC).toInstant();
             final GlobalPos global = positions.get(instant);

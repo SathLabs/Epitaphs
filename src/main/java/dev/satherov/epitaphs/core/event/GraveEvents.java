@@ -321,6 +321,7 @@ public class GraveEvents {
             
             level.removeBlockEntity(pos);
             level.removeBlock(pos, false);
+            DataHandler.invalidate(server, uuid, timestamp);
             Epitaphs.log.debug("Removed grave for {} - {} at {} in {}", name, uuid, pos, level.dimension().location());
             
             event.setCancellationResult(InteractionResult.SUCCESS);

@@ -9,7 +9,6 @@ import dev.satherov.epitaphs.util.StringUtils;
 import com.google.common.base.Supplier;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -60,7 +59,7 @@ public enum BackupType {
     }
     
     ///
-    /// Gets the pattern used to purge backup files.
+    /// Gets the pattern used to purge backup files
     ///
     public Pattern purgePattern() {
         return this.purgePattern.get();
@@ -71,6 +70,17 @@ public enum BackupType {
     ///
     public int limit() {
         return this.limit.get();
+    }
+    
+    ///
+    /// Creates a path for the given timestamp.
+    ///
+    /// @param parent Parent folder path. Should be a player's uuid.
+    /// @param now    Timestamp of the backup.
+    ///
+    public Path create(Path parent, Instant now) {
+        String timestamp = DataHandler.FORMATTER.format(now);
+        return parent.resolve(timestamp + "-" + StringUtils.lower(this.name()) + ".dat");
     }
     
     ///
