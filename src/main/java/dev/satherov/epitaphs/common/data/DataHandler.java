@@ -215,7 +215,7 @@ public class DataHandler {
             Files.createDirectories(storage);
             Path file = type.create(storage, now);
             NbtIo.writeCompressed(data, file);
-            Epitaphs.log.debug("Saved player data for {} at {}", uuid, file.getFileName());
+            Epitaphs.log.debug("Saved player data for {} to {}", player.getGameProfile().name(), file.getFileName());
         } catch (IOException e) {
             Epitaphs.log.error("Failed to save player data for {} at {}", uuid, storage.getFileName(), e);
             return 0;
@@ -250,12 +250,12 @@ public class DataHandler {
             PlayerContainer playerContainer = PlayerContainer.create(player);
             List<ItemStack> overflow = playerContainer.merge(backupContainer);
             List<ItemStack> dropped = playerContainer.inventory().insert(overflow);
-            Epitaphs.log.debug("Merged {} with {} for {}", file.getFileName(), player.getUUID(), player.getGameProfile().name());
+            Epitaphs.log.debug("Merged data from {} into {}", file.getFileName(), player.getGameProfile().name());
             
             if (!dropped.isEmpty()) for (ItemStack stack : dropped) player.drop(stack, false);
             
             playerContainer.write(player);
-            Epitaphs.log.debug("Loaded data for {} from {}", player.getUUID(), file.getFileName());
+            Epitaphs.log.debug("Loaded data from {} for {}", file.getFileName(), player.getGameProfile().name());
             return 1;
             
         } catch (IOException e) {
@@ -284,15 +284,15 @@ public class DataHandler {
             Path saved = world.resolve(uuid + ".dat");
             Path old = world.resolve(uuid + ".dat_old");
             Util.safeReplaceFile(saved, temp, old);
-            Epitaphs.log.debug("Reset player data for {} at {}", uuid, file.getFileName());
+            Epitaphs.log.debug("Reset offline player data for {} from {}", uuid, file.getFileName());
             
             @Nullable ServerPlayer player = server.getPlayerList().getPlayer(uuid);
             if (player != null) {
                 try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(Epitaphs.log)) {
                     player.load(TagValueInput.create(reporter, server.registryAccess(), data));
+                    Epitaphs.log.debug("Reloaded live player data for {} from {}", player.getGameProfile().name(), file.getFileName());
                 }
             }
-            Epitaphs.log.debug("Loaded live player data for {} at {}", uuid, file.getFileName());
             return 1;
             
         } catch (IOException e) {
@@ -356,8 +356,9 @@ public class DataHandler {
             String timestamp = DataHandler.FORMATTER.format(now);
             Path old = playerDirectory.resolve(timestamp + "-death.dat-old");
             Files.move(file, old, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            Epitaphs.log.debug("Invalidated death data for {} at {}", uuid, now);
         } catch (IOException e) {
-            Epitaphs.log.warn("Failed to invalidate death data for {} at {}", uuid, now.toString(), e);
+            Epitaphs.log.warn("Failed to invalidate death data for {} at {}", uuid, now, e);
         }
     }
 }

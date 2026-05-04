@@ -70,7 +70,6 @@ public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemS
     
     @Override
     public void write(ServerPlayer player) {
-        Epitaphs.log.debug("Writing inventory container to player");
         final Inventory inventory = player.getInventory();
         
         for (int slot = 0; slot < this.items.size(); slot++) {
@@ -150,7 +149,6 @@ public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemS
     
     @Override
     public void write(ValueInput input, ValueOutput output) {
-        Epitaphs.log.debug("Writing inventory container to data");
         final ValueOutput.TypedOutputList<ItemStackWithSlot> inventory = output.list("Inventory", ItemStackWithSlot.CODEC);
         
         for (int slot = 0; slot < this.items.size(); slot++) {

@@ -1,5 +1,6 @@
 package dev.satherov.epitaphs.common.container;
 
+import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.compat.CuriosHandler;
 
 import net.minecraft.core.UUIDUtil;
@@ -31,6 +32,7 @@ public record PlayerContainer(UUID uuid, InventoryContainer inventory, CuriosCon
         final UUID uuid = player.getUUID();
         final InventoryContainer inventory = InventoryContainer.create(player);
         final CuriosContainer curios = CuriosHandler.isLoaded() ? CuriosContainer.create(player) : CuriosContainer.empty();
+        Epitaphs.log.debug("Created PlayerContainer for {} (live)", player.getGameProfile().name());
         return new PlayerContainer(uuid, inventory, curios);
     }
     
@@ -38,6 +40,7 @@ public record PlayerContainer(UUID uuid, InventoryContainer inventory, CuriosCon
         final UUID uuid = input.read("UUID", UUIDUtil.CODEC).orElse(UUID.nameUUIDFromBytes(new byte[0]));
         final InventoryContainer inventory = InventoryContainer.create(input);
         final CuriosContainer curios = CuriosHandler.isLoaded() ? CuriosContainer.create(input) : CuriosContainer.empty();
+        Epitaphs.log.debug("Created PlayerContainer for {} (offline)", uuid);
         return new PlayerContainer(uuid, inventory, curios);
     }
     
@@ -45,18 +48,22 @@ public record PlayerContainer(UUID uuid, InventoryContainer inventory, CuriosCon
     public void write(ServerPlayer player) {
         this.inventory.write(player);
         if (CuriosHandler.isLoaded()) this.curios.write(player);
+        Epitaphs.log.debug("Wrote PlayerContainer for {} (online)", player.getGameProfile().name());
     }
     
     @Override
     public void write(ValueInput input, ValueOutput output) {
         this.inventory.write(input, output);
         if (CuriosHandler.isLoaded()) this.curios.write(input, output);
+        final UUID uuid = input.read("UUID", UUIDUtil.CODEC).orElse(UUID.nameUUIDFromBytes(new byte[0]));
+        Epitaphs.log.debug("Wrote PlayerContainer for {} (offline)", uuid);
     }
     
     @Override
     public List<ItemStack> merge(PlayerContainer other) {
         final List<ItemStack> result = new ArrayList<>(this.inventory.merge(other.inventory));
         if (CuriosHandler.isLoaded()) result.addAll(this.curios.merge(other.curios));
+        Epitaphs.log.debug("Merged PlayerContainer for {}", this.uuid);
         return result;
     }
     
@@ -64,6 +71,7 @@ public record PlayerContainer(UUID uuid, InventoryContainer inventory, CuriosCon
     public List<ItemStack> gather() {
         final List<ItemStack> result = new ArrayList<>(this.inventory.gather());
         if (CuriosHandler.isLoaded()) result.addAll(this.curios.gather());
+        Epitaphs.log.debug("Gathered PlayerContainer for {}", this.uuid);
         return result;
     }
     

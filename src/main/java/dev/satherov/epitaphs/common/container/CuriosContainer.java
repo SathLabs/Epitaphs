@@ -34,8 +34,6 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
     // ==================== ONLINE ====================
     
     public static CuriosContainer create(ServerPlayer player) {
-        Epitaphs.log.debug("Creating curios container for {} - {}", player.getGameProfile().name(), player.getStringUUID());
-        
         final Map<String, StackHandler> entries = new HashMap<>();
         CuriosApi.getCuriosInventory(player).ifPresentOrElse(inventory -> {
             inventory.getCurios().forEach((key, value) -> {
@@ -49,15 +47,11 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
     
     @Override
     public void write(ServerPlayer player) {
-        Epitaphs.log.debug("Writing curio container to player");
-        
         CuriosApi.getCuriosInventory(player).ifPresentOrElse(inventory -> {
             inventory.getCurios().forEach((key, value) -> {
                 final StackHandler handler = this.entries.get(key);
-                if (handler == null) {
-                    Epitaphs.log.debug("Handler for type '{}' does not exist in Curio Container", key);
-                    return;
-                }
+                if (handler == null) return;
+                if (handler.isEmpty()) return;
                 
                 final IDynamicStackHandler itemStacks = value.getStacks();
                 final List<ItemStack> items = handler.items();
@@ -94,15 +88,11 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
                         }
                     }
                 }
-                
-                Epitaphs.log.debug("Wrote data for curios handler {}", key);
             });
         }, () -> Epitaphs.log.warn("No curios capability found on player {} - {}", player.getGameProfile().name(), player.getStringUUID()));
     }
     
     public static CuriosContainer createSoulbound(ServerPlayer player) {
-        Epitaphs.log.debug("Creating curios soulbound container for {} - {}", player.getGameProfile().name(), player.getStringUUID());
-        
         final Map<String, StackHandler> entries = new HashMap<>();
         CuriosApi.getCuriosInventory(player).ifPresentOrElse(inventory -> {
             inventory.getCurios().forEach((key, value) -> {
@@ -132,8 +122,6 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
     
     @Override
     public void write(ValueInput input, ValueOutput output) {
-        Epitaphs.log.debug("Writing curio container to data");
-        
         final ValueInput.ValueInputList curios = input.rawChildOrEmpty("neoforge:attachments")
                 .rawChildOrEmpty("curios:inventory")
                 .childrenListOrEmpty("Curios");
@@ -154,6 +142,7 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
                     Epitaphs.log.debug("Handler for type '{}' does not exist in Curio Container", identifier);
                     handler = StackHandler.create(handlerInput);
                 }
+                if (handler.isEmpty()) return;
                 
                 final ValueOutput handlerOutput = entryOutput.child(identifier);
                 handlerOutput.putInt("BaseSize", handlerInput.getIntOr("BaseSize", handler.items().size()));
@@ -175,8 +164,6 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
                         AttributeModifier.CODEC.listOf(),
                         handlerInput.read("Modifiers", AttributeModifier.CODEC.listOf()).orElse(List.of())
                 );
-                
-                Epitaphs.log.debug("Wrote data for curios handler {}", identifier);
             });
         });
     }

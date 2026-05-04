@@ -32,6 +32,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
@@ -44,10 +45,12 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gamerules.GameRules;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 
 import org.jetbrains.annotations.Nullable;
@@ -69,8 +72,35 @@ public class CommonGraveEvents {
     public static void onLivingDeath(final LivingDeathEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         
+        final GameProfile profile = player.getGameProfile();
+        
+        Epitaphs.log.debug("Player {} was killed by {}", profile.name(), event.getSource());
+        if (event.getSource().getEntity() instanceof ServerPlayer killer) {
+            final ItemStack main = killer.getMainHandItem();
+            final DataComponentMap mainComponents = main.getComponents();
+            if (!main.isEmpty()) Epitaphs.log.debug("Killer main-hand: {}[{}]", main, mainComponents.isEmpty() ? "empty" : mainComponents.toString());
+            
+            final ItemStack off = killer.getOffhandItem();
+            final DataComponentMap offComponents = off.getComponents();
+            if (!off.isEmpty()) Epitaphs.log.debug("Killer off-hand: {}[{}]", off, offComponents.isEmpty() ? "empty" : offComponents.toString());
+        }
+        
+        if (event.isCanceled()) {
+            Epitaphs.log.warn("LivingDeathEvent for {} was canceled by another mod, this will almost certainly cause issues!", profile.name());
+            return;
+        }
+        
+        if (player.getPersistentData().getBoolean("epitaphs:player_is_dead").orElse(false)) {
+            Epitaphs.log.warn("LivingDeathEvent for {} was called a second time while the player is already dead, this is almost certainly unintended", profile.name());
+            return;
+        }
+        
+        player.getPersistentData().putBoolean("epitaphs:player_is_dead", true);
         ServerLevel level = player.level();
-        if (level.getGameRules().get(GameRules.KEEP_INVENTORY)) return;
+        if (level.getGameRules().get(GameRules.KEEP_INVENTORY)) {
+            Epitaphs.log.debug("KeepInventory is enabled, skipping grave creation for {}", profile.name());
+            return;
+        }
         
         SoulboundHandler.saveData(player);
         
@@ -88,6 +118,8 @@ public class CommonGraveEvents {
         }
         
         final BlockPos pos = GraveBlock.findSafeSpot(level, player.blockPosition());
+        Epitaphs.log.debug("Found safe grave spot for {} at {}", profile.name(), pos);
+        
         final BlockPos below = pos.below();
         final BlockState state = level.getBlockState(below);
         
@@ -132,6 +164,7 @@ public class CommonGraveEvents {
     private static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         SoulboundHandler.restorePlayer(player);
+        player.getPersistentData().putBoolean("epitaphs:player_is_dead", false);
     }
     
     @SubscribeEvent
@@ -169,7 +202,10 @@ public class CommonGraveEvents {
             }
             
             @Nullable ServerPlayer owner = server.getPlayerList().getPlayer(uuid);
-            if (owner != null) owner.setData(EPRegistry.LOCATION_DATA, owner.getData(EPRegistry.LOCATION_DATA).remove(timestamp));
+            if (owner != null) {
+                owner.setData(EPRegistry.LOCATION_DATA, owner.getData(EPRegistry.LOCATION_DATA).remove(timestamp));
+                Epitaphs.log.debug("Removed grave location for {} at {}", owner.getGameProfile().name(), pos);
+            }
             
         } else {
             

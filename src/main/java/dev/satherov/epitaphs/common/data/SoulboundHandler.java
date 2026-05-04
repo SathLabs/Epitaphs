@@ -17,6 +17,8 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
+import com.mojang.authlib.GameProfile;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -30,7 +32,7 @@ public class SoulboundHandler {
     ///
     public static void saveData(ServerPlayer player) {
         if (!player.getData(EPRegistry.SOULBOUND_DATA).isEmpty()) {
-            Epitaphs.log.warn("Soulbound data has already been saved. Did some mod kill us a second time?");
+            Epitaphs.log.warn("Soulbound data has already been saved. How did we get here...");
             return;
         }
         
@@ -42,7 +44,7 @@ public class SoulboundHandler {
         
         final SoulboundData data = new SoulboundData(container, experience);
         player.setData(EPRegistry.SOULBOUND_DATA, data);
-        Epitaphs.log.debug("Stored Soulbound data");
+        Epitaphs.log.debug("Stored Soulbound data for {}", player.getGameProfile().name());
     }
     
     ///
@@ -74,6 +76,7 @@ public class SoulboundHandler {
             SLExperienceUtil.addExperiencePoints(player, -part, false);
         }
         
+        Epitaphs.log.debug("Saved {} experience points out of {} total experience points for soulbound data of {}", result, experience, player.getGameProfile().name());
         return result;
     }
     
@@ -84,6 +87,7 @@ public class SoulboundHandler {
     /// @param player the Player to restore
     ///
     public static void restorePlayer(ServerPlayer player) {
+        final GameProfile profile = player.getGameProfile();
         final SoulboundData data = player.getData(EPRegistry.SOULBOUND_DATA);
         if (data.isEmpty()) return;
         
@@ -91,10 +95,12 @@ public class SoulboundHandler {
         final PlayerContainer container = data.container();
         
         player.giveExperiencePoints(experience);
+        Epitaphs.log.debug("Restored {} experience points for {}", experience, profile.name());
+        
         container.write(player);
         
         player.removeData(EPRegistry.SOULBOUND_DATA);
-        Epitaphs.log.debug("Restored soulbound data");
+        Epitaphs.log.debug("Restored soulbound data for {}", profile.name());
     }
     
     ///

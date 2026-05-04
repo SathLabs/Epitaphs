@@ -70,7 +70,7 @@ public final class OfflineHandler {
             
             List<ItemStack> overflow = playerContainer.merge(backupContainer);
             List<ItemStack> dropped = playerContainer.inventory().insert(overflow);
-            Epitaphs.log.debug("Merged {} with {} for {}", backupFile.getFileName(), playerData.getFileName(), uuid);
+            Epitaphs.log.debug("Merged data from {} into {}", backupFile.getFileName(), playerData.getFileName());
             
             if (!dropped.isEmpty()) {
                 Epitaphs.log.warn("Merging of playerdata for {} with backup at {} resulted in {} dropped items", uuid, backupFile.getFileName(), dropped.size());
@@ -83,7 +83,7 @@ public final class OfflineHandler {
                 playerDataTag.merge(output.buildResult());
             }
             NbtIo.writeCompressed(playerDataTag, playerData);
-            Epitaphs.log.debug("Wrote offline data from {} for {}", backupFile.getFileName(), uuid);
+            Epitaphs.log.debug("Restored data from {} to {}", backupFile.getFileName(), playerData.getFileName());
             return 1;
             
         } catch (IOException e) {
@@ -115,7 +115,7 @@ public final class OfflineHandler {
             try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(Epitaphs.log)) {
                 container = PlayerContainer.create(TagValueInput.create(reporter, server.registryAccess(), backup));
             }
-            Epitaphs.log.debug("Loaded {} for {}", backupFile.getFileName(), uuid);
+            Epitaphs.log.debug("Gathered data from {} for {}", backupFile.getFileName(), uuid);
             return container.gather();
         } catch (IOException e) {
             Epitaphs.log.error("Failed to load {} at {}", now.toString(), uuid, e);

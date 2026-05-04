@@ -49,12 +49,12 @@ public final class OnlineHandler {
             }
             List<ItemStack> overflow = playerContainer.merge(backupContainer);
             List<ItemStack> dropped = playerContainer.inventory().insert(overflow);
-            Epitaphs.log.debug("Merged {} with {} for {}", file.getFileName(), player.getUUID(), player.getGameProfile().name());
+            Epitaphs.log.debug("Merged data from {} into {}", file.getFileName(), player.getGameProfile().name());
             
             if (!dropped.isEmpty()) for (ItemStack stack : dropped) player.drop(stack, false);
             
             playerContainer.write(player);
-            Epitaphs.log.debug("Restored {} with data from {}", player.getUUID(), file.getFileName());
+            Epitaphs.log.debug("Restored data from {} for {}", file.getFileName(), player.getGameProfile().name());
             return 1;
             
         } catch (IOException e) {
@@ -84,8 +84,8 @@ public final class OnlineHandler {
             final PlayerContainer container;
             try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(Epitaphs.log)) {
                 container = PlayerContainer.create(TagValueInput.create(reporter, player.registryAccess(), backup));
+                Epitaphs.log.debug("Gathered data from {} for {}", file.getFileName(), player.getGameProfile().name());
             }
-            Epitaphs.log.debug("Loaded {} for {}", file.getFileName(), player.getStringUUID());
             return container.gather();
         } catch (IOException e) {
             Epitaphs.log.error("Failed to load {} at {}", now.toString(), player.getStringUUID(), e);

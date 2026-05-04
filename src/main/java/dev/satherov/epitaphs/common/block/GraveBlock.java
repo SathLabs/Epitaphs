@@ -1,5 +1,6 @@
 package dev.satherov.epitaphs.common.block;
 
+import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.common.component.GraveData;
 import dev.satherov.epitaphs.common.data.BackupType;
 import dev.satherov.epitaphs.common.data.DataHandler;
@@ -113,7 +114,10 @@ public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterlogge
         UUID uuid = data.owner();
         Instant timestamp = data.timestamp();
         List<ItemStack> items = DataHandler.gather(server, uuid, timestamp, BackupType.DEATH);
-        items.forEach(stack -> Block.popResource(level, pos, stack));
+        if (!items.isEmpty()) {
+            Epitaphs.log.info("Grave at {} for {} was broken, dropping {} items", pos, uuid, items.size());
+            items.forEach(stack -> Block.popResource(level, pos, stack));
+        }
         DataHandler.invalidate(server, uuid, timestamp);
     }
     
