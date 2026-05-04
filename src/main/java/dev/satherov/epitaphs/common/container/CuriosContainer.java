@@ -75,8 +75,10 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
                     }
                     
                     for (int i = 0; i < itemStacks.getSlots(); i++) {
-                        if (itemStacks.getStackInSlot(i).isEmpty())
+                        if (itemStacks.getStackInSlot(i).isEmpty()) {
                             itemStacks.setStackInSlot(i, stack);
+                            break;
+                        }
                     }
                 }
                 
@@ -90,8 +92,10 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
                     }
                     
                     for (int i = 0; i < cosmeticStacks.getSlots(); i++) {
-                        if (cosmeticStacks.getStackInSlot(i).isEmpty())
+                        if (cosmeticStacks.getStackInSlot(i).isEmpty()) {
                             cosmeticStacks.setStackInSlot(i, stack);
+                            break;
+                        }
                     }
                 }
             });

@@ -83,8 +83,10 @@ public record AccessoriesContainer(Map<String, StackHandler> entries) implements
                     }
                     
                     for (int i = 0; i < size; i++) {
-                        if (itemStacks.getItem(i).isEmpty())
+                        if (itemStacks.getItem(i).isEmpty()) {
                             itemStacks.setItem(i, stack);
+                            break;
+                        }
                     }
                 }
                 
@@ -98,8 +100,10 @@ public record AccessoriesContainer(Map<String, StackHandler> entries) implements
                     }
                     
                     for (int i = 0; i < size; i++) {
-                        if (cosmeticStacks.getItem(i).isEmpty())
+                        if (cosmeticStacks.getItem(i).isEmpty()) {
                             cosmeticStacks.setItem(i, stack);
+                            break;
+                        }
                     }
                 }
             });
