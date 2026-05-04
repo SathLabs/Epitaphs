@@ -44,12 +44,12 @@ public final class OnlineHandler {
             PlayerContainer backupContainer = PlayerContainer.create(player.registryAccess(), backup);
             List<ItemStack> overflow = playerContainer.merge(backupContainer);
             List<ItemStack> dropped = playerContainer.inventory().insert(overflow);
-            Epitaphs.log.debug("Merged {} with {} for {}", file.getFileName(), player.getUUID(), player.getGameProfile().getName());
+            Epitaphs.log.debug("Merged data from {} into {}", file.getFileName(), player.getGameProfile().getName());
             
             if (!dropped.isEmpty()) for (ItemStack stack : dropped) player.drop(stack, false);
             
             playerContainer.write(player);
-            Epitaphs.log.debug("Restored {} with data from {}", player.getUUID(), file.getFileName());
+            Epitaphs.log.debug("Restored data from {} for {}", file.getFileName(), player.getGameProfile().getName());
             return 1;
             
         } catch (IOException e) {
@@ -77,7 +77,7 @@ public final class OnlineHandler {
             
             CompoundTag backup = NbtIo.readCompressed(file, NbtAccounter.unlimitedHeap());
             PlayerContainer container = PlayerContainer.create(player.registryAccess(), backup);
-            Epitaphs.log.debug("Loaded {} for {}", file.getFileName(), player.getStringUUID());
+            Epitaphs.log.debug("Gathered data from {} for {}", file.getFileName(), player.getGameProfile().getName());
             return container.gather();
         } catch (IOException e) {
             Epitaphs.log.error("Failed to load {} at {}", now.toString(), player.getStringUUID(), e);

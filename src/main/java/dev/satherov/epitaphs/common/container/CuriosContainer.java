@@ -36,8 +36,6 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
     // ==================== ONLINE ====================
     
     public static CuriosContainer create(ServerPlayer player) {
-        Epitaphs.log.debug("Creating curios container for {} - {}", player.getGameProfile().getName(), player.getStringUUID());
-        
         final Map<String, StackHandler> entries = new HashMap<>();
         CuriosApi.getCuriosInventory(player).ifPresentOrElse(inventory -> {
             inventory.getCurios().forEach((key, value) -> {
@@ -61,15 +59,10 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
     
     @Override
     public void write(ServerPlayer player) {
-        Epitaphs.log.debug("Writing curio container to player");
-        
         CuriosApi.getCuriosInventory(player).ifPresentOrElse(inventory -> {
             inventory.getCurios().forEach((key, value) -> {
                 final StackHandler handler = this.entries.get(key);
-                if (handler == null) {
-                    Epitaphs.log.debug("Handler for type '{}' does not exist in Curio Container", key);
-                    return;
-                }
+                if (handler == null) return;
                 if (handler.isEmpty()) return;
                 
                 final IDynamicStackHandler itemStacks = value.getStacks();
@@ -101,14 +94,11 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
                             cosmeticStacks.setStackInSlot(i, stack);
                     }
                 }
-                Epitaphs.log.debug("Wrote data for curios handler {}", key);
             });
         }, () -> Epitaphs.log.warn("No curios capability found on player {} - {}", player.getGameProfile().getName(), player.getStringUUID()));
     }
     
     public static CuriosContainer createSoulbound(ServerPlayer player) {
-        Epitaphs.log.debug("Creating curios soulbound container for {} - {}", player.getGameProfile().getName(), player.getStringUUID());
-        
         final Map<String, StackHandler> entries = new HashMap<>();
         CuriosApi.getCuriosInventory(player).ifPresentOrElse(inventory -> {
             inventory.getCurios().forEach((key, value) -> {
@@ -135,8 +125,6 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
     // ==================== OFFLINE ====================
     
     public static CuriosContainer create(HolderLookup.Provider provider, CompoundTag data) {
-        Epitaphs.log.debug("Creating curios container from data of {}", data.getUUID("UUID"));
-        
         final Map<String, StackHandler> entries = new HashMap<>();
         final CompoundTag attachments = data.getCompound("neoforge:attachments");
         final CompoundTag curiosInventory = attachments.getCompound("curios:inventory");
@@ -155,8 +143,6 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
     
     @Override
     public void write(HolderLookup.Provider provider, CompoundTag data) {
-        Epitaphs.log.debug("Writing curio container to data");
-        
         final CompoundTag attachments = data.getCompound("neoforge:attachments");
         final CompoundTag curiosInventory = attachments.getCompound("curios:inventory");
         final ListTag curios = curiosInventory.getList("Curios", Tag.TAG_COMPOUND);
@@ -165,10 +151,7 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
             final String identifier = entry.getString("Identifier");
             final CompoundTag stacksHandler = entry.getCompound("StacksHandler");
             final StackHandler handler = this.entries.get(identifier);
-            if (handler == null) {
-                Epitaphs.log.debug("Handler for type '{}' does not exist in Curio Container", identifier);
-                continue;
-            }
+            if (handler == null) continue;
             if (handler.isEmpty()) continue;
             
             CompoundTag stacks = StackHandler.writeList(provider, handler.items());
@@ -177,8 +160,6 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
             CompoundTag cosmetics = StackHandler.writeList(provider, handler.cosmetics());
             stacksHandler.put("Cosmetics", cosmetics);
             entry.put("StacksHandler", stacksHandler);
-            
-            Epitaphs.log.debug("Wrote data for curios handler {}", identifier);
         }
     }
     

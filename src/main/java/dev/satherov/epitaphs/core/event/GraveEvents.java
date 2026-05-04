@@ -45,6 +45,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -57,6 +58,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -186,12 +188,39 @@ public class GraveEvents {
             EPCommands.register(dispatcher);
         }
         
-        @SubscribeEvent
+        @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
         public static void onLivingDeath(final LivingDeathEvent event) {
             if (!(event.getEntity() instanceof ServerPlayer player)) return;
             
+            final GameProfile profile = player.getGameProfile();
+            
+            Epitaphs.log.debug("Player {} was killed by {}", profile.getName(), event.getSource());
+            if (event.getSource().getEntity() instanceof ServerPlayer killer) {
+                final ItemStack main = killer.getMainHandItem();
+                final DataComponentMap mainComponents = main.getComponents();
+                if (!main.isEmpty()) Epitaphs.log.debug("Killer main-hand: {}[{}]", main, mainComponents.isEmpty() ? "empty" : mainComponents.toString());
+                
+                final ItemStack off = killer.getOffhandItem();
+                final DataComponentMap offComponents = off.getComponents();
+                if (!off.isEmpty()) Epitaphs.log.debug("Killer off-hand: {}[{}]", off, offComponents.isEmpty() ? "empty" : offComponents.toString());
+            }
+            
+            if (event.isCanceled()) {
+                Epitaphs.log.warn("LivingDeathEvent for {} was canceled by another mod, this will almost certainly cause issues!", profile.getName());
+                return;
+            }
+            
+            if (player.getPersistentData().getBoolean("epitaphs:player_is_dead")) {
+                Epitaphs.log.warn("LivingDeathEvent for {} was called a second time while the player is already dead, this is almost certainly unintended", profile.getName());
+                return;
+            }
+            
+            player.getPersistentData().putBoolean("epitaphs:player_is_dead", true);
             ServerLevel level = player.serverLevel();
-            if (level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).get()) return;
+            if (level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).get()) {
+                Epitaphs.log.debug("KeepInventory is enabled, skipping grave creation for {}", profile.getName());
+                return;
+            }
             
             SoulboundHandler.saveData(player);
             
@@ -204,11 +233,13 @@ public class GraveEvents {
             final PlayerContainer container = PlayerContainer.create(player);
             
             if (container.isEmpty()) {
-                Epitaphs.log.debug("Player {} has no items on them, skipping grave creation", player.getStringUUID());
+                Epitaphs.log.debug("Player {} has no items, skipping grave creation", profile.getName());
                 return;
             }
             
             final BlockPos pos = GraveBlock.findSafeSpot(level, player.blockPosition());
+            Epitaphs.log.debug("Found safe grave spot for {} at {}", profile.getName(), pos);
+            
             final BlockPos below = pos.below();
             final BlockState state = level.getBlockState(below);
             
@@ -219,13 +250,12 @@ public class GraveEvents {
             level.setBlockAndUpdate(pos, EPRegistry.GRAVE.get().defaultBlockState());
             GraveBlockEntity grave = EPRegistry.GRAVE_BLOCK_ENTITY.get().getBlockEntity(level, pos);
             if (grave == null) {
-                Epitaphs.log.warn("Failed to create grave block entity at {} for {}", pos, player.getStringUUID());
+                Epitaphs.log.warn("Failed to create grave block entity at {} for {}", pos, profile.getName());
                 return;
             }
             
-            final GameProfile profile = player.getGameProfile();
             grave.setData(EPRegistry.GRAVE_DATA, new GraveData(profile.getId(), now, profile.getName()));
-            Epitaphs.log.info("Created grave at {} for {}", pos, player.getStringUUID());
+            Epitaphs.log.info("Created grave at {} for {}", pos, profile.getName());
             
             player.displayClientMessage(EPLanguage.MESSAGE_GRAVE_CREATED.text(
                     ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())).withStyle(style -> {
@@ -249,12 +279,14 @@ public class GraveEvents {
             player.getInventory().clearContent();
             if (CuriosHandler.isLoaded()) CuriosHandler.clearAll(player);
             if (AccessoriesHandler.isLoaded()) AccessoriesHandler.clearAll(player);
+            Epitaphs.log.debug("Cleared inventory for {}", profile.getName());
         }
         
         @SubscribeEvent(priority = EventPriority.LOWEST)
         private static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
             if (!(event.getEntity() instanceof ServerPlayer player)) return;
             SoulboundHandler.restorePlayer(player);
+            player.getPersistentData().putBoolean("epitaphs:player_is_dead", false);
         }
         
         @SubscribeEvent
@@ -292,7 +324,10 @@ public class GraveEvents {
                 }
                 
                 @Nullable ServerPlayer owner = server.getPlayerList().getPlayer(uuid);
-                if (owner != null) owner.setData(EPRegistry.LOCATION_DATA, owner.getData(EPRegistry.LOCATION_DATA).remove(timestamp));
+                if (owner != null) {
+                    owner.setData(EPRegistry.LOCATION_DATA, owner.getData(EPRegistry.LOCATION_DATA).remove(timestamp));
+                    Epitaphs.log.debug("Removed grave location for {} at {}", owner.getGameProfile().getName(), pos);
+                }
                 
             } else {
                 

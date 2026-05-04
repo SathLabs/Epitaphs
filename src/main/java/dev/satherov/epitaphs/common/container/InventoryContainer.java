@@ -70,7 +70,6 @@ public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemS
     
     @Override
     public void write(ServerPlayer player) {
-        Epitaphs.log.debug("Writing inventory container to player");
         final Inventory inventory = player.getInventory();
         
         for (int slot = 0; slot < this.items.size(); slot++) {
@@ -121,7 +120,7 @@ public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemS
     ///
     /// Creates an Inventory Container from a player data tag
     ///
-    /// @param access Registry Access used to parse ItemStacks
+    /// @param provider Registry Access used to parse ItemStacks
     /// @param data   player data compound tag
     ///
     /// @return Inventory Container instance
@@ -153,7 +152,6 @@ public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemS
     
     @Override
     public void write(HolderLookup.Provider provider, CompoundTag data) {
-        Epitaphs.log.debug("Writing inventory container to data");
         final ListTag inventory = new ListTag();
         
         for (int slot = 0; slot < this.items.size(); slot++) {

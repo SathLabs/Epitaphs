@@ -11,6 +11,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -22,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @SuppressWarnings({ "LoggingSimilarMessage", "DuplicatedCode" })
 public record AccessoriesContainer(Map<String, StackHandler> entries) implements SaveContainer<AccessoriesContainer> {
@@ -37,7 +39,7 @@ public record AccessoriesContainer(Map<String, StackHandler> entries) implements
     // ==================== ONLINE ====================
     
     public static AccessoriesContainer create(ServerPlayer player) {
-        Epitaphs.log.debug("Creating accessories container for {} - {}", player.getGameProfile().getName(), player.getStringUUID());
+        final GameProfile profile = player.getGameProfile();
         
         final Map<String, StackHandler> entries = new HashMap<>();
         Optional.ofNullable(AccessoriesCapability.get(player)).ifPresentOrElse(cap -> {
@@ -56,21 +58,18 @@ public record AccessoriesContainer(Map<String, StackHandler> entries) implements
                 
                 entries.put(key, new StackHandler(items, cosmetics));
             });
-        }, () -> Epitaphs.log.warn("No accessories capability found on player {} - {}", player.getGameProfile().getName(), player.getStringUUID()));
+        }, () -> Epitaphs.log.warn("No accessories capability found on player {} - {}", profile.getName(), profile.getId()));
         return new AccessoriesContainer(entries);
     }
     
     @Override
     public void write(ServerPlayer player) {
-        Epitaphs.log.debug("Writing accessories container to player");
+        final GameProfile profile = player.getGameProfile();
         
         Optional.ofNullable(AccessoriesCapability.get(player)).ifPresentOrElse(cap -> {
             cap.getContainers().forEach((key, value) -> {
                 final StackHandler handler = this.entries.get(key);
-                if (handler == null) {
-                    Epitaphs.log.debug("Handler for type '{}' does not exist in Container", key);
-                    return;
-                }
+                if (handler == null) return;
                 if (handler.isEmpty()) return;
                 
                 final int size = value.getSize();
@@ -103,14 +102,12 @@ public record AccessoriesContainer(Map<String, StackHandler> entries) implements
                             cosmeticStacks.setItem(i, stack);
                     }
                 }
-                
-                Epitaphs.log.debug("Wrote accessories handler {}", key);
             });
-        }, () -> Epitaphs.log.warn("No accessories capability found on player {} - {}", player.getGameProfile().getName(), player.getStringUUID()));
+        }, () -> Epitaphs.log.warn("No accessories capability found on player {} - {}", profile.getName(), profile.getId()));
     }
     
     public static AccessoriesContainer createSoulbound(ServerPlayer player) {
-        Epitaphs.log.debug("Creating accessories soulbound container for {} - {}", player.getGameProfile().getName(), player.getStringUUID());
+        final GameProfile profile = player.getGameProfile();
         
         final Map<String, StackHandler> entries = new HashMap<>();
         Optional.ofNullable(AccessoriesCapability.get(player)).ifPresentOrElse(cap -> {
@@ -131,14 +128,14 @@ public record AccessoriesContainer(Map<String, StackHandler> entries) implements
                 
                 entries.put(key, new StackHandler(items, cosmetics));
             });
-        }, () -> Epitaphs.log.warn("No accessories capability found on player {} - {}", player.getGameProfile().getName(), player.getStringUUID()));
+        }, () -> Epitaphs.log.warn("No accessories capability found on player {} - {}", profile.getName(), profile.getId()));
         return new AccessoriesContainer(entries);
     }
     
     // ==================== OFFLINE ====================
     
     public static AccessoriesContainer create(HolderLookup.Provider provider, CompoundTag data) {
-        Epitaphs.log.debug("Creating accessories container from data of {}", data.getUUID("UUID"));
+        final UUID uuid = data.getUUID("UUID");
         
         final Map<String, StackHandler> entries = new HashMap<>();
         final CompoundTag attachments = data.getCompound("neoforge:attachments");
@@ -160,26 +157,19 @@ public record AccessoriesContainer(Map<String, StackHandler> entries) implements
     
     @Override
     public void write(HolderLookup.Provider provider, CompoundTag data) {
-        Epitaphs.log.debug("Writing accessories container to data");
-        
         final CompoundTag attachments = data.getCompound("neoforge:attachments");
         final CompoundTag accessoriesInventory = attachments.getCompound("accessories:inventory_holder");
         final CompoundTag containers = accessoriesInventory.getCompound("accessories_containers");
         for (String key : containers.getAllKeys()) {
             final CompoundTag entry = containers.getCompound(key);
             final StackHandler handler = this.entries.get(key);
-            if (handler == null) {
-                Epitaphs.log.debug("Handler for type '{}' does not exist in Accessories Container", key);
-                continue;
-            }
+            if (handler == null) continue;
             if (handler.isEmpty()) continue;
             
             ListTag stacks = StackHandler.writeList(provider, handler.items());
             entry.put("items", stacks);
             ListTag cosmetics = StackHandler.writeList(provider, handler.cosmetics());
             entry.put("cosmetics", cosmetics);
-            
-            Epitaphs.log.debug("Wrote accessories handler {}", key);
         }
     }
     
