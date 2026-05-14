@@ -1,8 +1,8 @@
 # Epitaphs
 
 [![Maven](https://img.shields.io/maven-metadata/v?metadataUrl=https://maven.satherov.dev/releases/dev/satherov/epitaphs/epitaphs/maven-metadata.xml&style=for-the-badge&label=Maven&logo=apachemaven&color=C71A36)](https://maven.satherov.dev/#/releases/dev/satherov/epitaphs/epitaphs)
-[![CurseForge](https://img.shields.io/curseforge/v/1325482?style=for-the-badge&label=CurseForge&logo=curseforge&color=F16436)](https://www.curseforge.com/minecraft/mc-mods/epitaphs)
-[![Downloads](https://img.shields.io/curseforge/dt/1325482?style=for-the-badge&label=Downloads&logo=curseforge&color=F16436)](https://www.curseforge.com/minecraft/mc-mods/epitaphs)
+[![CurseForge](https://img.shields.io/curseforge/dt/1325482?style=for-the-badge&label=Downloads&logo=curseforge&color=F16436)](https://www.curseforge.com/minecraft/mc-mods/epitaphs)
+[![GitHub](https://img.shields.io/badge/GitHub-Epitaphs-181717?style=for-the-badge&logo=github)](https://github.com/SathLabs/Epitaphs)
 
 Epitaphs is just a basic grave mod that does it's job of spawning graves and that's it. Also works with curios and accessories (only available in 1.21.1 currently)
 
