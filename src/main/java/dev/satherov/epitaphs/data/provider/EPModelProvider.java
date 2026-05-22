@@ -11,6 +11,7 @@ import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
 import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
 import net.minecraft.client.data.models.model.ItemModelUtils;
+import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
@@ -71,5 +72,7 @@ public class EPModelProvider extends ModelProvider {
                 grave.asItem(),
                 ItemModelUtils.plainModel(graveItemModelLoc)
         );
+        
+        itemModels.generateFlatItem(EPRegistry.SOUL_BOTTLE.get(), ModelTemplates.FLAT_ITEM);
     }
 }

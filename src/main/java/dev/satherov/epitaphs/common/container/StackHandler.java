@@ -58,11 +58,6 @@ record StackHandler(NonNullList<ItemStack> items, NonNullList<ItemStack> cosmeti
         return new StackHandler(items, cosmetics);
     }
     
-    void write(ValueOutput output) {
-        StackHandler.writeList(output.child("Stacks"), this.items);
-        StackHandler.writeList(output.child("Cosmetics"), this.cosmetics);
-    }
-    
     private static NonNullList<ItemStack> createList(ValueInput input) {
         final int size = input.getIntOr("Size", 0);
         final NonNullList<ItemStack> items = NonNullList.withSize(size, ItemStack.EMPTY);
@@ -80,6 +75,11 @@ record StackHandler(NonNullList<ItemStack> items, NonNullList<ItemStack> cosmeti
             list.add(new ItemStackWithSlot(slot, stack));
         }
         output.putInt("Size", items.size());
+    }
+    
+    void write(ValueOutput output) {
+        StackHandler.writeList(output.child("Stacks"), this.items);
+        StackHandler.writeList(output.child("Cosmetics"), this.cosmetics);
     }
     
     List<ItemStack> merge(StackHandler other) {

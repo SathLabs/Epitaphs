@@ -11,14 +11,14 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 ///
 public record SoulboundData(PlayerContainer container, int experience) {
     
-    public static SoulboundData empty() {
-        return new SoulboundData(PlayerContainer.empty(), 0);
-    }
-    
     public static final MapCodec<SoulboundData> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             PlayerContainer.CODEC.fieldOf("container").forGetter(SoulboundData::container),
             Codec.INT.fieldOf("experience").forGetter(SoulboundData::experience)
     ).apply(instance, SoulboundData::new));
+    
+    public static SoulboundData empty() {
+        return new SoulboundData(PlayerContainer.empty(), 0);
+    }
     
     ///
     /// Checks if this {@link SoulboundData} is empty.

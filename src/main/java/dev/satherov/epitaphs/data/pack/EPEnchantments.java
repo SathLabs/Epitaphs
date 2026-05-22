@@ -28,11 +28,11 @@ public class EPEnchantments {
                                 Enchantment.definition(
                                         items.getOrThrow(EPRegistry.SOULBOUND_ENCHANTABLE),
                                         items.getOrThrow(EPRegistry.SOULBOUND_ENCHANTABLE),
-                                        6,
                                         1,
-                                        Enchantment.dynamicCost(1, 0),
-                                        Enchantment.dynamicCost(100, 0),
-                                        0,
+                                        1,
+                                        Enchantment.constantCost(0),
+                                        Enchantment.constantCost(0),
+                                        1,
                                         EquipmentSlotGroup.ANY
                                 )
                         )
@@ -47,11 +47,11 @@ public class EPEnchantments {
                                 Enchantment.definition(
                                         items.getOrThrow(EPRegistry.EXPERIENCE_SOULBOUND_ENCHANTABLE),
                                         items.getOrThrow(EPRegistry.EXPERIENCE_SOULBOUND_ENCHANTABLE),
-                                        2,
                                         1,
-                                        Enchantment.dynamicCost(1, 0),
-                                        Enchantment.dynamicCost(100, 0),
-                                        0,
+                                        1,
+                                        Enchantment.constantCost(0),
+                                        Enchantment.constantCost(0),
+                                        1,
                                         EquipmentSlotGroup.ARMOR
                                 )
                         )

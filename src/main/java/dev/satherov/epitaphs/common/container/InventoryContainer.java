@@ -1,6 +1,5 @@
 package dev.satherov.epitaphs.common.container;
 
-import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.common.data.SoulboundHandler;
 
 import net.minecraft.core.NonNullList;
@@ -68,29 +67,6 @@ public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemS
         return new InventoryContainer(items, armor, offhand);
     }
     
-    @Override
-    public void write(ServerPlayer player) {
-        final Inventory inventory = player.getInventory();
-        
-        for (int slot = 0; slot < this.items.size(); slot++) {
-            final ItemStack stack = this.items.get(slot);
-            if (stack.isEmpty()) continue;
-            inventory.setItem(slot, stack.copyAndClear());
-        }
-        
-        for (int slot = 0; slot < this.armor.size(); slot++) {
-            final ItemStack stack = this.armor.get(slot);
-            if (stack.isEmpty()) continue;
-            inventory.setItem(Inventory.INVENTORY_SIZE + slot, stack.copyAndClear());
-        }
-        
-        for (int slot = 0; slot < this.offhand.size(); slot++) {
-            final ItemStack stack = this.offhand.get(slot);
-            if (stack.isEmpty()) continue;
-            inventory.setItem(Inventory.SLOT_OFFHAND + slot, stack.copyAndClear());
-        }
-    }
-    
     public static InventoryContainer createSoulbound(ServerPlayer player) {
         final Inventory inventory = player.getInventory();
         
@@ -114,8 +90,6 @@ public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemS
         
         return new InventoryContainer(items, armor, offhand);
     }
-    
-    // ==================== OFFLINE ====================
     
     ///
     /// Creates an Inventory Container from player data
@@ -145,6 +119,31 @@ public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemS
         offhand.set(0, equipment.get(EquipmentSlot.OFFHAND));
         
         return new InventoryContainer(items, armor, offhand);
+    }
+    
+    // ==================== OFFLINE ====================
+    
+    @Override
+    public void write(ServerPlayer player) {
+        final Inventory inventory = player.getInventory();
+        
+        for (int slot = 0; slot < this.items.size(); slot++) {
+            final ItemStack stack = this.items.get(slot);
+            if (stack.isEmpty()) continue;
+            inventory.setItem(slot, stack.copyAndClear());
+        }
+        
+        for (int slot = 0; slot < this.armor.size(); slot++) {
+            final ItemStack stack = this.armor.get(slot);
+            if (stack.isEmpty()) continue;
+            inventory.setItem(Inventory.INVENTORY_SIZE + slot, stack.copyAndClear());
+        }
+        
+        for (int slot = 0; slot < this.offhand.size(); slot++) {
+            final ItemStack stack = this.offhand.get(slot);
+            if (stack.isEmpty()) continue;
+            inventory.setItem(Inventory.SLOT_OFFHAND + slot, stack.copyAndClear());
+        }
     }
     
     @Override

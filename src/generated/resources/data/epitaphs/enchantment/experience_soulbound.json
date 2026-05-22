@@ -1,5 +1,5 @@
 {
-  "anvil_cost": 0,
+  "anvil_cost": 1,
   "description": {
     "translate": "enchantment.epitaphs.experience_soulbound"
   },
@@ -8,12 +8,12 @@
   },
   "exclusive_set": "minecraft:binding_curse",
   "max_cost": {
-    "base": 100,
+    "base": 0,
     "per_level_above_first": 0
   },
   "max_level": 1,
   "min_cost": {
-    "base": 1,
+    "base": 0,
     "per_level_above_first": 0
   },
   "primary_items": "#c:enchantable/experience_soulbound",
@@ -21,5 +21,5 @@
     "armor"
   ],
   "supported_items": "#c:enchantable/experience_soulbound",
-  "weight": 2
+  "weight": 1
 }

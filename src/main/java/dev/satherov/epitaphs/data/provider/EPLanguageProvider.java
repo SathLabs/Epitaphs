@@ -21,7 +21,9 @@ public class EPLanguageProvider extends LanguageProvider {
     
     @Override
     protected void addTranslations() {
+        this.add("creative_tab.epitaphs", "Epitaphs");
         this.addBlock(EPRegistry.GRAVE, "Grave");
+        this.addItem(EPRegistry.SOUL_BOTTLE, "Soul in a Bottle");
         EPEnchantmentLang.translate(this::add);
         EPCommandLang.translate(this::add);
         EPMessageLang.translate(this::add);

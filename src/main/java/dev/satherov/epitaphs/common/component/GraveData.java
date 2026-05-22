@@ -25,24 +25,23 @@ import java.util.UUID;
 ///
 public record GraveData(UUID owner, Instant timestamp, String name) {
     
-    public static GraveData empty() {
-        return new GraveData(UUID.nameUUIDFromBytes(new byte[0]), Instant.EPOCH, "Unknown");
-    }
-    
-    public GraveData(ServerPlayer player, Instant timestamp) {
-        this(player.getUUID(), timestamp, player.getGameProfile().name());
-    }
-    
     public static final MapCodec<GraveData> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             SLCodec.UUID.fieldOf("uuid").forGetter(GraveData::owner),
             SLCodec.INSTANT.fieldOf("timestamp").forGetter(GraveData::timestamp),
             Codec.STRING.optionalFieldOf("name", "Unknown").forGetter(GraveData::name)
     ).apply(instance, GraveData::new));
-    
     public static final StreamCodec<ByteBuf, GraveData> STREAM_CODEC = StreamCodec.composite(
             SLStreamCodec.UUID, GraveData::owner,
             SLStreamCodec.INSTANT, GraveData::timestamp,
             ByteBufCodecs.STRING_UTF8, GraveData::name,
             GraveData::new
     );
+    
+    public GraveData(ServerPlayer player, Instant timestamp) {
+        this(player.getUUID(), timestamp, player.getGameProfile().name());
+    }
+    
+    public static GraveData empty() {
+        return new GraveData(UUID.nameUUIDFromBytes(new byte[0]), Instant.EPOCH, "Unknown");
+    }
 }

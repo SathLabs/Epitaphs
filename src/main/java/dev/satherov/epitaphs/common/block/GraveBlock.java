@@ -10,6 +10,7 @@ import dev.satherov.sathlib.common.block.SLBlockProperties;
 import dev.satherov.sathlib.core.annotations.NothingNull;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -17,11 +18,15 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
@@ -33,6 +38,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -47,6 +53,7 @@ import java.util.UUID;
 public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterloggedBlock {
     
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
+    public static final BooleanProperty SOULS = BooleanProperty.create("souls");
     
     private static final VoxelShape SHAPE = Shapes.or(
             Block.box(0, 0, 0, 16, 2, 16), // Ground
@@ -60,9 +67,45 @@ public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterlogge
         this.registerDefaultState(this.defaultBlockState().setValue(BlockStateProperties.WATERLOGGED, false));
     }
     
+    ///
+    /// Finds a safe spot for the grave to be placed. Snakes outwards from the given chunk
+    /// and will try to find an unoccupied spot with solid ground or a block where dirt can be spawned below
+    ///
+    /// @param level The level to search in.
+    /// @param death The position of the player's death and start position to search.
+    ///
+    public static BlockPos findSafeSpot(ServerLevel level, BlockPos death) {
+        BlockPos origin = new BlockPos(
+                death.getX(),
+                Mth.clamp(death.getY(), level.getMinY() + 1, level.getMaxY() - 1),
+                death.getZ()
+        ).immutable();
+        
+        List<BlockPos> candidates = new ArrayList<>();
+        List<BlockPos> fallbacks = new ArrayList<>();
+        level.getChunk(origin).findBlocks(
+                state -> state.isAir() || state.is(BlockTags.REPLACEABLE),
+                (pos, _) -> {
+                    final BlockPos candidate = pos.immutable();
+                    BlockState below = level.getBlockState(candidate.below());
+                    if (!level.isInWorldBounds(candidate) || !level.isInWorldBounds(candidate.below())) return;
+                    if (!(below.isAir() || below.is(BlockTags.REPLACEABLE))) candidates.add(candidate);
+                    else fallbacks.add(candidate);
+                }
+        );
+        
+        return candidates.stream()
+                .min(Comparator.comparingDouble(origin::distSqr))
+                .orElse(fallbacks.stream()
+                        .min(Comparator.comparingDouble(origin::distSqr))
+                        .orElseGet(origin::immutable)
+                );
+    }
+    
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(GraveBlock.WATERLOGGED);
+        builder.add(GraveBlock.SOULS);
     }
     
     @Override
@@ -121,38 +164,26 @@ public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterlogge
         DataHandler.invalidate(server, uuid, timestamp);
     }
     
-    ///
-    /// Finds a safe spot for the grave to be placed. Snakes outwards from the given chunk
-    /// and will try to find an unoccupied spot with solid ground or a block where dirt can be spawned below
-    ///
-    /// @param level The level to search in.
-    /// @param death The position of the player's death and start position to search.
-    ///
-    public static BlockPos findSafeSpot(ServerLevel level, BlockPos death) {
-        BlockPos origin = new BlockPos(
-                death.getX(),
-                Mth.clamp(death.getY(), level.getMinY() + 1, level.getMaxY() - 1),
-                death.getZ()
-        ).immutable();
-        
-        List<BlockPos> candidates = new ArrayList<>();
-        List<BlockPos> fallbacks = new ArrayList<>();
-        level.getChunk(origin).findBlocks(
-                state -> state.isAir() || state.is(BlockTags.REPLACEABLE),
-                (pos, _) -> {
-                    final BlockPos candidate = pos.immutable();
-                    BlockState below = level.getBlockState(candidate.below());
-                    if (!level.isInWorldBounds(candidate) || !level.isInWorldBounds(candidate.below())) return;
-                    if (!(below.isAir() || below.is(BlockTags.REPLACEABLE))) candidates.add(candidate);
-                    else fallbacks.add(candidate);
-                }
-        );
-        
-        return candidates.stream()
-                .min(Comparator.comparingDouble(origin::distSqr))
-                .orElse(fallbacks.stream()
-                        .min(Comparator.comparingDouble(origin::distSqr))
-                        .orElseGet(origin::immutable)
-                );
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        if (level.isClientSide() && state.getValue(GraveBlock.SOULS) && random.nextFloat() < 0.2f) {
+            final int count = random.nextIntBetweenInclusive(1, 4);
+            for (int i = 0; i < count; i++) {
+                final double x = (pos.getX() + 0.5) + random.nextGaussian() * 0.4;
+                final double y = (pos.getY() + 0.5) + random.nextGaussian() * 0.6;
+                final double z = (pos.getZ() + 0.5) + random.nextGaussian() * 0.4;
+                
+                level.addParticle(ParticleTypes.SCULK_SOUL, x, y, z, 0.0, 0.0, 0.0);
+            }
+        }
+    }
+    
+    @Override
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (state.getBlock() instanceof GraveBlock && state.getValue(GraveBlock.SOULS)) {
+            level.setBlockAndUpdate(pos, state.setValue(GraveBlock.SOULS, false));
+            return InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(EPRegistry.SOUL_BOTTLE.get().getDefaultInstance());
+        }
+        return InteractionResult.CONSUME;
     }
 }

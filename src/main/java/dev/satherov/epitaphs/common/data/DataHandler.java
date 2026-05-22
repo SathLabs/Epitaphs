@@ -45,12 +45,12 @@ import java.util.stream.Stream;
 @UtilityClass
 public class DataHandler {
     
-    private static final Locale SYS_LOCALE = Locale.getDefault(Locale.Category.FORMAT);
-    private static final String DATE_FORMATTER = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, null, IsoChronology.INSTANCE, DataHandler.SYS_LOCALE);
-    public static final DateTimeFormatter SYSTEM_FORMATTER = DateTimeFormatter.ofPattern(DataHandler.DATE_FORMATTER + " HH:mm:ss", DataHandler.SYS_LOCALE).withZone(ZoneId.systemDefault());
     public static final DateTimeFormatter ISO8601_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneOffset.UTC);
     public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss").withZone(ZoneOffset.UTC);
     public static final Pattern DATE_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}");
+    private static final Locale SYS_LOCALE = Locale.getDefault(Locale.Category.FORMAT);
+    private static final String DATE_FORMATTER = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, null, IsoChronology.INSTANCE, DataHandler.SYS_LOCALE);
+    public static final DateTimeFormatter SYSTEM_FORMATTER = DateTimeFormatter.ofPattern(DataHandler.DATE_FORMATTER + " HH:mm:ss", DataHandler.SYS_LOCALE).withZone(ZoneId.systemDefault());
     
     ///
     /// Gets the file path to the world folder.

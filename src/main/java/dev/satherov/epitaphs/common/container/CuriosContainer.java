@@ -45,6 +45,34 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
         return new CuriosContainer(entries);
     }
     
+    public static CuriosContainer createSoulbound(ServerPlayer player) {
+        final Map<String, StackHandler> entries = new HashMap<>();
+        CuriosApi.getCuriosInventory(player).ifPresentOrElse(inventory -> {
+            inventory.getCurios().forEach((key, value) -> {
+                final IDynamicStackHandler itemStacks = value.getStacks();
+                final IDynamicStackHandler cosmeticStacks = value.getCosmeticStacks();
+                entries.put(key, StackHandler.createSoulbound(itemStacks.getSlots(), itemStacks::getStackInSlot, cosmeticStacks.getSlots(), cosmeticStacks::getStackInSlot));
+            });
+        }, () -> Epitaphs.log.warn("No curios capability found on player {} - {}", player.getGameProfile().name(), player.getStringUUID()));
+        return new CuriosContainer(entries);
+    }
+    
+    public static CuriosContainer create(ValueInput input) {
+        final Map<String, StackHandler> entries = new HashMap<>();
+        final ValueInput.ValueInputList curios = input.rawChildOrEmpty("neoforge:attachments")
+                .rawChildOrEmpty("curios:inventory")
+                .childrenListOrEmpty("Curios");
+        
+        curios.forEach(entry -> entry.keySet().forEach(identifier -> {
+            if (identifier.isEmpty()) return;
+            entries.put(identifier, StackHandler.create(entry.childOrEmpty(identifier)));
+        }));
+        
+        return new CuriosContainer(entries);
+    }
+    
+    // ==================== OFFLINE ====================
+    
     @Override
     public void write(ServerPlayer player) {
         CuriosApi.getCuriosInventory(player).ifPresentOrElse(inventory -> {
@@ -90,34 +118,6 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
                 }
             });
         }, () -> Epitaphs.log.warn("No curios capability found on player {} - {}", player.getGameProfile().name(), player.getStringUUID()));
-    }
-    
-    public static CuriosContainer createSoulbound(ServerPlayer player) {
-        final Map<String, StackHandler> entries = new HashMap<>();
-        CuriosApi.getCuriosInventory(player).ifPresentOrElse(inventory -> {
-            inventory.getCurios().forEach((key, value) -> {
-                final IDynamicStackHandler itemStacks = value.getStacks();
-                final IDynamicStackHandler cosmeticStacks = value.getCosmeticStacks();
-                entries.put(key, StackHandler.createSoulbound(itemStacks.getSlots(), itemStacks::getStackInSlot, cosmeticStacks.getSlots(), cosmeticStacks::getStackInSlot));
-            });
-        }, () -> Epitaphs.log.warn("No curios capability found on player {} - {}", player.getGameProfile().name(), player.getStringUUID()));
-        return new CuriosContainer(entries);
-    }
-    
-    // ==================== OFFLINE ====================
-    
-    public static CuriosContainer create(ValueInput input) {
-        final Map<String, StackHandler> entries = new HashMap<>();
-        final ValueInput.ValueInputList curios = input.rawChildOrEmpty("neoforge:attachments")
-                .rawChildOrEmpty("curios:inventory")
-                .childrenListOrEmpty("Curios");
-        
-        curios.forEach(entry -> entry.keySet().forEach(identifier -> {
-            if (identifier.isEmpty()) return;
-            entries.put(identifier, StackHandler.create(entry.childOrEmpty(identifier)));
-        }));
-        
-        return new CuriosContainer(entries);
     }
     
     @Override

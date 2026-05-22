@@ -35,6 +35,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.permissions.Permission;
 import net.minecraft.server.permissions.PermissionLevel;
 import net.minecraft.util.context.ContextKey;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
@@ -152,7 +153,7 @@ public final class ClientGraveEvents {
         graphics.nextStratum();
         graphics.tooltip(
                 mc.font,
-                ClientGraveEvents.createTooltip(player, grave.getData(EPRegistry.GRAVE_DATA)),
+                ClientGraveEvents.createTooltip(state, player, grave.getData(EPRegistry.GRAVE_DATA)),
                 graphics.guiWidth() / 2 + 3,
                 graphics.guiHeight() / 2,
                 DefaultTooltipPositioner.INSTANCE,
@@ -168,7 +169,7 @@ public final class ClientGraveEvents {
         return EPMessageLang.MESSAGE_DISTANCE_TO_GRAVE.translate(SLComponent.squareBrackets(argument).style(ChatFormatting.GOLD));
     }
     
-    private static List<ClientTooltipComponent> createTooltip(LocalPlayer player, GraveData data) {
+    private static List<ClientTooltipComponent> createTooltip(BlockState state, LocalPlayer player, GraveData data) {
         final String name = data.name();
         final UUID uuid = data.owner();
         final String timestamp = EPConfig.Client.getTooltipFormatter().formatter().format(data.timestamp());
@@ -183,6 +184,9 @@ public final class ClientGraveEvents {
                 lines.add(Component.translatable(EPMessageLang.MESSAGE_GRAVE_NO_ACCESS.key(), name).withStyle(ChatFormatting.RED));
             }
         }
+        
+        if (state.getValue(GraveBlock.SOULS)) lines.add(EPMessageLang.MESSAGE_SOULS_HINT.translate(ChatFormatting.GOLD));
+        else lines.add(EPMessageLang.MESSAGE_SOULS_NONE.translate(ChatFormatting.GRAY));
         
         return lines.stream()
                 .map(Component::getVisualOrderText)

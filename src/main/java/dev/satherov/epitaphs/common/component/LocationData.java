@@ -30,6 +30,10 @@ import java.util.TreeMap;
 ///
 public record LocationData(TreeMap<Instant, GlobalPos> positions) {
     
+    public static final MapCodec<LocationData> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            SLCodec.map(SLCodec.INSTANT, GlobalPos.CODEC, TreeMap::new).fieldOf("positions").forGetter(LocationData::positions)
+    ).apply(instance, LocationData::new));
+    public static final StreamCodec<ByteBuf, LocationData> STREAM_CODEC = SLStreamCodec.map(SLStreamCodec.INSTANT, GlobalPos.STREAM_CODEC, TreeMap::new).map(LocationData::new, LocationData::positions);
     private static final String ATTACHMENT_ID = Epitaphs.id("grave_locations").toString();
     
     public static LocationData empty() {
@@ -41,12 +45,6 @@ public record LocationData(TreeMap<Instant, GlobalPos> positions) {
         if (tag == null) return LocationData.empty();
         return LocationData.CODEC.codec().parse(NbtOps.INSTANCE, tag).getOrThrow(IllegalStateException::new);
     }
-    
-    public static final MapCodec<LocationData> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            SLCodec.map(SLCodec.INSTANT, GlobalPos.CODEC, TreeMap::new).fieldOf("positions").forGetter(LocationData::positions)
-    ).apply(instance, LocationData::new));
-    
-    public static final StreamCodec<ByteBuf, LocationData> STREAM_CODEC = SLStreamCodec.map(SLStreamCodec.INSTANT, GlobalPos.STREAM_CODEC, TreeMap::new).map(LocationData::new, LocationData::positions);
     
     ///
     /// Adds a new entry to the list.

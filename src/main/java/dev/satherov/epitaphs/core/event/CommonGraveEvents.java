@@ -13,14 +13,18 @@ import dev.satherov.epitaphs.common.data.BackupType;
 import dev.satherov.epitaphs.common.data.DataHandler;
 import dev.satherov.epitaphs.common.data.OnlineHandler;
 import dev.satherov.epitaphs.common.data.SoulboundHandler;
+import dev.satherov.epitaphs.common.item.SoulBottleItem;
 import dev.satherov.epitaphs.compat.CuriosHandler;
 import dev.satherov.epitaphs.core.EPRegistry;
+import dev.satherov.epitaphs.data.pack.EPEnchantments;
 import dev.satherov.sathlib.network.chat.SLComponent;
 import dev.satherov.sathlib.util.SLStringUtils;
 
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.event.AnvilUpdateEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -32,7 +36,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
@@ -45,7 +53,13 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.BottleItem;
+import net.minecraft.world.item.ExperienceBottleItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -61,6 +75,8 @@ import java.util.UUID;
 
 @EventBusSubscriber(modid = Epitaphs.MOD_ID)
 public class CommonGraveEvents {
+    
+    private static Instant LAST_BACKUP = Instant.MIN;
     
     @SubscribeEvent
     public static void onRegisterCommands(final RegisterCommandsEvent event) {
@@ -185,14 +201,30 @@ public class CommonGraveEvents {
             return;
         }
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        if (!(level.getBlockEntity(event.getPos()) instanceof GraveBlockEntity entity)) return;
         
         final MinecraftServer server = level.getServer();
         final BlockPos pos = event.getPos();
+        final BlockState state = level.getBlockState(pos);
+        
+        if (!state.is(EPRegistry.GRAVE.get())) return;
+        if (!(level.getBlockEntity(pos) instanceof GraveBlockEntity entity)) return;
+        
+        final ItemStack stack = player.getMainHandItem();
         final GraveData data = entity.getData(EPRegistry.GRAVE_DATA);
         final Instant timestamp = data.timestamp();
         final UUID uuid = data.owner();
         final String name = data.name();
+        
+        if (state.getValue(GraveBlock.SOULS) && stack.getItem() instanceof BottleItem) {
+            level.setBlockAndUpdate(pos, state.setValue(GraveBlock.SOULS, false));
+            stack.shrink(1);
+            final ItemStack bottle = EPRegistry.SOUL_BOTTLE.get().getDefaultInstance();
+            
+            if (stack.isEmpty()) player.setItemSlot(EquipmentSlot.MAINHAND, bottle);
+            else if (!player.getInventory().add(bottle)) player.drop(bottle, true);
+            level.playSound(null, pos, SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.BLOCKS, 1.0F, 1.0F);
+            return;
+        }
         
         if (player.createCommandSourceStack().permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.GAMEMASTERS))) { // Allow operators to open graves that aren't theirs
             
@@ -241,7 +273,44 @@ public class CommonGraveEvents {
         event.setCanceled(true);
     }
     
-    private static Instant LAST_BACKUP = Instant.MIN;
+    @SubscribeEvent
+    public static void onAnvilCraftUpdated(final AnvilUpdateEvent event) {
+        if (!(event.getPlayer() instanceof ServerPlayer player)) return;
+        final RegistryAccess access = player.registryAccess();
+        final HolderGetter<Enchantment> lookup = access.lookupOrThrow(Registries.ENCHANTMENT);
+        
+        final ItemStack right = event.getRight();
+        final ItemStack left = event.getLeft();
+        
+        final boolean experienceSoulboundValid = (left.is(Tags.Items.ARMORS) && EnchantmentHelper.has(left, EPRegistry.SOULBOUND.get())) && right.getItem() instanceof ExperienceBottleItem;
+        final boolean soulboundValid = EnchantmentHelper.canStoreEnchantments(left) && right.getItem() instanceof SoulBottleItem && !EnchantmentHelper.has(left, EPRegistry.EXPERIENCE_SOULBOUND.get());
+        
+        if (!(soulboundValid || experienceSoulboundValid)) return;
+        
+        final Holder<Enchantment> soulbound = lookup.getOrThrow(EPEnchantments.SOULBOUND);
+        final Holder<Enchantment> experienceSoulbound = lookup.getOrThrow(EPEnchantments.EXPERIENCE_SOULBOUND);
+        
+        final ItemStack result = left.copy();
+        ItemEnchantments.Mutable enchantments = new ItemEnchantments.Mutable(EnchantmentHelper.getEnchantmentsForCrafting(result));
+        
+        if (experienceSoulboundValid) {
+            for (Holder<Enchantment> entry : enchantments.keySet()) {
+                if (!Enchantment.areCompatible(experienceSoulbound, entry)) return;
+            }
+            enchantments.set(experienceSoulbound, 1);
+            enchantments.removeIf(x -> x.equals(soulbound));
+        } else {
+            for (Holder<Enchantment> entry : enchantments.keySet()) {
+                if (!Enchantment.areCompatible(soulbound, entry)) return;
+            }
+            enchantments.set(soulbound, 1);
+        }
+        
+        EnchantmentHelper.setEnchantments(result, enchantments.toImmutable());
+        event.setMaterialCost(1);
+        event.setXpCost(1);
+        event.setOutput(result);
+    }
     
     @SubscribeEvent
     private static void scheduleBackup(ServerTickEvent.Post event) {

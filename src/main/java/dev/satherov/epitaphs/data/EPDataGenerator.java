@@ -5,7 +5,6 @@ import dev.satherov.epitaphs.data.pack.EPEnchantments;
 import dev.satherov.epitaphs.data.provider.EPLanguageProvider;
 import dev.satherov.epitaphs.data.provider.EPModelProvider;
 import dev.satherov.epitaphs.data.provider.tags.EPBlockTagsProvider;
-import dev.satherov.epitaphs.data.provider.tags.EPEnchantmentTagsProvider;
 import dev.satherov.epitaphs.data.provider.tags.EPItemTagProvider;
 
 import net.neoforged.bus.api.SubscribeEvent;
@@ -30,7 +29,6 @@ public class EPDataGenerator {
         
         event.createProvider(EPBlockTagsProvider::new);
         event.createProvider(EPItemTagProvider::new);
-        event.createProvider(EPEnchantmentTagsProvider::new);
         
         event.createDatapackRegistryObjects(EPDataGenerator.BUILDER);
     }
