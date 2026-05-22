@@ -36,17 +36,25 @@ Epitaphs is just a basic grave mod that does it's job of spawning graves and tha
   - the target dimension if it is not
   - a glowing outline to make the grave visible through blocks
 
+## Soul in a Bottle
+
+- The Soul in a Bottle is an item that can be obtained by right-clicking a grave with a lingering soul with a bottle.
+- Upon consumption, it teleports the player to their last grave location.
+- When combined with a valid item in an anvil, it will apply the Soulbound enchantment to the item.
+
 ## Enchantments
 
 ### Soulbound
 
 - Keeps the item on the player through death
+- Applied when an item is combined with a Soul in a Bottle in an anvil.
 - With curio items sometimes may not be inserted into the exact slot as they were before death due to the way slot modifiers apply
 
 ### Experience Soulbound
 
 - Same features as Soulbound
-- Additionally also retains 1/4th of the players total xp per enchanted armor piece
+- Applied when an armor piece with the soulbound enchantment is combined with an experience bottle in an anvil.
+- Additionally, also retains 1/4th of the players total xp per enchanted armor piece
 - With all four armor pieces enchanted, the player keeps 100% of their XP.
 
 ## Commands
