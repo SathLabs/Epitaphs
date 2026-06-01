@@ -74,7 +74,8 @@ public class DataHandler {
     ///
     public static Path getPlayerDataStorage(MinecraftServer server) {
         return DataHandler.world(server)
-                .resolve("playerdata");
+                .resolve("players")
+                .resolve("data");
     }
     
     ///
