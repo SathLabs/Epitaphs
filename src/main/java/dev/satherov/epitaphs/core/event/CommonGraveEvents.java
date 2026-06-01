@@ -282,8 +282,8 @@ public class CommonGraveEvents {
         final ItemStack right = event.getRight();
         final ItemStack left = event.getLeft();
         
-        final boolean experienceSoulboundValid = (left.is(Tags.Items.ARMORS) && EnchantmentHelper.has(left, EPRegistry.SOULBOUND.get())) && right.getItem() instanceof ExperienceBottleItem;
-        final boolean soulboundValid = EnchantmentHelper.canStoreEnchantments(left) && right.getItem() instanceof SoulBottleItem && !EnchantmentHelper.has(left, EPRegistry.EXPERIENCE_SOULBOUND.get());
+        final boolean soulboundValid = left.is(EPRegistry.SOULBOUND_ENCHANTABLE) && !EnchantmentHelper.has(left, EPRegistry.EXPERIENCE_SOULBOUND.get()) && right.getItem() instanceof SoulBottleItem;
+        final boolean experienceSoulboundValid = left.is(EPRegistry.EXPERIENCE_SOULBOUND_ENCHANTABLE) && EnchantmentHelper.has(left, EPRegistry.SOULBOUND.get()) && right.getItem() instanceof ExperienceBottleItem;
         
         if (!(soulboundValid || experienceSoulboundValid)) return;
         
