@@ -162,7 +162,7 @@ public class DataHandler {
     ///
     public static LinkedList<String> listFiles(MinecraftServer server, UUID player) {
         Path storage = DataHandler.getFileStorage(server).resolve(player.toString());
-        if (!Files.exists(storage) && !Files.isDirectory(storage)) {
+        if (!Files.exists(storage) || !Files.isDirectory(storage)) {
             Epitaphs.log.debug("No player directory found at {}", storage.getFileName());
             return new LinkedList<>();
         }

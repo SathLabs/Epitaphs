@@ -2,6 +2,7 @@ package dev.satherov.epitaphs.common.command;
 
 import lombok.experimental.UtilityClass;
 
+import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.client.lang.EPCommandLang;
 import dev.satherov.epitaphs.client.lang.EPMessageLang;
 import dev.satherov.epitaphs.common.component.LocationData;
@@ -166,7 +167,7 @@ public class HighlightCommand {
         
         final MinecraftServer server = source.getServer();
         final GameProfile profile = EPCommands.getProfile(server, uuid);
-        final Path playerData = DataHandler.getPlayerDataStorage(server).resolve(uuid.toString());
+        final Path playerData = DataHandler.getPlayerDataStorage(server).resolve(uuid + ".dat");
         
         try {
             CompoundTag data = NbtIo.readCompressed(playerData, NbtAccounter.unlimitedHeap());
@@ -192,6 +193,7 @@ public class HighlightCommand {
             return 1;
         } catch (IOException | IllegalStateException e) {
             source.sendFailure(EPCommandLang.COMMAND_LIST_FAILURE_FILE.translate(EPCommands.formatPlayer(profile)).style(ChatFormatting.RED));
+            Epitaphs.log.warn("Failed to read player data for {}", uuid, e);
             return 0;
         }
     }
