@@ -28,6 +28,8 @@ public enum EPMessageLang implements SLTranslatable {
     MESSAGE_SOUL_BOTTLE_USE          ("soul_bottle_use",           "Will teleport you to your last grave after drinking"),
     MESSAGE_SOULBOUND_HINT           ("soulbound_hint",            "Applies the soulbound enchantment when combined in an anvil"),
     MESSAGE_EXPERIENCE_SOULBOUND_HINT("experience_soulbound_hint", "Combine soulbound armor with an experience bottle to apply experience soulbound"),
+    MESSAGE_FILE_PURGING_WARNING     ("file_purging_warning",      "This server has automatic file purging enabled."),
+    MESSAGE_FILE_PURGED_INFO         ("file_purged_info",          "This save was created before %s and automatically deleted!"),
     // @formatter:on
     ;
     

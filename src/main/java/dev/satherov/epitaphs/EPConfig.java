@@ -44,6 +44,10 @@ public final class EPConfig {
     public static final class Server {
         
         @Range(min = 0)
+        @ConfigEntry(comment = "Amount of days to keep backups before permanently removing them. 0 to disable")
+        private static @Getter @Setter int backupMaxAgeDays = 0;
+        
+        @Range(min = 0)
         @ConfigEntry(comment = "Time in minutes between an automatic backup of all players. 0 to disable.")
         private static @Getter @Setter int backupInterval = 10;
         

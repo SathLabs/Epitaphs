@@ -23,7 +23,6 @@ import dev.satherov.sathlib.util.SLStringUtils;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.event.AnvilUpdateEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
@@ -75,8 +74,6 @@ import java.util.UUID;
 
 @EventBusSubscriber(modid = Epitaphs.MOD_ID)
 public class CommonGraveEvents {
-    
-    private static Instant LAST_BACKUP = Instant.MIN;
     
     @SubscribeEvent
     public static void onRegisterCommands(final RegisterCommandsEvent event) {
@@ -193,13 +190,12 @@ public class CommonGraveEvents {
     
     @SubscribeEvent(receiveCanceled = true)
     public static void onRightClickBlock(final PlayerInteractEvent.RightClickBlock event) {
-        if (!(event.getLevel() instanceof ServerLevel level)) {
-            if (event.getLevel().getBlockEntity(event.getPos()) instanceof GraveBlockEntity) {
-                event.setCancellationResult(InteractionResult.SUCCESS);
-                event.setCanceled(true);
-            }
-            return;
+        if (event.getLevel().getBlockEntity(event.getPos()) instanceof GraveBlockEntity) {
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            event.setCanceled(true);
         }
+        
+        if (!(event.getLevel() instanceof ServerLevel level)) return;
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         
         final MinecraftServer server = level.getServer();
@@ -228,16 +224,14 @@ public class CommonGraveEvents {
         
         if (player.createCommandSourceStack().permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.GAMEMASTERS))) { // Allow operators to open graves that aren't theirs
             
+            if (CommonGraveEvents.purgeInvalidGrave(server, level, player, pos, timestamp, uuid, name)) return;
+            
             if (DataHandler.load(player, uuid, timestamp, BackupType.DEATH) < 1) {
                 player.sendSystemMessage(EPMessageLang.MESSAGE_RESTORE_FAILED.translate(ChatFormatting.RED), true);
                 return;
             }
             
-            @Nullable ServerPlayer owner = server.getPlayerList().getPlayer(uuid);
-            if (owner != null) {
-                owner.setData(EPRegistry.LOCATION_DATA, owner.getData(EPRegistry.LOCATION_DATA).remove(timestamp));
-                Epitaphs.log.debug("Removed grave location for {} at {}", owner.getGameProfile().name(), pos);
-            }
+            CommonGraveEvents.removeLocationData(server, level, uuid, timestamp, pos);
             
         } else {
             
@@ -245,6 +239,8 @@ public class CommonGraveEvents {
                 player.sendSystemMessage(EPMessageLang.MESSAGE_GRAVE_NO_ACCESS.translate(ChatFormatting.RED, name), true);
                 return;
             }
+            
+            if (CommonGraveEvents.purgeInvalidGrave(server, level, player, pos, timestamp, uuid, name)) return;
             
             if (OnlineHandler.restore(player, timestamp, BackupType.DEATH) < 1) {
                 player.sendSystemMessage(EPMessageLang.MESSAGE_RESTORE_FAILED.translate(ChatFormatting.RED), true);
@@ -268,9 +264,40 @@ public class CommonGraveEvents {
         level.removeBlock(pos, false);
         DataHandler.invalidate(server, uuid, timestamp);
         Epitaphs.log.debug("Removed grave for {} - {} at {} in {}", name, uuid, pos, level.dimension().identifier());
+    }
+    
+    private static boolean purgeInvalidGrave(MinecraftServer server, ServerLevel level, ServerPlayer player, BlockPos pos, Instant timestamp, UUID uuid, String name) {
+        final int backupMaxDaysAge = EPConfig.Server.getBackupMaxAgeDays();
+        final Instant cutoff = Instant.now().minus(backupMaxDaysAge, ChronoUnit.DAYS);
+        if (backupMaxDaysAge <= 0 || cutoff.isBefore(timestamp)) return false;
         
-        event.setCancellationResult(InteractionResult.SUCCESS);
-        event.setCanceled(true);
+        player.sendSystemMessage(EPMessageLang.MESSAGE_FILE_PURGING_WARNING.translate(ChatFormatting.RED));
+        player.sendSystemMessage(EPMessageLang.MESSAGE_FILE_PURGED_INFO.translate(ChatFormatting.RED, DataHandler.ISO8601_FORMATTER.format(cutoff)));
+        
+        Epitaphs.log.warn("Grave for {} at {} is too old to be restored, created at {}, but only allowed to be {} days old", name, pos, timestamp, backupMaxDaysAge);
+        level.removeBlockEntity(pos); // We need to call this first to clear any data on the block to prevent the next function from erroring
+        level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+        level.playSound(null, pos, SoundEvents.WITHER_BREAK_BLOCK, SoundSource.BLOCKS, 1.0F, 1.0F);
+        
+        CommonGraveEvents.removeLocationData(server, level, uuid, timestamp, pos);
+        
+        if (player.getData(EPRegistry.TRACKED_LOCATION_DATA).pos().equals(new GlobalPos(level.dimension(), pos))) {
+            player.setData(EPRegistry.TRACKED_LOCATION_DATA, TrackedLocation.ZERO);
+        }
+        return true;
+    }
+    
+    private static void removeLocationData(MinecraftServer server, ServerLevel level, UUID uuid, Instant timestamp, BlockPos pos) {
+        @Nullable ServerPlayer owner = server.getPlayerList().getPlayer(uuid);
+        if (owner != null) {
+            owner.setData(EPRegistry.LOCATION_DATA, owner.getData(EPRegistry.LOCATION_DATA).remove(timestamp));
+            if (owner.getData(EPRegistry.TRACKED_LOCATION_DATA).pos().equals(new GlobalPos(level.dimension(), pos))) {
+                owner.setData(EPRegistry.TRACKED_LOCATION_DATA, TrackedLocation.ZERO);
+            }
+            
+            owner.setData(EPRegistry.LOCATION_DATA, owner.getData(EPRegistry.LOCATION_DATA).remove(timestamp));
+            Epitaphs.log.debug("Removed grave location for {} at {}", owner.getGameProfile().name(), pos);
+        }
     }
     
     @SubscribeEvent
@@ -312,16 +339,24 @@ public class CommonGraveEvents {
         event.setOutput(result);
     }
     
+    private static Instant LAST_BACKUP = Instant.now();
+    private static Instant LAST_PURGE = Instant.now();
+    
     @SubscribeEvent
     private static void scheduleBackup(ServerTickEvent.Post event) {
         final MinecraftServer server = event.getServer();
         final Instant now = Instant.now();
         final int minutes = EPConfig.Server.getBackupInterval();
-        if (minutes <= 0) return;
-        
-        if (now.isAfter(CommonGraveEvents.LAST_BACKUP.plus(minutes, ChronoUnit.MINUTES))) {
-            Epitaphs.log.info("Running player backup task");
-            DataHandler.saveAll(server, now);
+        if (minutes <= 0) {
+            if (now.isAfter(CommonGraveEvents.LAST_PURGE.plus(10, ChronoUnit.MINUTES))) {
+                Epitaphs.log.debug("Running player purge task");
+                DataHandler.purgeAll(server);
+                CommonGraveEvents.LAST_PURGE = now;
+            }
+        } else if (now.isAfter(CommonGraveEvents.LAST_BACKUP.plus(minutes, ChronoUnit.MINUTES))) {
+            Epitaphs.log.debug("Running player backup task");
+            if (DataHandler.saveAll(server, now) <= 0) Epitaphs.log.debug("No players to back up");
+            DataHandler.purgeAll(server);
             CommonGraveEvents.LAST_BACKUP = now;
         }
     }
