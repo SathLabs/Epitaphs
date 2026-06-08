@@ -1,8 +1,10 @@
 package dev.satherov.epitaphs.common.container;
 
 import dev.satherov.epitaphs.Epitaphs;
+import dev.satherov.epitaphs.common.component.SlotStackList;
 
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
@@ -82,12 +84,12 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
                 if (handler.isEmpty()) return;
                 
                 final IDynamicStackHandler itemStacks = value.getStacks();
-                final List<ItemStack> items = handler.items();
-                for (int slot = 0; slot < items.size(); slot++) {
-                    ItemStack stack = items.get(slot).copyAndClear();
+                final SlotStackList items = handler.items();
+                for (ItemStackWithSlot entry : items) {
+                    ItemStack stack = entry.stack().copyAndClear();
                     if (stack.isEmpty()) continue;
-                    if (slot < itemStacks.getSlots()) {
-                        itemStacks.setStackInSlot(slot, stack);
+                    if (entry.slot() < itemStacks.getSlots()) {
+                        itemStacks.setStackInSlot(entry.slot(), stack);
                         continue;
                     }
                     
@@ -100,12 +102,12 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
                 }
                 
                 final IDynamicStackHandler cosmeticStacks = value.getCosmeticStacks();
-                final List<ItemStack> cosmetics = handler.cosmetics();
-                for (int slot = 0; slot < cosmetics.size(); slot++) {
-                    ItemStack stack = cosmetics.get(slot).copyAndClear();
+                final SlotStackList cosmetics = handler.cosmetics();
+                for (ItemStackWithSlot entry : cosmetics) {
+                    ItemStack stack = entry.stack().copyAndClear();
                     if (stack.isEmpty()) continue;
-                    if (slot < cosmeticStacks.getSlots()) {
-                        cosmeticStacks.setStackInSlot(slot, stack);
+                    if (entry.slot() < cosmeticStacks.getSlots()) {
+                        cosmeticStacks.setStackInSlot(entry.slot(), stack);
                         continue;
                     }
                     

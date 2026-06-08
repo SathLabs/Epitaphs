@@ -1,8 +1,8 @@
 package dev.satherov.epitaphs.common.container;
 
+import dev.satherov.epitaphs.common.component.SlotStackList;
 import dev.satherov.epitaphs.common.data.SoulboundHandler;
 
-import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.entity.EntityEquipment;
@@ -17,13 +17,14 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
-public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemStack> armor, NonNullList<ItemStack> offhand) implements SaveContainer<InventoryContainer> {
+public record InventoryContainer(SlotStackList items, SlotStackList armor, SlotStackList offhand) implements SaveContainer<InventoryContainer> {
     
     public static final Codec<InventoryContainer> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            NonNullList.codecOf(ItemStack.OPTIONAL_CODEC).fieldOf("items").forGetter(InventoryContainer::items),
-            NonNullList.codecOf(ItemStack.OPTIONAL_CODEC).fieldOf("armor").forGetter(InventoryContainer::armor),
-            NonNullList.codecOf(ItemStack.OPTIONAL_CODEC).fieldOf("offhand").forGetter(InventoryContainer::offhand)
+            SlotStackList.CODEC.fieldOf("items").forGetter(InventoryContainer::items),
+            SlotStackList.CODEC.fieldOf("armor").forGetter(InventoryContainer::armor),
+            SlotStackList.CODEC.fieldOf("offhand").forGetter(InventoryContainer::offhand)
     ).apply(instance, InventoryContainer::new));
     
     private static final int ARMOR_SIZE = 4;
@@ -31,9 +32,9 @@ public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemS
     
     public static InventoryContainer empty() {
         return new InventoryContainer(
-                NonNullList.withSize(Inventory.INVENTORY_SIZE, ItemStack.EMPTY),
-                NonNullList.withSize(InventoryContainer.ARMOR_SIZE, ItemStack.EMPTY),
-                NonNullList.withSize(InventoryContainer.OFFHAND_SIZE, ItemStack.EMPTY)
+                new SlotStackList(Inventory.INVENTORY_SIZE),
+                new SlotStackList(InventoryContainer.ARMOR_SIZE),
+                new SlotStackList(InventoryContainer.OFFHAND_SIZE)
         );
     }
     
@@ -48,45 +49,35 @@ public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemS
     ///
     public static InventoryContainer create(ServerPlayer player) {
         final Inventory inventory = player.getInventory();
+        final SlotStackList items = new SlotStackList(Inventory.INVENTORY_SIZE);
+        final SlotStackList armor = new SlotStackList(InventoryContainer.ARMOR_SIZE);
+        final SlotStackList offhand = new SlotStackList(InventoryContainer.OFFHAND_SIZE);
         
-        final NonNullList<ItemStack> items = NonNullList.withSize(Inventory.INVENTORY_SIZE, ItemStack.EMPTY);
-        for (int slot = 0; slot < Inventory.INVENTORY_SIZE; slot++) {
-            items.set(slot, inventory.getItem(slot).copy());
-        }
-        
-        final NonNullList<ItemStack> armor = NonNullList.withSize(InventoryContainer.ARMOR_SIZE, ItemStack.EMPTY);
-        for (int slot = 0; slot < InventoryContainer.ARMOR_SIZE; slot++) {
-            armor.set(slot, inventory.getItem(Inventory.INVENTORY_SIZE + slot).copy());
-        }
-        
-        final NonNullList<ItemStack> offhand = NonNullList.withSize(InventoryContainer.OFFHAND_SIZE, ItemStack.EMPTY);
-        for (int slot = 0; slot < InventoryContainer.OFFHAND_SIZE; slot++) {
-            offhand.set(slot, inventory.getItem(Inventory.SLOT_OFFHAND + slot).copy());
-        }
+        IntStream.range(0, Inventory.INVENTORY_SIZE).forEach(slot -> items.add(slot, inventory.getItem(slot).copy()));
+        IntStream.range(0, InventoryContainer.ARMOR_SIZE).forEach(slot -> armor.add(slot, inventory.getItem(Inventory.INVENTORY_SIZE + slot).copy()));
+        IntStream.range(0, InventoryContainer.OFFHAND_SIZE).forEach(slot -> offhand.add(slot, inventory.getItem(Inventory.SLOT_OFFHAND + slot).copy()));
         
         return new InventoryContainer(items, armor, offhand);
     }
     
     public static InventoryContainer createSoulbound(ServerPlayer player) {
         final Inventory inventory = player.getInventory();
+        final SlotStackList items = new SlotStackList(Inventory.INVENTORY_SIZE);
+        final SlotStackList armor = new SlotStackList(InventoryContainer.ARMOR_SIZE);
+        final SlotStackList offhand = new SlotStackList(InventoryContainer.OFFHAND_SIZE);
         
-        final NonNullList<ItemStack> items = NonNullList.withSize(Inventory.INVENTORY_SIZE, ItemStack.EMPTY);
-        for (int slot = 0; slot < Inventory.INVENTORY_SIZE; slot++) {
-            ItemStack stack = inventory.getItem(slot);
-            if (SoulboundHandler.isSoulbound(stack)) items.set(slot, stack.copyAndClear());
-        }
-        
-        final NonNullList<ItemStack> armor = NonNullList.withSize(InventoryContainer.ARMOR_SIZE, ItemStack.EMPTY);
-        for (int slot = 0; slot < InventoryContainer.ARMOR_SIZE; slot++) {
-            ItemStack stack = inventory.getItem(Inventory.INVENTORY_SIZE + slot);
-            if (SoulboundHandler.isSoulbound(stack)) armor.set(slot, stack.copyAndClear());
-        }
-        
-        final NonNullList<ItemStack> offhand = NonNullList.withSize(InventoryContainer.OFFHAND_SIZE, ItemStack.EMPTY);
-        for (int slot = 0; slot < InventoryContainer.OFFHAND_SIZE; slot++) {
-            ItemStack stack = inventory.getItem(Inventory.SLOT_OFFHAND + slot);
-            if (SoulboundHandler.isSoulbound(stack)) offhand.set(slot, stack.copyAndClear());
-        }
+        IntStream.range(0, Inventory.INVENTORY_SIZE).forEach(slot -> {
+            final ItemStack stack = inventory.getItem(slot);
+            if (SoulboundHandler.isSoulbound(stack)) items.add(slot, stack.copyAndClear());
+        });
+        IntStream.range(0, InventoryContainer.ARMOR_SIZE).forEach(slot -> {
+            final ItemStack stack = inventory.getItem(Inventory.INVENTORY_SIZE + slot);
+            if (SoulboundHandler.isSoulbound(stack)) armor.add(slot, stack.copyAndClear());
+        });
+        IntStream.range(0, InventoryContainer.OFFHAND_SIZE).forEach(slot -> {
+            final ItemStack stack = inventory.getItem(Inventory.SLOT_OFFHAND + slot);
+            if (SoulboundHandler.isSoulbound(stack)) offhand.add(slot, stack.copyAndClear());
+        });
         
         return new InventoryContainer(items, armor, offhand);
     }
@@ -99,24 +90,18 @@ public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemS
     /// @return Inventory Container instance
     ///
     public static InventoryContainer create(ValueInput input) {
-        final NonNullList<ItemStack> items = NonNullList.withSize(Inventory.INVENTORY_SIZE, ItemStack.EMPTY);
-        final NonNullList<ItemStack> armor = NonNullList.withSize(InventoryContainer.ARMOR_SIZE, ItemStack.EMPTY);
-        final NonNullList<ItemStack> offhand = NonNullList.withSize(InventoryContainer.OFFHAND_SIZE, ItemStack.EMPTY);
+        final SlotStackList items = new SlotStackList(Inventory.INVENTORY_SIZE);
+        final SlotStackList armor = new SlotStackList(InventoryContainer.ARMOR_SIZE);
+        final SlotStackList offhand = new SlotStackList(InventoryContainer.OFFHAND_SIZE);
         
-        input.listOrEmpty("Inventory", ItemStackWithSlot.CODEC).forEach(entry -> {
-            final int slot = entry.slot();
-            final ItemStack stack = entry.stack();
-            if (stack.isEmpty()) return;
-            
-            if (slot >= 0 && slot < Inventory.INVENTORY_SIZE) items.set(slot, stack);
-        });
+        input.listOrEmpty("Inventory", ItemStackWithSlot.CODEC).forEach(items::add);
         
         final EntityEquipment equipment = input.read("equipment", EntityEquipment.CODEC).orElseGet(EntityEquipment::new);
-        armor.set(0, equipment.get(EquipmentSlot.FEET));
-        armor.set(1, equipment.get(EquipmentSlot.LEGS));
-        armor.set(2, equipment.get(EquipmentSlot.CHEST));
-        armor.set(3, equipment.get(EquipmentSlot.HEAD));
-        offhand.set(0, equipment.get(EquipmentSlot.OFFHAND));
+        armor.add(0, equipment.get(EquipmentSlot.FEET));
+        armor.add(1, equipment.get(EquipmentSlot.LEGS));
+        armor.add(2, equipment.get(EquipmentSlot.CHEST));
+        armor.add(3, equipment.get(EquipmentSlot.HEAD));
+        offhand.add(0, equipment.get(EquipmentSlot.OFFHAND));
         
         return new InventoryContainer(items, armor, offhand);
     }
@@ -127,41 +112,22 @@ public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemS
     public void write(ServerPlayer player) {
         final Inventory inventory = player.getInventory();
         
-        for (int slot = 0; slot < this.items.size(); slot++) {
-            final ItemStack stack = this.items.get(slot);
-            if (stack.isEmpty()) continue;
-            inventory.setItem(slot, stack.copyAndClear());
-        }
-        
-        for (int slot = 0; slot < this.armor.size(); slot++) {
-            final ItemStack stack = this.armor.get(slot);
-            if (stack.isEmpty()) continue;
-            inventory.setItem(Inventory.INVENTORY_SIZE + slot, stack.copyAndClear());
-        }
-        
-        for (int slot = 0; slot < this.offhand.size(); slot++) {
-            final ItemStack stack = this.offhand.get(slot);
-            if (stack.isEmpty()) continue;
-            inventory.setItem(Inventory.SLOT_OFFHAND + slot, stack.copyAndClear());
-        }
+        this.items.forEach(entry -> inventory.setItem(entry.slot(), entry.stack().copyAndClear()));
+        this.armor.forEach(entry -> inventory.setItem(Inventory.INVENTORY_SIZE + entry.slot(), entry.stack().copyAndClear()));
+        this.offhand.forEach(entry -> inventory.setItem(Inventory.SLOT_OFFHAND + entry.slot(), entry.stack().copyAndClear()));
     }
     
     @Override
     public void write(ValueInput input, ValueOutput output) {
         final ValueOutput.TypedOutputList<ItemStackWithSlot> inventory = output.list("Inventory", ItemStackWithSlot.CODEC);
-        
-        for (int slot = 0; slot < this.items.size(); slot++) {
-            ItemStack stack = this.items.get(slot);
-            if (stack.isEmpty()) continue;
-            inventory.add(new ItemStackWithSlot(slot, stack));
-        }
+        this.items.forEach(inventory::add);
         
         final EntityEquipment equipment = input.read("equipment", EntityEquipment.CODEC).orElseGet(EntityEquipment::new);
-        equipment.set(EquipmentSlot.FEET, this.armor.get(0));
-        equipment.set(EquipmentSlot.LEGS, this.armor.get(1));
-        equipment.set(EquipmentSlot.CHEST, this.armor.get(2));
-        equipment.set(EquipmentSlot.HEAD, this.armor.get(3));
-        equipment.set(EquipmentSlot.OFFHAND, this.offhand.getFirst());
+        equipment.set(EquipmentSlot.FEET, this.armor.getStack(0));
+        equipment.set(EquipmentSlot.LEGS, this.armor.getStack(1));
+        equipment.set(EquipmentSlot.CHEST, this.armor.getStack(2));
+        equipment.set(EquipmentSlot.HEAD, this.armor.getStack(3));
+        equipment.set(EquipmentSlot.OFFHAND, this.offhand.getStack(0));
         output.store("equipment", EntityEquipment.CODEC, equipment);
     }
     
@@ -171,26 +137,18 @@ public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemS
     public List<ItemStack> merge(InventoryContainer other) {
         final List<ItemStack> overflow = new ArrayList<>();
         
-        for (int slot = 0; slot < Inventory.INVENTORY_SIZE; slot++) {
-            final ItemStack stack = other.items.get(slot).copyAndClear();
-            final ItemStack existing = this.items.get(slot);
-            if (existing.isEmpty()) this.items.set(slot, stack);
-            else overflow.add(stack);
-        }
-        
-        for (int slot = 0; slot < InventoryContainer.ARMOR_SIZE; slot++) {
-            final ItemStack stack = other.armor.get(slot).copyAndClear();
-            final ItemStack existing = this.armor.get(slot);
-            if (existing.isEmpty()) this.armor.set(slot, stack);
-            else overflow.add(stack);
-        }
-        
-        for (int slot = 0; slot < InventoryContainer.OFFHAND_SIZE; slot++) {
-            final ItemStack stack = other.offhand.get(slot).copyAndClear();
-            final ItemStack existing = this.offhand.get(slot);
-            if (existing.isEmpty()) this.offhand.set(slot, stack);
-            else overflow.add(stack);
-        }
+        other.items.forEach(entry -> {
+            final ItemStack stack = entry.stack().copyAndClear();
+            if (!stack.isEmpty() && !this.items.add(entry.slot(), stack)) overflow.add(stack);
+        });
+        other.armor.forEach(entry -> {
+            final ItemStack stack = entry.stack().copyAndClear();
+            if (!stack.isEmpty() && !this.armor.add(entry.slot(), stack)) overflow.add(stack);
+        });
+        other.offhand.forEach(entry -> {
+            final ItemStack stack = entry.stack().copyAndClear();
+            if (!stack.isEmpty() && !this.offhand.add(entry.slot(), stack)) overflow.add(stack);
+        });
         
         return overflow;
     }
@@ -198,56 +156,42 @@ public record InventoryContainer(NonNullList<ItemStack> items, NonNullList<ItemS
     @Override
     public List<ItemStack> gather() {
         final List<ItemStack> result = new ArrayList<>();
-        this.items.forEach(stack -> result.add(stack.copyAndClear()));
-        this.armor.forEach(stack -> result.add(stack.copyAndClear()));
-        this.offhand.forEach(stack -> result.add(stack.copyAndClear()));
+        this.items.forEach(entry -> result.add(entry.stack().copyAndClear()));
+        this.armor.forEach(entry -> result.add(entry.stack().copyAndClear()));
+        this.offhand.forEach(entry -> result.add(entry.stack().copyAndClear()));
         return result;
     }
     
     @Override
     public boolean isEmpty() {
-        return (this.items.isEmpty() || this.items.stream().allMatch(ItemStack::isEmpty)) &&
-                (this.armor.isEmpty() || this.armor.stream().allMatch(ItemStack::isEmpty)) &&
-                (this.offhand.isEmpty() || this.offhand.stream().allMatch(ItemStack::isEmpty));
+        return this.items.isEmpty() && this.armor.isEmpty() && this.offhand.isEmpty();
     }
     
     public List<ItemStack> insert(List<ItemStack> stacks) {
         final List<ItemStack> overflow = new ArrayList<>();
         
-        for (ItemStack input : stacks) {
-            if (input.isEmpty()) continue;
-            ItemStack stack = input.copyAndClear();
+        stacks.stream().filter(stack -> !stack.isEmpty()).forEach(input -> {
+            final ItemStack stack = input.copyAndClear();
             
-            // try to insert into any matching
-            for (int slot = 0; slot < Inventory.INVENTORY_SIZE; slot++) {
-                if (stack.isEmpty()) break;
-                
-                final ItemStack existing = this.items.get(slot);
-                if (existing.isEmpty()) continue;
-                if (!existing.isStackable()) continue;
-                if (!ItemStack.isSameItemSameComponents(existing, stack)) continue;
+            this.items.forEach(entry -> {
+                final ItemStack existing = entry.stack();
+                if (stack.isEmpty()) return;
+                if (!existing.isStackable()) return;
+                if (!ItemStack.isSameItemSameComponents(existing, stack)) return;
                 
                 final int space = existing.getMaxStackSize() - existing.getCount();
-                if (space <= 0) continue;
+                if (space <= 0) return;
                 
                 final int moved = Math.min(space, stack.getCount());
                 existing.grow(moved);
                 stack.shrink(moved);
+            });
+            
+            if (!stack.isEmpty()) {
+                final ItemStack remaining = stack.copyAndClear();
+                if (!this.items.add(remaining)) overflow.add(remaining);
             }
-            
-            if (stack.isEmpty()) continue;
-            
-            // try to insert into any empty
-            for (int slot = 0; slot < Inventory.INVENTORY_SIZE; slot++) {
-                final ItemStack existing = this.items.get(slot);
-                if (!existing.isEmpty()) continue;
-                
-                this.items.set(slot, stack.copyAndClear());
-                break;
-            }
-            
-            if (!stack.isEmpty()) overflow.add(stack.copyAndClear());
-        }
+        });
         
         return overflow;
     }
