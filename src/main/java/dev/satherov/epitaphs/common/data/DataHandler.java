@@ -74,7 +74,7 @@ public class DataHandler {
                 .normalize()
                 .toAbsolutePath();
     }
-
+    
     ///
     /// Gets the file path to the player data folder.
     ///
@@ -87,7 +87,7 @@ public class DataHandler {
                 .resolve("players")
                 .resolve("data");
     }
-
+    
     ///
     /// Gets the file path to the storage directory.
     ///
@@ -100,8 +100,8 @@ public class DataHandler {
                 .resolve("data")
                 .resolve(Epitaphs.MOD_ID);
     }
-
-
+    
+    
     ///
     /// Purges old backup files from the storage directory.
     ///
@@ -123,18 +123,18 @@ public class DataHandler {
                 Files.deleteIfExists(oldest);
                 Epitaphs.log.debug("Removed old {} file {}", name, oldest.getFileName());
             }
-
+            
             final int backupMaxDaysAge = EPConfig.Server.getBackupMaxAgeDays();
             if (backupMaxDaysAge <= 0) return;
-
+            
             final Instant cutoff = Instant.now().minus(backupMaxDaysAge, ChronoUnit.DAYS);
             DataHandler.purgeByTimestamp(player, files, cutoff, backupMaxDaysAge);
-
+            
         } catch (IOException e) {
             Epitaphs.log.error("Failed to remove old files for '{}' at {}", name, storage.getFileName(), e);
         }
     }
-
+    
     ///
     /// Purges backups older than the configured backup age.
     ///
@@ -149,9 +149,9 @@ public class DataHandler {
             final @Nullable Instant timestamp = DataHandler.parseTimestamp(filename);
             if (timestamp == null) continue;
             if (!timestamp.isBefore(cutoff)) continue;
-
+            
             Files.deleteIfExists(file);
-
+            
             Epitaphs.log.debug(
                     "Removed file {} owned by {} since it was older than {} days (Created at {})",
                     filename,
@@ -161,11 +161,11 @@ public class DataHandler {
             );
         }
     }
-
+    
     private static @Nullable Instant parseTimestamp(String filename) {
         final Matcher matcher = DataHandler.DATE_PATTERN.matcher(filename);
         if (!matcher.find()) return null;
-
+        
         try {
             return Instant.from(DataHandler.FORMATTER.parse(matcher.group()));
         } catch (DateTimeException e) {
@@ -173,8 +173,8 @@ public class DataHandler {
             return null;
         }
     }
-
-
+    
+    
     ///
     /// Returns a list of all players with saved data.
     ///
@@ -188,7 +188,7 @@ public class DataHandler {
             Epitaphs.log.debug("No data directory found at {}", storage.getFileName());
             return new LinkedList<>();
         }
-
+        
         try (Stream<Path> stream = Files.walk(storage, 1)) {
             return stream.filter(Files::isDirectory)
                     .map(Path::getFileName)
@@ -208,7 +208,7 @@ public class DataHandler {
             return new LinkedList<>();
         }
     }
-
+    
     ///
     /// Returns a list of names for all backup files for the given player.
     ///
@@ -223,7 +223,7 @@ public class DataHandler {
             Epitaphs.log.debug("No player directory found at {}", storage.getFileName());
             return new LinkedList<>();
         }
-
+        
         try (Stream<Path> stream = Files.walk(storage, 1)) {
             return stream.filter(Files::isRegularFile)
                     .map(Path::getFileName)
@@ -236,7 +236,7 @@ public class DataHandler {
             return new LinkedList<>();
         }
     }
-
+    
     ///
     /// Saves all current players to disk.
     ///
@@ -248,7 +248,7 @@ public class DataHandler {
         for (ServerPlayer player : players) DataHandler.save(player, now, BackupType.SAVE);
         return players.size();
     }
-
+    
     ///
     /// Purges all outdated backup files.
     ///
@@ -257,7 +257,7 @@ public class DataHandler {
     public static void purgeAll(MinecraftServer server) {
         final int backupMaxDaysAge = EPConfig.Server.getBackupMaxAgeDays();
         if (backupMaxDaysAge <= 0) return;
-
+        
         final Instant cutoff = Instant.now().minus(backupMaxDaysAge, ChronoUnit.DAYS);
         final LinkedList<String> players = DataHandler.listPlayer(server);
         final List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -279,7 +279,7 @@ public class DataHandler {
         }
         CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
     }
-
+    
     ///
     /// Saves the given player to disk.
     ///
@@ -294,14 +294,14 @@ public class DataHandler {
         MinecraftServer server = level.getServer();
         UUID uuid = player.getUUID();
         Path storage = DataHandler.getFileStorage(server).resolve(uuid.toString());
-
+        
         final CompoundTag data;
         try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(Epitaphs.log)) {
             TagValueOutput output = TagValueOutput.createWithContext(reporter, player.registryAccess());
             player.saveWithoutId(output);
             data = output.buildResult();
         }
-
+        
         try {
             Files.createDirectories(storage);
             Path file = type.create(storage, now);
@@ -311,11 +311,11 @@ public class DataHandler {
             Epitaphs.log.error("Failed to save player data for {} at {}", uuid, storage.getFileName(), e);
             return 0;
         }
-
+        
         DataHandler.purge(uuid, storage, type);
         return 1;
     }
-
+    
     ///
     /// Loads the given backup into the given player.
     ///
@@ -329,11 +329,11 @@ public class DataHandler {
     @SuppressWarnings("DuplicatedCode")
     public static int load(ServerPlayer player, UUID uuid, Instant now, BackupType type) {
         Path playerDirectory = DataHandler.getFileStorage(player.level().getServer()).resolve(uuid.toString());
-
+        
         try {
             Path file = type.resolve(playerDirectory, now);
             CompoundTag backup = NbtIo.readCompressed(file, NbtAccounter.unlimitedHeap());
-
+            
             final PlayerContainer backupContainer;
             try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(Epitaphs.log)) {
                 backupContainer = PlayerContainer.create(TagValueInput.create(reporter, player.registryAccess(), backup));
@@ -342,19 +342,19 @@ public class DataHandler {
             List<ItemStack> overflow = playerContainer.merge(backupContainer);
             List<ItemStack> dropped = playerContainer.inventory().insert(overflow);
             Epitaphs.log.debug("Merged data from {} into {}", file.getFileName(), player.getGameProfile().name());
-
+            
             if (!dropped.isEmpty()) for (ItemStack stack : dropped) player.drop(stack, false);
-
+            
             playerContainer.write(player);
             Epitaphs.log.debug("Loaded data from {} for {}", file.getFileName(), player.getGameProfile().name());
             return 1;
-
+            
         } catch (IOException e) {
             Epitaphs.log.error("Failed to load data for {} at {}", player.getUUID(), now.toString(), e);
             return 0;
         }
     }
-
+    
     ///
     /// Resets the player's data to the given backup.
     ///
@@ -365,18 +365,18 @@ public class DataHandler {
     public static int reset(MinecraftServer server, UUID uuid, Instant now) {
         Path world = DataHandler.getPlayerDataStorage(server);
         Path storage = DataHandler.getFileStorage(server).resolve(uuid.toString());
-
+        
         try {
             Path file = BackupType.ANY.resolve(storage, now);
             CompoundTag data = NbtIo.readCompressed(file, NbtAccounter.unlimitedHeap());
-
+            
             Path temp = Files.createTempFile(world, uuid + "-", ".dat");
             NbtIo.writeCompressed(data, temp);
             Path saved = world.resolve(uuid + ".dat");
             Path old = world.resolve(uuid + ".dat_old");
             Util.safeReplaceFile(saved, temp, old);
             Epitaphs.log.debug("Reset offline player data for {} from {}", uuid, file.getFileName());
-
+            
             @Nullable ServerPlayer player = server.getPlayerList().getPlayer(uuid);
             if (player != null) {
                 try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(Epitaphs.log)) {
@@ -385,13 +385,13 @@ public class DataHandler {
                 }
             }
             return 1;
-
+            
         } catch (IOException e) {
             Epitaphs.log.error("Failed to set player data for {} at {}", uuid, storage.getFileName(), e);
             return 0;
         }
     }
-
+    
     ///
     /// Restores a player's data from the given backup.
     /// Tries to restore the online player if available, otherwise falls back to offline restore.
@@ -411,7 +411,7 @@ public class DataHandler {
         if (player == null) return OfflineHandler.restore(server, uuid, now, type);
         else return OnlineHandler.restore(player, now, type);
     }
-
+    
     ///
     /// Gets a list of items from the given backup.
     /// Tries to gather from the online player if available, otherwise falls back to offline gathering.
@@ -431,7 +431,7 @@ public class DataHandler {
         if (player == null) return OfflineHandler.gather(server, uuid, now, type);
         else return OnlineHandler.gather(player, now, type);
     }
-
+    
     ///
     /// Invalidates the current grave data
     ///
@@ -441,7 +441,7 @@ public class DataHandler {
     ///
     public static void invalidate(MinecraftServer server, UUID uuid, Instant now) {
         Path playerDirectory = DataHandler.getFileStorage(server).resolve(uuid.toString());
-
+        
         try {
             Path file = BackupType.DEATH.resolve(playerDirectory, now);
             String timestamp = DataHandler.FORMATTER.format(now);
