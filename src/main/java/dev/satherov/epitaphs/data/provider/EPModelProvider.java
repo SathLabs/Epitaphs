@@ -1,6 +1,7 @@
 package dev.satherov.epitaphs.data.provider;
 
 import dev.satherov.epitaphs.Epitaphs;
+import dev.satherov.epitaphs.common.block.GraveBlock;
 import dev.satherov.epitaphs.core.EPRegistry;
 
 import net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplate;
@@ -10,9 +11,11 @@ import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
 import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
+import net.minecraft.client.data.models.blockstates.PropertyDispatch;
 import net.minecraft.client.data.models.model.ItemModelUtils;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
+import net.minecraft.core.Direction;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -34,6 +37,11 @@ public class EPModelProvider extends ModelProvider {
                 MultiVariantGenerator.dispatch(
                         grave,
                         BlockModelGenerators.plainVariant(graveBlockModelLoc)
+                ).with(PropertyDispatch.modify(GraveBlock.FACING)
+                        .select(Direction.NORTH, BlockModelGenerators.NOP)
+                        .select(Direction.EAST, BlockModelGenerators.Y_ROT_90)
+                        .select(Direction.SOUTH, BlockModelGenerators.Y_ROT_180)
+                        .select(Direction.WEST, BlockModelGenerators.Y_ROT_270)
                 )
         );
         

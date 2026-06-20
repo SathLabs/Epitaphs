@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
+    "facing=east": {
+      "model": "epitaphs:block/grave",
+      "y": 90
+    },
+    "facing=north": {
       "model": "epitaphs:block/grave"
+    },
+    "facing=south": {
+      "model": "epitaphs:block/grave",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "epitaphs:block/grave",
+      "y": 270
     }
   }
 }

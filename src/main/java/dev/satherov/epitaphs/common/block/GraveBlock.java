@@ -12,6 +12,7 @@ import dev.satherov.sathlib.core.annotations.NothingNull;
 import net.neoforged.neoforge.event.EventHooks;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
@@ -35,12 +36,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -63,6 +66,7 @@ public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterlogge
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     public static final BooleanProperty SOULS = BooleanProperty.create("souls");
     public static final BooleanProperty DECORATIVE = BooleanProperty.create("decorative");
+    public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     
     private static final VoxelShape SHAPE = Shapes.or(
             Block.box(0, 0, 0, 16, 2, 16), // Ground
@@ -70,6 +74,7 @@ public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterlogge
             Block.box(1, 2, 0, 15, 14, 2), // Stone
             Block.box(2, 14, 0, 14, 16, 2)  // Top
     );
+    private static final Map<Direction, VoxelShape> SHAPE_BY_SIDE = Shapes.rotateHorizontal(GraveBlock.SHAPE);
     
     public static final BlockItemStateProperties DECO_PROPERTIES = new BlockItemStateProperties(Map.of(
             "souls", "false",
@@ -79,6 +84,7 @@ public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterlogge
     public GraveBlock(Identifier id) {
         super(SLBlockProperties.ofFullCopy(Blocks.BEDROCK).requiresCorrectToolForDrops().setId(ResourceKey.create(Registries.BLOCK, id)));
         this.registerDefaultState(this.defaultBlockState()
+                .setValue(GraveBlock.FACING, Direction.NORTH)
                 .setValue(GraveBlock.SOULS, true)
                 .setValue(GraveBlock.DECORATIVE, false)
                 .setValue(BlockStateProperties.WATERLOGGED, false)
@@ -122,6 +128,7 @@ public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterlogge
     
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(GraveBlock.FACING);
         builder.add(GraveBlock.WATERLOGGED);
         builder.add(GraveBlock.SOULS);
         builder.add(GraveBlock.DECORATIVE);
@@ -135,7 +142,14 @@ public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterlogge
             BlockItemStateProperties properties = stack.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
             state = properties.apply(state);
         }
-        return state.setValue(GraveBlock.WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
+        return state
+                .setValue(GraveBlock.FACING, context.getHorizontalDirection())
+                .setValue(GraveBlock.WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
+    }
+    
+    @Override
+    protected BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(GraveBlock.FACING, rotation.rotate(state.getValue(GraveBlock.FACING)));
     }
     
     @Override
@@ -182,7 +196,7 @@ public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterlogge
     
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return GraveBlock.SHAPE;
+        return GraveBlock.SHAPE_BY_SIDE.get(state.getValue(GraveBlock.FACING));
     }
     
     @Override
