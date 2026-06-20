@@ -26,10 +26,11 @@ public enum EPMessageLang implements SLTranslatable {
     MESSAGE_SOULS_NONE               ("souls_none",                "No souls linger in this grave anymore"),
     MESSAGE_SOUL_BOTTLE_OBTAIN       ("soul_bottle_obtain",        "Obtained by using a bottle on a grave with a lingering soul"),
     MESSAGE_SOUL_BOTTLE_USE          ("soul_bottle_use",           "Will teleport you to your last grave after drinking"),
+    MESSAGE_SOUL_DEATH_HINT          ("soul_death_hint",           "If a villager dies near a grave without a soul, its soul will inhabit the grave"),
     MESSAGE_SOULBOUND_HINT           ("soulbound_hint",            "Applies the soulbound enchantment when combined in an anvil"),
-    MESSAGE_EXPERIENCE_SOULBOUND_HINT("experience_soulbound_hint", "Combine soulbound armor with an experience bottle to apply experience soulbound"),
     MESSAGE_FILE_PURGING_WARNING     ("file_purging_warning",      "This server has automatic file purging enabled."),
     MESSAGE_FILE_PURGED_INFO         ("file_purged_info",          "This save was created before %s and automatically deleted!"),
+    MESSAGE_DECORATIVE               ("decorative",                "Decorative")
     // @formatter:on
     ;
     

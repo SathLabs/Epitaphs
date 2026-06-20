@@ -15,7 +15,7 @@ import java.util.function.BiConsumer;
 public enum EPEnchantmentLang implements SLTranslatable {
     // @formatter:off
     ENCHANTMENT_SOULBOUND                ("soulbound",                 "Soulbound"),
-    ENCHANTMENT_SOULBOUND_DESC           ("soulbound.desc",            "Keeps this item on the player after death"),
+    ENCHANTMENT_SOULBOUND_DESC           ("soulbound.desc",            "Keeps this item on the player after death. Combine an armor piece with an experience bottle in an anvil to obtain Experience Soulbound"),
                                                                                        
     ENCHANTMENT_EXPERIENCE_SOULBOUND     ("experience_soulbound",      "Experience Soulbound"),
     ENCHANTMENT_EXPERIENCE_SOULBOUND_DESC("experience_soulbound.desc", "Keeps this item on the player after death. Additionally keeps 1/4th of the players xp"),

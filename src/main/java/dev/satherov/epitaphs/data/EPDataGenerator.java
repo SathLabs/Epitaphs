@@ -4,6 +4,7 @@ import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.data.pack.EPEnchantments;
 import dev.satherov.epitaphs.data.provider.EPLanguageProvider;
 import dev.satherov.epitaphs.data.provider.EPModelProvider;
+import dev.satherov.epitaphs.data.provider.EPRecipeProvider;
 import dev.satherov.epitaphs.data.provider.tags.EPBlockTagsProvider;
 import dev.satherov.epitaphs.data.provider.tags.EPItemTagProvider;
 
@@ -29,6 +30,7 @@ public class EPDataGenerator {
         
         event.createProvider(EPBlockTagsProvider::new);
         event.createProvider(EPItemTagProvider::new);
+        event.createProvider(EPRecipeProvider.Runner::new);
         
         event.createDatapackRegistryObjects(EPDataGenerator.BUILDER);
     }

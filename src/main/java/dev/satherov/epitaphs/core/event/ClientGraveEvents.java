@@ -177,17 +177,21 @@ public final class ClientGraveEvents {
         final String timestamp = formatter.format(data.timestamp());
         
         final List<Component> lines = new ArrayList<>();
-        lines.add(Component.literal(name + " - " + timestamp).withStyle(ChatFormatting.GRAY));
-        lines.add(Component.literal(uuid.toString()).withStyle(ChatFormatting.DARK_GRAY));
-        if (!player.getUUID().equals(uuid)) {
-            if (player.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.GAMEMASTERS))) {
-                lines.add(Component.translatable(EPMessageLang.MESSAGE_GRAVE_OP_BYPASS.key()).withStyle(ChatFormatting.GREEN));
-            } else {
-                lines.add(Component.translatable(EPMessageLang.MESSAGE_GRAVE_NO_ACCESS.key(), name).withStyle(ChatFormatting.RED));
+        if (state.getValue(GraveBlock.DECORATIVE)) {
+            lines.add(EPMessageLang.MESSAGE_DECORATIVE.translate(ChatFormatting.GOLD));
+        } else {
+            lines.add(Component.literal(name + " - " + timestamp).withStyle(ChatFormatting.GRAY));
+            lines.add(Component.literal(uuid.toString()).withStyle(ChatFormatting.DARK_GRAY));
+            if (!player.getUUID().equals(uuid)) {
+                if (player.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.GAMEMASTERS))) {
+                    lines.add(EPMessageLang.MESSAGE_GRAVE_OP_BYPASS.translate(ChatFormatting.GREEN));
+                } else {
+                    lines.add(EPMessageLang.MESSAGE_GRAVE_NO_ACCESS.translate(name, ChatFormatting.RED));
+                }
             }
         }
         
-        if (state.getValue(GraveBlock.SOULS)) lines.add(EPMessageLang.MESSAGE_SOULS_HINT.translate(ChatFormatting.GOLD));
+        if (state.getValue(GraveBlock.SOULS)) lines.add(EPMessageLang.MESSAGE_SOULS_HINT.translate(ChatFormatting.BLUE));
         else lines.add(EPMessageLang.MESSAGE_SOULS_NONE.translate(ChatFormatting.GRAY));
         
         return lines.stream()

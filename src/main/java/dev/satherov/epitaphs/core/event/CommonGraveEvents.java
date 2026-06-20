@@ -53,12 +53,14 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.item.BottleItem;
 import net.minecraft.world.item.ExperienceBottleItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -83,8 +85,11 @@ public class CommonGraveEvents {
     
     @SubscribeEvent
     public static void onLivingDeath(final LivingDeathEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        
+        if (event.getEntity() instanceof ServerPlayer player) CommonGraveEvents.onPlayerDeath(event, player);
+        else if (event.getEntity() instanceof Villager villager) CommonGraveEvents.onVillagerDeath(event, villager);
+    }
+    
+    private static void onPlayerDeath(final LivingDeathEvent event, final ServerPlayer player) {
         final GameProfile profile = player.getGameProfile();
         
         Epitaphs.log.debug("Player {} was killed by {}", profile.name(), event.getSource());
@@ -173,6 +178,15 @@ public class CommonGraveEvents {
         if (CuriosHandler.isLoaded()) CuriosHandler.clearAll(player);
     }
     
+    private static void onVillagerDeath(final LivingDeathEvent event, final Villager villager) {
+        if (EPConfig.Server.getVillagerDeathDistance() < 1) return;
+        final Level level = villager.level();
+        GraveBlockEntity.TRACKER.find(level, villager.blockPosition()).ifPresent(grave -> {
+            level.setBlockAndUpdate(grave.getBlockPos(), grave.getBlockState().setValue(GraveBlock.SOULS, true));
+            grave.updateArea(GraveBlockEntity.getVillagerDeathArea());
+        });
+    }
+    
     @SubscribeEvent(priority = EventPriority.LOWEST)
     private static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
@@ -206,13 +220,10 @@ public class CommonGraveEvents {
         if (!(level.getBlockEntity(pos) instanceof GraveBlockEntity entity)) return;
         
         final ItemStack stack = player.getMainHandItem();
-        final GraveData data = entity.getData(EPRegistry.GRAVE_DATA);
-        final Instant timestamp = data.timestamp();
-        final UUID uuid = data.owner();
-        final String name = data.name();
         
         if (state.getValue(GraveBlock.SOULS) && stack.getItem() instanceof BottleItem) {
             level.setBlockAndUpdate(pos, state.setValue(GraveBlock.SOULS, false));
+            if (EPConfig.Server.getVillagerDeathDistance() > 0) GraveBlockEntity.TRACKER.update(entity, GraveBlockEntity.getVillagerDeathArea());
             stack.shrink(1);
             final ItemStack bottle = EPRegistry.SOUL_BOTTLE.get().getDefaultInstance();
             
@@ -221,6 +232,12 @@ public class CommonGraveEvents {
             level.playSound(null, pos, SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.BLOCKS, 1.0F, 1.0F);
             return;
         }
+        
+        if (state.getValue(GraveBlock.DECORATIVE)) return;
+        final GraveData data = entity.getData(EPRegistry.GRAVE_DATA);
+        final Instant timestamp = data.timestamp();
+        final UUID uuid = data.owner();
+        final String name = data.name();
         
         if (player.createCommandSourceStack().permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.GAMEMASTERS))) { // Allow operators to open graves that aren't theirs
             

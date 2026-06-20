@@ -25,6 +25,6 @@ public class SoulBottleItem extends SLItem {
         builder.accept(EPMessageLang.MESSAGE_SOUL_BOTTLE_OBTAIN.translate(ChatFormatting.GRAY));
         builder.accept(EPMessageLang.MESSAGE_SOUL_BOTTLE_USE.translate(ChatFormatting.GRAY));
         builder.accept(EPMessageLang.MESSAGE_SOULBOUND_HINT.translate(ChatFormatting.GOLD));
-        builder.accept(EPMessageLang.MESSAGE_EXPERIENCE_SOULBOUND_HINT.translate(ChatFormatting.DARK_GREEN));
+        builder.accept(EPMessageLang.MESSAGE_SOUL_DEATH_HINT.translate(ChatFormatting.DARK_RED));
     }
 }

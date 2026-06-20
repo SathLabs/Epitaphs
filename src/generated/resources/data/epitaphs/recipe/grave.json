@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "minecraft:stone",
+    "S": "minecraft:stone_slab",
+    "X": "minecraft:smooth_stone_slab"
+  },
+  "pattern": [
+    " # ",
+    "#X#",
+    "SSS"
+  ],
+  "result": {
+    "components": {
+      "minecraft:block_state": {
+        "decorative": "true",
+        "souls": "false"
+      }
+    },
+    "id": "epitaphs:grave"
+  }
+}

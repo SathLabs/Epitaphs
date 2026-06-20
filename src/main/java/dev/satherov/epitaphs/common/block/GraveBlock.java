@@ -9,7 +9,10 @@ import dev.satherov.sathlib.common.block.SLBlock;
 import dev.satherov.sathlib.common.block.SLBlockProperties;
 import dev.satherov.sathlib.core.annotations.NothingNull;
 
+import net.neoforged.neoforge.event.EventHooks;
+
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -24,6 +27,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
@@ -38,6 +43,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -45,8 +51,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @NothingNull
@@ -54,6 +62,7 @@ public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterlogge
     
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     public static final BooleanProperty SOULS = BooleanProperty.create("souls");
+    public static final BooleanProperty DECORATIVE = BooleanProperty.create("decorative");
     
     private static final VoxelShape SHAPE = Shapes.or(
             Block.box(0, 0, 0, 16, 2, 16), // Ground
@@ -62,9 +71,18 @@ public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterlogge
             Block.box(2, 14, 0, 14, 16, 2)  // Top
     );
     
+    public static final BlockItemStateProperties DECO_PROPERTIES = new BlockItemStateProperties(Map.of(
+            "souls", "false",
+            "decorative", "true"
+    ));
+    
     public GraveBlock(Identifier id) {
-        super(SLBlockProperties.ofFullCopy(Blocks.BEDROCK).setId(ResourceKey.create(Registries.BLOCK, id)));
-        this.registerDefaultState(this.defaultBlockState().setValue(BlockStateProperties.WATERLOGGED, false));
+        super(SLBlockProperties.ofFullCopy(Blocks.BEDROCK).requiresCorrectToolForDrops().setId(ResourceKey.create(Registries.BLOCK, id)));
+        this.registerDefaultState(this.defaultBlockState()
+                .setValue(GraveBlock.SOULS, true)
+                .setValue(GraveBlock.DECORATIVE, false)
+                .setValue(BlockStateProperties.WATERLOGGED, false)
+        );
     }
     
     ///
@@ -106,6 +124,18 @@ public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterlogge
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(GraveBlock.WATERLOGGED);
         builder.add(GraveBlock.SOULS);
+        builder.add(GraveBlock.DECORATIVE);
+    }
+    
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        final ItemStack stack = context.getItemInHand();
+        BlockState state = this.defaultBlockState();
+        if (stack.is(EPRegistry.GRAVE.get().asItem())) {
+            BlockItemStateProperties properties = stack.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
+            state = properties.apply(state);
+        }
+        return state.setValue(GraveBlock.WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
     }
     
     @Override
@@ -115,27 +145,39 @@ public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterlogge
     
     @Override
     public boolean canHarvestBlock(BlockState state, BlockGetter blockGetter, BlockPos pos, Player player) {
-        return player.isCreative();
+        return player.isCreative() || state.getValue(GraveBlock.DECORATIVE);
     }
     
     @Override
-    public float getDestroyProgress(BlockState state, Player player, BlockGetter blockGetter, BlockPos pos) {
-        return player.isCreative() ? super.getDestroyProgress(state, player, blockGetter, pos) : 0.0F;
+    public float getDestroyProgress(BlockState state, Player player, BlockGetter getter, BlockPos pos) {
+        if (state.getValue(GraveBlock.DECORATIVE)) {
+            int check = EventHooks.doPlayerHarvestCheck(player, state, getter, pos) ? 30 : 100;
+            return player.getDestroySpeed(state, pos) / 1.5F / (float) check;
+        }
+        return player.isCreative() ? 1.0F : 0.0F;
     }
     
     @Override
     public float getExplosionResistance(BlockState state, BlockGetter level, BlockPos pos, Explosion explosion) {
-        return Float.MAX_VALUE;
+        return state.getValue(GraveBlock.DECORATIVE) ? 8.0F : Float.MAX_VALUE;
     }
     
     @Override
     public void onBlockExploded(BlockState state, ServerLevel level, BlockPos pos, Explosion explosion) {
-        // DONT TOUCH ME >:c
+        if (state.getValue(GraveBlock.DECORATIVE)) level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
     }
     
     @Override
     public boolean canEntityDestroy(BlockState state, BlockGetter level, BlockPos pos, Entity entity) {
-        return false;
+        return state.getValue(GraveBlock.DECORATIVE);
+    }
+    
+    @Override
+    protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+        if (!state.getValue(GraveBlock.DECORATIVE)) return List.of();
+        final ItemStack stack = new ItemStack(EPRegistry.GRAVE.get());
+        stack.set(DataComponents.BLOCK_STATE, GraveBlock.DECO_PROPERTIES);
+        return Collections.singletonList(stack);
     }
     
     @Override
@@ -150,6 +192,7 @@ public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterlogge
     
     @Override
     protected void onRemoved(ServerLevel level, BlockPos pos, BlockState state, BlockState newState, boolean movedByPiston) {
+        if (state.getValue(GraveBlock.DECORATIVE)) return;
         if (state.getBlock() == newState.getBlock()) return;
         if (!(level.getBlockEntity(pos) instanceof GraveBlockEntity entity)) return;
         MinecraftServer server = level.getServer();
