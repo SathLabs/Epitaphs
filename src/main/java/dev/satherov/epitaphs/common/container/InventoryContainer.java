@@ -9,6 +9,8 @@ import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
@@ -17,6 +19,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 public record InventoryContainer(SlotStackList items, SlotStackList armor, SlotStackList offhand) implements SaveContainer<InventoryContainer> {
@@ -113,7 +116,9 @@ public record InventoryContainer(SlotStackList items, SlotStackList armor, SlotS
         final Inventory inventory = player.getInventory();
         
         this.items.forEach(entry -> inventory.setItem(entry.slot(), entry.stack().copyAndClear()));
-        this.armor.forEach(entry -> inventory.setItem(Inventory.INVENTORY_SIZE + entry.slot(), entry.stack().copyAndClear()));
+        this.armor.forEach(entry -> {
+            InventoryContainer.equipOrInsert(entry.stack().copyAndClear(), stack -> inventory.setItem(Inventory.INVENTORY_SIZE + entry.slot(), stack), inventory::add);
+        });
         this.offhand.forEach(entry -> inventory.setItem(Inventory.SLOT_OFFHAND + entry.slot(), entry.stack().copyAndClear()));
     }
     
@@ -123,12 +128,22 @@ public record InventoryContainer(SlotStackList items, SlotStackList armor, SlotS
         this.items.forEach(inventory::add);
         
         final EntityEquipment equipment = input.read("equipment", EntityEquipment.CODEC).orElseGet(EntityEquipment::new);
-        equipment.set(EquipmentSlot.FEET, this.armor.getStack(0));
-        equipment.set(EquipmentSlot.LEGS, this.armor.getStack(1));
-        equipment.set(EquipmentSlot.CHEST, this.armor.getStack(2));
-        equipment.set(EquipmentSlot.HEAD, this.armor.getStack(3));
+        final List<ItemStack> overflow = new ArrayList<>();
+        InventoryContainer.equipOrInsert(this.armor.getStack(0), stack -> equipment.set(EquipmentSlot.FEET, stack), overflow::add);
+        InventoryContainer.equipOrInsert(this.armor.getStack(1), stack -> equipment.set(EquipmentSlot.LEGS, stack), overflow::add);
+        InventoryContainer.equipOrInsert(this.armor.getStack(2), stack -> equipment.set(EquipmentSlot.CHEST, stack), overflow::add);
+        InventoryContainer.equipOrInsert(this.armor.getStack(3), stack -> equipment.set(EquipmentSlot.HEAD, stack), overflow::add);
+        if (!overflow.isEmpty()) this.insert(overflow);
         equipment.set(EquipmentSlot.OFFHAND, this.offhand.getStack(0));
         output.store("equipment", EntityEquipment.CODEC, equipment);
+    }
+    
+    private static void equipOrInsert(ItemStack stack, Consumer<ItemStack> equip, Consumer<ItemStack> insert) {
+        if (EnchantmentHelper.has(stack, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE)) {
+            insert.accept(stack);
+        } else {
+            equip.accept(stack);
+        }
     }
     
     // ==================== OTHER ====================
