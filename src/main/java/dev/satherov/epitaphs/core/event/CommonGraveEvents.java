@@ -73,6 +73,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 import java.util.UUID;
 
 @EventBusSubscriber(modid = Epitaphs.MOD_ID)
@@ -116,6 +117,7 @@ public class CommonGraveEvents {
         
         player.getPersistentData().putBoolean("epitaphs:player_is_dead", true);
         ServerLevel level = player.level();
+        MinecraftServer server = level.getServer();
         if (level.getGameRules().get(GameRules.KEEP_INVENTORY)) {
             Epitaphs.log.debug("KeepInventory is enabled, skipping grave creation for {}", profile.name());
             return;
@@ -136,8 +138,29 @@ public class CommonGraveEvents {
             return;
         }
         
-        final BlockPos pos = GraveBlock.findSafeSpot(level, player.blockPosition());
-        Epitaphs.log.debug("Found safe grave spot for {} at {}", profile.name(), pos);
+        if (EPConfig.Server.getBlacklistedDimensions().contains(level.dimension().identifier().toString())) {
+            ServerPlayer.RespawnConfig cfg = player.getRespawnConfig();
+            ServerLevel respawnLevel = Objects.requireNonNullElse(server.getLevel(ServerPlayer.RespawnConfig.getDimensionOrDefault(cfg)), server.overworld());
+            
+            BlockPos origin;
+            if (cfg != null) origin = cfg.respawnData().pos();
+            else origin = server.getRespawnData().pos();
+            origin = BlockPos.randomInCube(level.getRandom(), 1, origin, 3).iterator().next();
+            
+            CommonGraveEvents.placeGrave(player, respawnLevel, origin, now);
+            Epitaphs.log.debug("Placing grave in {} for {} in {} due to blacklisted dimension", respawnLevel.dimension().identifier(), player.getStringUUID(), level.dimension().identifier());
+        } else {
+            CommonGraveEvents.placeGrave(player, level, player.blockPosition(), now);
+        }
+        
+        player.getInventory().clearContent();
+        if (CuriosHandler.isLoaded()) CuriosHandler.clearAll(player);
+        if (ToolbeltHandler.isLoaded()) ToolbeltHandler.clear(player);
+    }
+    
+    private static void placeGrave(ServerPlayer player, ServerLevel level, BlockPos origin, Instant now) {
+        final BlockPos pos = GraveBlock.findSafeSpot(level, origin);
+        Epitaphs.log.debug("Found safe grave spot for {} at {}", player.getName(), pos);
         
         final BlockPos below = pos.below();
         final BlockState state = level.getBlockState(below);
@@ -156,11 +179,17 @@ public class CommonGraveEvents {
         grave.setData(EPRegistry.GRAVE_DATA, new GraveData(player, now));
         Epitaphs.log.info("Created grave at {} for {}", pos, player.getStringUUID());
         
+        final String dimension = level.dimension().identifier().toString();
         player.sendSystemMessage(EPMessageLang.MESSAGE_GRAVE_CREATED.translate(
                 SLComponent.squareBrackets(SLComponent.pos(pos)).style(style -> {
                     style.color(ChatFormatting.GOLD);
-                    style.clickEvent(new ClickEvent.SuggestCommand(SLStringUtils.format("/execute in %s run tp @s %s %s %s", level.dimension().identifier(), pos.getX(), pos.getY(), pos.getZ())));
+                    style.clickEvent(new ClickEvent.SuggestCommand(SLStringUtils.format("/execute in %s run tp @s %s %s %s", dimension, pos.getX(), pos.getY(), pos.getZ())));
                     style.hoverEvent(new HoverEvent.ShowText(EPMessageLang.MESSAGE_AUTOFILL_COMMAND.translate(ChatFormatting.DARK_GRAY)));
+                    return style;
+                }),
+                SLComponent.squareBrackets(Component.literal(dimension)).style(style -> {
+                    style.color(ChatFormatting.BLUE);
+                    style.clickEvent(new ClickEvent.CopyToClipboard(dimension));
                     return style;
                 })
         ).style(ChatFormatting.GREEN), false);
@@ -174,10 +203,6 @@ public class CommonGraveEvents {
         ).style(ChatFormatting.GRAY), false);
         
         player.setData(EPRegistry.LOCATION_DATA, player.getData(EPRegistry.LOCATION_DATA).add(now, GlobalPos.of(level.dimension(), pos)));
-        
-        player.getInventory().clearContent();
-        if (CuriosHandler.isLoaded()) CuriosHandler.clearAll(player);
-        if (ToolbeltHandler.isLoaded()) ToolbeltHandler.clear(player);
     }
     
     private static void onVillagerDeath(final LivingDeathEvent event, final Villager villager) {

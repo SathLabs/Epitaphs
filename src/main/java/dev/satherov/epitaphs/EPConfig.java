@@ -16,6 +16,8 @@ import dev.satherov.sathlib.config.data.Range;
 import net.neoforged.fml.config.ModConfig;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @UtilityClass
 @ConfigHolder
@@ -42,6 +44,9 @@ public final class EPConfig {
     
     @Config(ModConfig.Type.SERVER)
     public static final class Server {
+        
+        @ConfigEntry(comment = "List of dimensions to blacklist graves from spawning in")
+        private static @Getter @Setter List<String> blacklistedDimensions = new ArrayList<>();
         
         @Range(min = 0)
         @ConfigEntry(comment = "Maximum distance at which a villager death will. 0 to disable")

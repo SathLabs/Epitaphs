@@ -14,7 +14,7 @@ import java.util.function.BiConsumer;
 @Accessors(fluent = true)
 public enum EPMessageLang implements SLTranslatable {
     // @formatter:off
-    MESSAGE_GRAVE_CREATED            ("grave_created",             "Created a grave with your items at %s"),
+    MESSAGE_GRAVE_CREATED            ("grave_created",             "Created a grave with your items at %s in %s"),
     MESSAGE_HIGHLIGHT_INFO           ("highlight_info",            "Use %s to find your way back to your grave"),
     MESSAGE_GRAVE_NO_ACCESS          ("grave_no_access",           "This grave belongs to %s. You cannot access it"),
     MESSAGE_GRAVE_OP_BYPASS          ("grave_op_bypass",           "You have sufficient permission to bypass this grave's access"),
