@@ -7,7 +7,9 @@ import dev.satherov.epitaphs.common.component.SoulboundData;
 import dev.satherov.epitaphs.common.container.CuriosContainer;
 import dev.satherov.epitaphs.common.container.InventoryContainer;
 import dev.satherov.epitaphs.common.container.PlayerContainer;
+import dev.satherov.epitaphs.common.container.ToolBeltContainer;
 import dev.satherov.epitaphs.compat.CuriosHandler;
+import dev.satherov.epitaphs.compat.ToolbeltHandler;
 import dev.satherov.epitaphs.core.EPRegistry;
 import dev.satherov.sathlib.util.SLExperienceUtil;
 import dev.satherov.sathlib.util.SLMathUtils;
@@ -40,7 +42,8 @@ public class SoulboundHandler {
         final int experience = SoulboundHandler.extractExperience(player);
         final InventoryContainer inventory = InventoryContainer.createSoulbound(player);
         final CuriosContainer curios = CuriosHandler.isLoaded() ? CuriosContainer.createSoulbound(player) : CuriosContainer.empty();
-        final PlayerContainer container = new PlayerContainer(uuid, inventory, curios);
+        final ToolBeltContainer toolbelt = ToolbeltHandler.isLoaded() ? ToolBeltContainer.createSoulbound(player) : ToolBeltContainer.empty();
+        final PlayerContainer container = new PlayerContainer(uuid, inventory, curios, toolbelt);
         
         final SoulboundData data = new SoulboundData(container, experience);
         player.setData(EPRegistry.SOULBOUND_DATA, data);

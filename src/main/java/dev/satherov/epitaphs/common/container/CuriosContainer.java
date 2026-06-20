@@ -59,6 +59,8 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
         return new CuriosContainer(entries);
     }
     
+    // ==================== OFFLINE ====================
+    
     public static CuriosContainer create(ValueInput input) {
         final Map<String, StackHandler> entries = new HashMap<>();
         final ValueInput.ValueInputList curios = input.rawChildOrEmpty("neoforge:attachments")
@@ -72,8 +74,6 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
         
         return new CuriosContainer(entries);
     }
-    
-    // ==================== OFFLINE ====================
     
     @Override
     public void write(ServerPlayer player) {

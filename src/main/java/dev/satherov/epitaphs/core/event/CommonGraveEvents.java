@@ -15,6 +15,7 @@ import dev.satherov.epitaphs.common.data.OnlineHandler;
 import dev.satherov.epitaphs.common.data.SoulboundHandler;
 import dev.satherov.epitaphs.common.item.SoulBottleItem;
 import dev.satherov.epitaphs.compat.CuriosHandler;
+import dev.satherov.epitaphs.compat.ToolbeltHandler;
 import dev.satherov.epitaphs.core.EPRegistry;
 import dev.satherov.epitaphs.data.pack.EPEnchantments;
 import dev.satherov.sathlib.network.chat.SLComponent;
@@ -176,6 +177,7 @@ public class CommonGraveEvents {
         
         player.getInventory().clearContent();
         if (CuriosHandler.isLoaded()) CuriosHandler.clearAll(player);
+        if (ToolbeltHandler.isLoaded()) ToolbeltHandler.clear(player);
     }
     
     private static void onVillagerDeath(final LivingDeathEvent event, final Villager villager) {

@@ -118,6 +118,8 @@ dependencies {
 
     compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}+26.1.2:api"
     implementation "top.theillusivec4.curios:curios-neoforge:${curios_version}+26.1.2"
+
+    implementation "curse.maven:tool-belt-260262:7927463"
 }
 
 tasks.withType(ProcessResources).configureEach {

@@ -61,7 +61,7 @@ public class DataHandler {
     private static final String DATE_FORMATTER = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, null, IsoChronology.INSTANCE, DataHandler.SYS_LOCALE);
     public static final DateTimeFormatter ISO8601_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneOffset.UTC);
     public static final DateTimeFormatter SYSTEM_FORMATTER = DateTimeFormatter.ofPattern(DataHandler.DATE_FORMATTER + " HH:mm:ss", DataHandler.SYS_LOCALE).withZone(ZoneId.systemDefault());
-
+    
     ///
     /// Gets the file path to the world folder.
     ///
