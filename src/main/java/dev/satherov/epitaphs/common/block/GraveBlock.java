@@ -158,8 +158,8 @@ public class GraveBlock extends SLBlock implements EntityBlock, SimpleWaterlogge
     }
     
     @Override
-    public boolean canHarvestBlock(BlockState state, BlockGetter blockGetter, BlockPos pos, Player player) {
-        return player.isCreative() || state.getValue(GraveBlock.DECORATIVE);
+    public boolean canHarvestBlock(BlockState state, BlockGetter level, BlockPos pos, Player player) {
+        return player.isCreative() || (state.getValue(GraveBlock.DECORATIVE) && EventHooks.doPlayerHarvestCheck(player, state, level, pos));
     }
     
     @Override

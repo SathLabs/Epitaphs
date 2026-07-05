@@ -166,7 +166,7 @@ public class CommonGraveEvents {
         final BlockState state = level.getBlockState(below);
         
         if (state.isAir() || state.is(BlockTags.REPLACEABLE)) {
-            level.setBlockAndUpdate(pos, Blocks.DIRT.defaultBlockState());
+            level.setBlockAndUpdate(below, Blocks.DIRT.defaultBlockState());
         }
         
         level.setBlockAndUpdate(pos, EPRegistry.GRAVE.get().defaultBlockState());
@@ -210,7 +210,7 @@ public class CommonGraveEvents {
         final Level level = villager.level();
         GraveBlockEntity.TRACKER.find(level, villager.blockPosition()).ifPresent(grave -> {
             level.setBlockAndUpdate(grave.getBlockPos(), grave.getBlockState().setValue(GraveBlock.SOULS, true));
-            grave.updateArea(GraveBlockEntity.getVillagerDeathArea());
+            GraveBlockEntity.TRACKER.unregister(grave);
         });
     }
     
@@ -225,7 +225,7 @@ public class CommonGraveEvents {
     public static void onExplosionDetonate(ExplosionEvent.Detonate event) {
         event.getAffectedBlocks().removeIf(pos -> {
             final BlockState state = event.getLevel().getBlockState(pos);
-            return state.is(EPRegistry.GRAVE.get());
+            return state.is(EPRegistry.GRAVE.get()) && !state.getValueOrElse(GraveBlock.DECORATIVE, true);
         });
     }
     
@@ -246,7 +246,7 @@ public class CommonGraveEvents {
         if (!state.is(EPRegistry.GRAVE.get())) return;
         if (!(level.getBlockEntity(pos) instanceof GraveBlockEntity entity)) return;
         
-        final ItemStack stack = player.getMainHandItem();
+        final ItemStack stack = event.getItemStack();
         
         if (state.getValue(GraveBlock.SOULS) && stack.getItem() instanceof BottleItem) {
             level.setBlockAndUpdate(pos, state.setValue(GraveBlock.SOULS, false));
@@ -254,7 +254,7 @@ public class CommonGraveEvents {
             stack.shrink(1);
             final ItemStack bottle = EPRegistry.SOUL_BOTTLE.get().getDefaultInstance();
             
-            if (stack.isEmpty()) player.setItemSlot(EquipmentSlot.MAINHAND, bottle);
+            if (stack.isEmpty()) player.setItemInHand(event.getHand(), bottle);
             else if (!player.getInventory().add(bottle)) player.drop(bottle, true);
             level.playSound(null, pos, SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.BLOCKS, 1.0F, 1.0F);
             return;
