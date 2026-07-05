@@ -147,10 +147,10 @@ public class CommonGraveEvents {
             else origin = server.getRespawnData().pos();
             origin = BlockPos.randomInCube(level.getRandom(), 1, origin, 3).iterator().next();
             
-            CommonGraveEvents.placeGrave(player, respawnLevel, origin, now);
+            if (CommonGraveEvents.placeGrave(player, respawnLevel, origin, now)) return;
             Epitaphs.log.debug("Placing grave in {} for {} in {} due to blacklisted dimension", respawnLevel.dimension().identifier(), player.getStringUUID(), level.dimension().identifier());
         } else {
-            CommonGraveEvents.placeGrave(player, level, player.blockPosition(), now);
+            if (CommonGraveEvents.placeGrave(player, level, player.blockPosition(), now)) return;
         }
         
         player.getInventory().clearContent();
@@ -158,7 +158,7 @@ public class CommonGraveEvents {
         if (ToolbeltHandler.isLoaded()) ToolbeltHandler.clear(player);
     }
     
-    private static void placeGrave(ServerPlayer player, ServerLevel level, BlockPos origin, Instant now) {
+    private static boolean placeGrave(ServerPlayer player, ServerLevel level, BlockPos origin, Instant now) {
         final BlockPos pos = GraveBlock.findSafeSpot(level, origin);
         Epitaphs.log.debug("Found safe grave spot for {} at {}", player.getName(), pos);
         
@@ -173,7 +173,7 @@ public class CommonGraveEvents {
         GraveBlockEntity grave = EPRegistry.GRAVE_BLOCK_ENTITY.get().getBlockEntity(level, pos);
         if (grave == null) {
             Epitaphs.log.warn("Failed to create grave block entity at {} for {}", pos, player.getStringUUID());
-            return;
+            return true;
         }
         
         grave.setData(EPRegistry.GRAVE_DATA, new GraveData(player, now));
@@ -203,6 +203,7 @@ public class CommonGraveEvents {
         ).style(ChatFormatting.GRAY), false);
         
         player.setData(EPRegistry.LOCATION_DATA, player.getData(EPRegistry.LOCATION_DATA).add(now, GlobalPos.of(level.dimension(), pos)));
+        return false;
     }
     
     private static void onVillagerDeath(final LivingDeathEvent event, final Villager villager) {

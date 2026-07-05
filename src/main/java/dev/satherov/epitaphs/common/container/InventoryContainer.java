@@ -1,8 +1,14 @@
 package dev.satherov.epitaphs.common.container;
 
+import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.common.component.SlotStackList;
+import dev.satherov.epitaphs.common.data.OfflineHandler;
 import dev.satherov.epitaphs.common.data.SoulboundHandler;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.entity.EntityEquipment;
@@ -11,6 +17,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
@@ -117,25 +124,38 @@ public record InventoryContainer(SlotStackList items, SlotStackList armor, SlotS
         
         this.items.forEach(entry -> inventory.setItem(entry.slot(), entry.stack().copyAndClear()));
         this.armor.forEach(entry -> {
-            InventoryContainer.equipOrInsert(entry.stack().copyAndClear(), stack -> inventory.setItem(Inventory.INVENTORY_SIZE + entry.slot(), stack), inventory::add);
+            InventoryContainer.equipOrInsert(entry.stack().copyAndClear(), stack -> inventory.setItem(Inventory.INVENTORY_SIZE + entry.slot(), stack), stack -> {
+                if (!inventory.add(stack)) player.drop(stack, false);
+            });
         });
         this.offhand.forEach(entry -> inventory.setItem(Inventory.SLOT_OFFHAND + entry.slot(), entry.stack().copyAndClear()));
     }
     
     @Override
-    public void write(ValueInput input, ValueOutput output) {
-        final ValueOutput.TypedOutputList<ItemStackWithSlot> inventory = output.list("Inventory", ItemStackWithSlot.CODEC);
-        this.items.forEach(inventory::add);
-        
+    public void write(MinecraftServer server, ValueInput input, ValueOutput output) {
         final EntityEquipment equipment = input.read("equipment", EntityEquipment.CODEC).orElseGet(EntityEquipment::new);
         final List<ItemStack> overflow = new ArrayList<>();
         InventoryContainer.equipOrInsert(this.armor.getStack(0), stack -> equipment.set(EquipmentSlot.FEET, stack), overflow::add);
         InventoryContainer.equipOrInsert(this.armor.getStack(1), stack -> equipment.set(EquipmentSlot.LEGS, stack), overflow::add);
         InventoryContainer.equipOrInsert(this.armor.getStack(2), stack -> equipment.set(EquipmentSlot.CHEST, stack), overflow::add);
         InventoryContainer.equipOrInsert(this.armor.getStack(3), stack -> equipment.set(EquipmentSlot.HEAD, stack), overflow::add);
-        if (!overflow.isEmpty()) this.insert(overflow);
+        
         equipment.set(EquipmentSlot.OFFHAND, this.offhand.getStack(0));
         output.store("equipment", EntityEquipment.CODEC, equipment);
+        
+        List<ItemStack> dropped = List.of();
+        if (!overflow.isEmpty()) {
+            dropped = this.insert(overflow);
+        }
+        
+        final ValueOutput.TypedOutputList<ItemStackWithSlot> inventory = output.list("Inventory", ItemStackWithSlot.CODEC);
+        this.items.forEach(inventory::add);
+        
+        if (!dropped.isEmpty()) {
+            ResourceKey<Level> dimension = input.read("Dimension", Level.RESOURCE_KEY_CODEC).orElse(server.getRespawnData().dimension());
+            BlockPos pos = input.read("Pos", BlockPos.CODEC).orElse(server.getRespawnData().pos());
+            OfflineHandler.drop(server, dimension, pos, dropped);
+        }
     }
     
     private static void equipOrInsert(ItemStack stack, Consumer<ItemStack> equip, Consumer<ItemStack> insert) {

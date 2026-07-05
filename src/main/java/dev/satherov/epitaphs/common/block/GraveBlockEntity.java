@@ -32,6 +32,8 @@ public class GraveBlockEntity extends AreaBlockEntity<GraveBlockEntity> {
         if (EPConfig.Server.getVillagerDeathDistance() < 1) return;
         if (!this.getBlockState().getValue(GraveBlock.SOULS)) {
             GraveBlockEntity.TRACKER.update(this.self(), GraveBlockEntity.getVillagerDeathArea());
+        } else {
+            GraveBlockEntity.TRACKER.unregister(this.self());
         }
     }
     

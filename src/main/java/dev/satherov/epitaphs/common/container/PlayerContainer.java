@@ -5,6 +5,7 @@ import dev.satherov.epitaphs.compat.CuriosHandler;
 import dev.satherov.epitaphs.compat.ToolbeltHandler;
 
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
@@ -67,10 +68,10 @@ public record PlayerContainer(
     }
     
     @Override
-    public void write(ValueInput input, ValueOutput output) {
-        this.inventory.write(input, output);
-        if (CuriosHandler.isLoaded()) this.curios.write(input, output);
-        if (ToolbeltHandler.isLoaded()) this.toolbelt.write(input, output);
+    public void write(MinecraftServer server, ValueInput input, ValueOutput output) {
+        this.inventory.write(server, input, output);
+        if (CuriosHandler.isLoaded()) this.curios.write(server, input, output);
+        if (ToolbeltHandler.isLoaded()) this.toolbelt.write(server, input, output);
         final UUID uuid = input.read("UUID", UUIDUtil.CODEC).orElse(UUID.nameUUIDFromBytes(new byte[0]));
         Epitaphs.log.debug("Wrote PlayerContainer for {} (offline)", uuid);
     }

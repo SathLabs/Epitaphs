@@ -3,6 +3,7 @@ package dev.satherov.epitaphs.common.container;
 import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.common.component.SlotStackList;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -123,7 +124,7 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
     }
     
     @Override
-    public void write(ValueInput input, ValueOutput output) {
+    public void write(MinecraftServer server, ValueInput input, ValueOutput output) {
         final ValueInput.ValueInputList curios = input.rawChildOrEmpty("neoforge:attachments")
                 .rawChildOrEmpty("curios:inventory")
                 .childrenListOrEmpty("Curios");

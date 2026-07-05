@@ -3,6 +3,7 @@ package dev.satherov.epitaphs.common.container;
 import dev.satherov.epitaphs.common.component.SlotStackList;
 import dev.satherov.epitaphs.common.data.SoulboundHandler;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
@@ -65,7 +66,7 @@ public record ToolBeltContainer(SlotStackList stack) implements SaveContainer<To
     }
     
     @Override
-    public void write(ValueInput input, ValueOutput output) {
+    public void write(MinecraftServer server, ValueInput input, ValueOutput output) {
         ValueOutput out = output.child("neoforge:attachments")
                 .child("toolbelt:belt")
                 .childrenList("stacks")

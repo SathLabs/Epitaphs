@@ -74,12 +74,14 @@ public final class OfflineHandler {
             
             if (!dropped.isEmpty()) {
                 Epitaphs.log.warn("Merging of playerdata for {} with backup at {} resulted in {} dropped items", uuid, backupFile.getFileName(), dropped.size());
-                OfflineHandler.drop(server, playerDataTag, dropped);
+                ResourceKey<Level> dimension = Level.RESOURCE_KEY_CODEC.parse(NbtOps.INSTANCE, playerDataTag).resultOrPartial().orElse(server.getRespawnData().dimension());
+                BlockPos pos = BlockPos.CODEC.parse(NbtOps.INSTANCE, playerDataTag).resultOrPartial().orElse(server.getRespawnData().pos());
+                OfflineHandler.drop(server, dimension, pos, dropped);
             }
             
             try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(Epitaphs.log)) {
                 TagValueOutput output = TagValueOutput.createWithContext(reporter, access);
-                playerContainer.write(TagValueInput.create(reporter, access, playerDataTag), output);
+                playerContainer.write(server, TagValueInput.create(reporter, access, playerDataTag), output);
                 playerDataTag.merge(output.buildResult());
             }
             NbtIo.writeCompressed(playerDataTag, playerData);
@@ -123,16 +125,7 @@ public final class OfflineHandler {
         }
     }
     
-    private static void drop(MinecraftServer server, CompoundTag data, List<ItemStack> items) {
-        DataResult<ResourceKey<Level>> dimensionResult = Level.RESOURCE_KEY_CODEC.parse(NbtOps.INSTANCE, data);
-        DataResult<BlockPos> posResult = BlockPos.CODEC.parse(NbtOps.INSTANCE, data);
-        if (dimensionResult.isError() || posResult.isError()) {
-            Epitaphs.log.error("Failed to drop items due to invalid data");
-            return;
-        }
-        
-        ResourceKey<Level> dimension = dimensionResult.getOrThrow();
-        BlockPos pos = posResult.getOrThrow();
+    public static void drop(MinecraftServer server, ResourceKey<Level> dimension, BlockPos pos, List<ItemStack> items) {
         ServerLevel level = server.getLevel(dimension);
         if (level == null) {
             Epitaphs.log.warn("Failed to drop items due to invalid dimension '{}'", dimension.identifier());

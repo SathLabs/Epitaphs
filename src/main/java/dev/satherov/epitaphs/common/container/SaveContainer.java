@@ -1,5 +1,6 @@
 package dev.satherov.epitaphs.common.container;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
@@ -11,7 +12,7 @@ public interface SaveContainer<T extends SaveContainer<T>> {
     
     void write(ServerPlayer player);
     
-    void write(ValueInput input, ValueOutput output);
+    void write(MinecraftServer server, ValueInput input, ValueOutput output);
     
     List<ItemStack> merge(T other);
     
