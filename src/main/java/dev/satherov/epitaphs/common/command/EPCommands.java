@@ -59,6 +59,7 @@ public class EPCommands {
                 // Commands for operators only
                 .then(ResetCommand.register().requires(EPCommands.hasPermission()))
                 .then(RecoverCommand.register().requires(EPCommands.hasPermission()))
+                .then(PreviewCommand.register().requires(EPCommands.hasPermission()))
                 .then(SaveCommand.register().requires(EPCommands.hasPermission()))
                 .then(FilesCommand.register().requires(EPCommands.hasPermission()))
         );

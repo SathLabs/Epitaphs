@@ -5,6 +5,7 @@ import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.client.lang.EPCommandLang;
 import dev.satherov.epitaphs.client.lang.EPEnchantmentLang;
 import dev.satherov.epitaphs.client.lang.EPMessageLang;
+import dev.satherov.epitaphs.client.lang.EPScreenLang;
 import dev.satherov.epitaphs.core.EPRegistry;
 import dev.satherov.sathlib.config.SLConfigLoader;
 
@@ -27,6 +28,7 @@ public class EPLanguageProvider extends LanguageProvider {
         EPEnchantmentLang.translate(this::add);
         EPCommandLang.translate(this::add);
         EPMessageLang.translate(this::add);
+        EPScreenLang.translate(this::add);
         SLConfigLoader.translate(ModList.get().getModContainerById(Epitaphs.MOD_ID).orElseThrow(), this::add);
     }
 }

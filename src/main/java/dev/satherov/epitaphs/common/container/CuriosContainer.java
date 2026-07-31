@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 @SuppressWarnings("LoggingSimilarMessage")
 public record CuriosContainer(Map<String, StackHandler> entries) implements SaveContainer<CuriosContainer> {
@@ -172,6 +173,38 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
     }
     
     // ==================== OTHER ====================
+    
+    ///
+    /// Returns all curio slot identifiers in this container, sorted alphabetically.
+    ///
+    public List<String> identifiers() {
+        return this.entries.keySet().stream().sorted().toList();
+    }
+    
+    ///
+    /// Returns the amount of slots the given curio identifier holds.
+    ///
+    /// @param identifier The curio slot identifier.
+    /// @param cosmetic   Whether to count the cosmetic slots instead of the regular ones.
+    ///
+    public int size(String identifier, boolean cosmetic) {
+        final StackHandler handler = this.entries.get(identifier);
+        if (handler == null) return 0;
+        return (cosmetic ? handler.cosmetics() : handler.items()).size();
+    }
+    
+    ///
+    /// Returns a dense, slot indexed list of the stacks stored for the given curio identifier.
+    ///
+    /// @param identifier The curio slot identifier.
+    /// @param cosmetic   Whether to read the cosmetic slots instead of the regular ones.
+    ///
+    public List<ItemStack> stacks(String identifier, boolean cosmetic) {
+        final StackHandler handler = this.entries.get(identifier);
+        if (handler == null) return List.of();
+        final SlotStackList list = cosmetic ? handler.cosmetics() : handler.items();
+        return IntStream.range(0, list.size()).mapToObj(list::getStack).toList();
+    }
     
     @Override
     public List<ItemStack> merge(CuriosContainer other) {

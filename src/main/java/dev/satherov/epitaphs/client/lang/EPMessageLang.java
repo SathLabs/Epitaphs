@@ -30,7 +30,8 @@ public enum EPMessageLang implements SLTranslatable {
     MESSAGE_SOULBOUND_HINT           ("soulbound_hint",            "Applies the soulbound enchantment when combined in an anvil"),
     MESSAGE_FILE_PURGING_WARNING     ("file_purging_warning",      "This server has automatic file purging enabled."),
     MESSAGE_FILE_PURGED_INFO         ("file_purged_info",          "This save was created before %s and automatically deleted!"),
-    MESSAGE_DECORATIVE               ("decorative",                "Decorative")
+    MESSAGE_DECORATIVE               ("decorative",                "Decorative"),
+    MESSAGE_PREVIEW_DENIED           ("preview_denied",            "You are not allowed to take items out of a backup preview")
     // @formatter:on
     ;
     

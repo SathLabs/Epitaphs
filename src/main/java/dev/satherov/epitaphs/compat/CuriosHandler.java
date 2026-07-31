@@ -13,7 +13,7 @@ import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
 @UtilityClass
 public class CuriosHandler {
     
-    private static final String MOD_ID = "curios";
+    public static final String MOD_ID = "curios";
     
     public static boolean isLoaded() {
         return ModList.get().isLoaded(CuriosHandler.MOD_ID);

@@ -1,12 +1,10 @@
 package dev.satherov.epitaphs.common.container;
 
-import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.common.component.SlotStackList;
 import dev.satherov.epitaphs.common.data.OfflineHandler;
 import dev.satherov.epitaphs.common.data.SoulboundHandler;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;

@@ -9,10 +9,12 @@ import dev.satherov.epitaphs.common.component.SoulBottleConsumeEffect;
 import dev.satherov.epitaphs.common.component.SoulboundData;
 import dev.satherov.epitaphs.common.component.TrackedLocation;
 import dev.satherov.epitaphs.common.item.SoulBottleItem;
+import dev.satherov.epitaphs.common.menu.PreviewMenu;
 import dev.satherov.sathlib.common.item.SLItemProperties;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
@@ -25,6 +27,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.Consumable;
@@ -48,6 +51,9 @@ public final class EPRegistry {
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, Epitaphs.MOD_ID);
     private static final DeferredRegister<DataComponentType<?>> ENCHANTMENT_DATA_COMPONENTS = DeferredRegister.create(BuiltInRegistries.ENCHANTMENT_EFFECT_COMPONENT_TYPE, Epitaphs.MOD_ID);
     private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(BuiltInRegistries.CREATIVE_MODE_TAB, Epitaphs.MOD_ID);
+    private static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(BuiltInRegistries.MENU, Epitaphs.MOD_ID);
+    
+    public static final DeferredHolder<MenuType<?>, MenuType<PreviewMenu>> PREVIEW_MENU = EPRegistry.MENUS.register("preview", () -> IMenuTypeExtension.create(PreviewMenu::new));
     
     public static final DeferredHolder<Block, GraveBlock> GRAVE = EPRegistry.register("grave", GraveBlock::new);
     public static final DeferredHolder<Item, SoulBottleItem> SOUL_BOTTLE = EPRegistry.ITEMS.register("soul_bottle", k -> new SoulBottleItem(SLItemProperties.create(k).food(EPRegistry.SOUL_BOTTLE_FOOD, EPRegistry.SOUL_BOTTLE_CONSUMABLE)));
@@ -116,7 +122,7 @@ public final class EPRegistry {
             })
             .build()
     );
-
+    
     private static <T extends Block> DeferredHolder<Block, T> register(String name, Function<Identifier, ? extends T> block) {
         final DeferredHolder<Block, T> holder = EPRegistry.BLOCKS.register(name, block);
         EPRegistry.ITEMS.registerSimpleBlockItem(holder);
@@ -130,6 +136,7 @@ public final class EPRegistry {
         EPRegistry.ATTACHMENT_TYPES.register(bus);
         EPRegistry.ENCHANTMENT_DATA_COMPONENTS.register(bus);
         EPRegistry.TABS.register(bus);
+        EPRegistry.MENUS.register(bus);
     }
     
 }

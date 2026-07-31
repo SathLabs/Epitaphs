@@ -20,6 +20,10 @@ public enum EPCommandLang implements SLTranslatable {
     COMMAND_RECOVER_SUCCESS         ("recover.success",          "Successfully recovered %s to %s"),
     COMMAND_RECOVER_FAILURE         ("recover.failure",          "Failed to recover %s to %s"),
     
+    COMMAND_PREVIEW_TITLE           ("preview.title",            "Backup of %s"),
+    COMMAND_PREVIEW_SUCCESS         ("preview.success",          "Opened a preview of %s at %s"),
+    COMMAND_PREVIEW_FAILURE         ("preview.failure",          "Failed to preview %s at %s"),
+
     COMMAND_FILES_EMPTY             ("files.empty",              "No backups available for %s "),
     COMMAND_FILES_SUCCESS           ("files.success",            "The following backups are available for %s:"),
     

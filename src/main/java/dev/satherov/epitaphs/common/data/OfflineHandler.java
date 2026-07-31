@@ -23,8 +23,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 
-import com.mojang.serialization.DataResult;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
