@@ -89,6 +89,10 @@ Epitaphs is just a basic grave mod that does it's job of spawning graves and tha
 - `/epitaphs highlight player <player> <timestamp>`
 - `/epitaphs highlight uuid <uuid> <timestamp>`
   - Highlights the tracked grave for the targeted player at the given timestamp
+- `/epitaphs preview player <player> <timestamp>`
+- `/epitaphs preview uuid <uuid> <timestamp>`
+  - Opens a preview screen with a fake inventory of all items present in the backup. 
+  - When run from a server console, this simply prints out a list of all items.
 - `/epitaphs recover player <player> <timestamp>`
 - `/epitaphs recover uuid <uuid> <timestamp>`
   - Restores a backup and merges the data into the target player. This is a graceful reset and will retain existing data
