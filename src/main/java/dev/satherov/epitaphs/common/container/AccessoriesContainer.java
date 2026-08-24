@@ -127,7 +127,7 @@ public record AccessoriesContainer(Map<String, StackHandler> entries) implements
                 final NonNullList<ItemStack> cosmetics = NonNullList.withSize(cosmeticStacks.getContainerSize(), ItemStack.EMPTY);
                 for (int slot = 0; slot < cosmeticStacks.getContainerSize(); slot++) {
                     ItemStack stack = cosmeticStacks.getItem(slot);
-                    if (SoulboundHandler.isSoulbound(stack)) cosmeticStacks.setItem(slot, stack.copyAndClear());
+                    if (SoulboundHandler.isSoulbound(stack)) cosmetics.set(slot, stack.copyAndClear());
                 }
                 
                 entries.put(key, new StackHandler(items, cosmetics));

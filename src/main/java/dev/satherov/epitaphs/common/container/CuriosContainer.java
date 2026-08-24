@@ -117,7 +117,7 @@ public record CuriosContainer(Map<String, StackHandler> entries) implements Save
                 final NonNullList<ItemStack> cosmetics = NonNullList.withSize(cosmeticStacks.getSlots(), ItemStack.EMPTY);
                 for (int slot = 0; slot < cosmeticStacks.getSlots(); slot++) {
                     ItemStack stack = cosmeticStacks.getStackInSlot(slot);
-                    if (SoulboundHandler.isSoulbound(stack)) cosmeticStacks.setStackInSlot(slot, stack.copyAndClear());
+                    if (SoulboundHandler.isSoulbound(stack)) cosmetics.set(slot, stack.copyAndClear());
                 }
                 
                 entries.put(key, new StackHandler(items, cosmetics));
