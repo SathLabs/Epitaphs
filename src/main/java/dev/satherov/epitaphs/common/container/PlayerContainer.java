@@ -29,9 +29,9 @@ public record PlayerContainer(
     public static final Codec<PlayerContainer> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.xmap(UUID::fromString, UUID::toString).fieldOf("uuid").forGetter(PlayerContainer::uuid),
             InventoryContainer.CODEC.fieldOf("inventory").forGetter(PlayerContainer::inventory),
-            CuriosContainer.CODEC.fieldOf("curios").forGetter(PlayerContainer::curios),
-            AccessoriesContainer.CODEC.fieldOf("accessories").forGetter(PlayerContainer::accessories),
-            CosmeticArmorContainer.CODEC.fieldOf("cosmetic_armor").forGetter(PlayerContainer::cosmeticArmor)
+            CuriosContainer.CODEC.optionalFieldOf("curios", CuriosContainer.empty()).forGetter(PlayerContainer::curios),
+            AccessoriesContainer.CODEC.optionalFieldOf("accessories", AccessoriesContainer.empty()).forGetter(PlayerContainer::accessories),
+            CosmeticArmorContainer.CODEC.optionalFieldOf("cosmetic_armor", CosmeticArmorContainer.empty()).forGetter(PlayerContainer::cosmeticArmor)
     ).apply(instance, PlayerContainer::new));
     
     public static PlayerContainer empty() {
