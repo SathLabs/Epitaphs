@@ -2,6 +2,7 @@ package dev.satherov.epitaphs.common.container;
 
 import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.compat.AccessoriesHandler;
+import dev.satherov.epitaphs.compat.CosmeticArmorHandler;
 import dev.satherov.epitaphs.compat.CuriosHandler;
 
 import net.minecraft.core.HolderLookup;
@@ -17,17 +18,24 @@ import java.util.List;
 import java.util.UUID;
 
 @SuppressWarnings("LoggingSimilarMessage")
-public record PlayerContainer(UUID uuid, InventoryContainer inventory, CuriosContainer curios, AccessoriesContainer accessories) implements SaveContainer<PlayerContainer> {
+public record PlayerContainer(
+        UUID uuid,
+        InventoryContainer inventory,
+        CuriosContainer curios,
+        AccessoriesContainer accessories,
+        CosmeticArmorContainer cosmeticArmor
+) implements SaveContainer<PlayerContainer> {
     
     public static final Codec<PlayerContainer> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.xmap(UUID::fromString, UUID::toString).fieldOf("uuid").forGetter(PlayerContainer::uuid),
             InventoryContainer.CODEC.fieldOf("inventory").forGetter(PlayerContainer::inventory),
             CuriosContainer.CODEC.fieldOf("curios").forGetter(PlayerContainer::curios),
-            AccessoriesContainer.CODEC.fieldOf("accessories").forGetter(PlayerContainer::accessories)
+            AccessoriesContainer.CODEC.fieldOf("accessories").forGetter(PlayerContainer::accessories),
+            CosmeticArmorContainer.CODEC.fieldOf("cosmetic_armor").forGetter(PlayerContainer::cosmeticArmor)
     ).apply(instance, PlayerContainer::new));
     
     public static PlayerContainer empty() {
-        return new PlayerContainer(UUID.nameUUIDFromBytes(new byte[0]), InventoryContainer.empty(), CuriosContainer.empty(), AccessoriesContainer.empty());
+        return new PlayerContainer(UUID.nameUUIDFromBytes(new byte[0]), InventoryContainer.empty(), CuriosContainer.empty(), AccessoriesContainer.empty(), CosmeticArmorContainer.empty());
     }
     
     public static PlayerContainer create(ServerPlayer player) {
@@ -35,8 +43,9 @@ public record PlayerContainer(UUID uuid, InventoryContainer inventory, CuriosCon
         final InventoryContainer inventory = InventoryContainer.create(player);
         final CuriosContainer curios = CuriosHandler.isLoaded() ? CuriosContainer.create(player) : CuriosContainer.empty();
         final AccessoriesContainer accessories = AccessoriesHandler.isLoaded() ? AccessoriesContainer.create(player) : AccessoriesContainer.empty();
+        final CosmeticArmorContainer cosmeticArmor = CosmeticArmorHandler.isLoaded() ? CosmeticArmorContainer.create(player) : CosmeticArmorContainer.empty();
         Epitaphs.log.debug("Created PlayerContainer for {} (live)", player.getGameProfile().getName());
-        return new PlayerContainer(uuid, inventory, curios, accessories);
+        return new PlayerContainer(uuid, inventory, curios, accessories, cosmeticArmor);
     }
     
     public static PlayerContainer create(HolderLookup.Provider provider, CompoundTag data) {
@@ -44,8 +53,9 @@ public record PlayerContainer(UUID uuid, InventoryContainer inventory, CuriosCon
         final InventoryContainer inventory = InventoryContainer.create(provider, data);
         final CuriosContainer curios = CuriosHandler.isLoaded() ? CuriosContainer.create(provider, data) : CuriosContainer.empty();
         final AccessoriesContainer accessories = AccessoriesHandler.isLoaded() ? AccessoriesContainer.create(provider, data) : AccessoriesContainer.empty();
+        final CosmeticArmorContainer cosmeticArmor = CosmeticArmorHandler.isLoaded() ? CosmeticArmorContainer.create(provider, data) : CosmeticArmorContainer.empty();
         Epitaphs.log.debug("Created PlayerContainer for {} (offline)", uuid);
-        return new PlayerContainer(uuid, inventory, curios, accessories);
+        return new PlayerContainer(uuid, inventory, curios, accessories, cosmeticArmor);
     }
     
     @Override
@@ -53,6 +63,7 @@ public record PlayerContainer(UUID uuid, InventoryContainer inventory, CuriosCon
         this.inventory.write(player);
         if (CuriosHandler.isLoaded()) this.curios.write(player);
         if (AccessoriesHandler.isLoaded()) this.accessories.write(player);
+        if (CosmeticArmorHandler.isLoaded()) this.cosmeticArmor.write(player);
         Epitaphs.log.debug("Wrote PlayerContainer for {} (online)", player.getGameProfile().getName());
     }
     
@@ -61,6 +72,7 @@ public record PlayerContainer(UUID uuid, InventoryContainer inventory, CuriosCon
         this.inventory.write(provider, data);
         if (CuriosHandler.isLoaded()) this.curios.write(provider, data);
         if (AccessoriesHandler.isLoaded()) this.accessories.write(provider, data);
+        if (CosmeticArmorHandler.isLoaded()) this.cosmeticArmor.write(provider, data);
         Epitaphs.log.debug("Wrote PlayerContainer for {} (offline)", data.getUUID("UUID"));
     }
     
@@ -70,6 +82,7 @@ public record PlayerContainer(UUID uuid, InventoryContainer inventory, CuriosCon
         result.addAll(this.inventory.merge(other.inventory));
         if (CuriosHandler.isLoaded()) result.addAll(this.curios.merge(other.curios));
         if (AccessoriesHandler.isLoaded()) result.addAll(this.accessories.merge(other.accessories));
+        if (CosmeticArmorHandler.isLoaded()) result.addAll(this.cosmeticArmor.merge(other.cosmeticArmor));
         Epitaphs.log.debug("Merged PlayerContainer for {}", this.uuid);
         return result;
     }
@@ -80,12 +93,13 @@ public record PlayerContainer(UUID uuid, InventoryContainer inventory, CuriosCon
         result.addAll(this.inventory.gather());
         if (CuriosHandler.isLoaded()) result.addAll(this.curios.gather());
         if (AccessoriesHandler.isLoaded()) result.addAll(this.accessories.gather());
+        if (CosmeticArmorHandler.isLoaded()) result.addAll(this.cosmeticArmor.gather());
         Epitaphs.log.debug("Gathered PlayerContainer for {}", this.uuid);
         return result;
     }
     
     @Override
     public boolean isEmpty() {
-        return this.inventory.isEmpty() && this.curios.isEmpty() && this.accessories.isEmpty();
+        return this.inventory.isEmpty() && this.curios.isEmpty() && this.accessories.isEmpty() && this.cosmeticArmor.isEmpty();
     }
 }

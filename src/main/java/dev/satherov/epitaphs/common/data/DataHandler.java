@@ -4,6 +4,7 @@ import lombok.experimental.UtilityClass;
 
 import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.common.container.PlayerContainer;
+import dev.satherov.epitaphs.compat.CosmeticArmorHandler;
 import dev.satherov.epitaphs.util.StringUtils;
 
 import net.minecraft.Util;
@@ -202,6 +203,7 @@ public class DataHandler {
         Path storage = DataHandler.getFileStorage(server).resolve(uuid.toString());
         
         CompoundTag data = player.saveWithoutId(new CompoundTag());
+        if (CosmeticArmorHandler.isLoaded()) CosmeticArmorHandler.save(player, data);
         
         try {
             Files.createDirectories(storage);
@@ -267,6 +269,7 @@ public class DataHandler {
         try {
             Path file = BackupType.ANY.resolve(storage, now);
             CompoundTag data = NbtIo.readCompressed(file, NbtAccounter.unlimitedHeap());
+            if (CosmeticArmorHandler.isLoaded()) CosmeticArmorHandler.reset(server, uuid, data);
             
             Path temp = Files.createTempFile(world, uuid + "-", ".dat");
             NbtIo.writeCompressed(data, temp);

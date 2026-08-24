@@ -4,6 +4,7 @@ import lombok.experimental.UtilityClass;
 
 import dev.satherov.epitaphs.Epitaphs;
 import dev.satherov.epitaphs.common.container.PlayerContainer;
+import dev.satherov.epitaphs.compat.CosmeticArmorHandler;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -54,6 +55,7 @@ public final class OfflineHandler {
             RegistryAccess access = server.registryAccess();
             CompoundTag playerDataTag = NbtIo.readCompressed(playerData, NbtAccounter.unlimitedHeap());
             CompoundTag backupTag = NbtIo.readCompressed(backupFile, NbtAccounter.unlimitedHeap());
+            if (CosmeticArmorHandler.isLoaded()) CosmeticArmorHandler.load(server, uuid, playerDataTag);
             
             PlayerContainer playerContainer = PlayerContainer.create(access, playerDataTag);
             PlayerContainer backupContainer = PlayerContainer.create(access, backupTag);
@@ -67,6 +69,7 @@ public final class OfflineHandler {
             }
             
             playerContainer.write(access, playerDataTag);
+            if (CosmeticArmorHandler.isLoaded()) CosmeticArmorHandler.store(server, uuid, playerDataTag);
             NbtIo.writeCompressed(playerDataTag, playerData);
             Epitaphs.log.debug("Restored data from {} to {}", backupFile.getFileName(), playerData.getFileName());
             return 1;
