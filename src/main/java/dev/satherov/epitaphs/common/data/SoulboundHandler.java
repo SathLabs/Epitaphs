@@ -9,9 +9,11 @@ import dev.satherov.epitaphs.common.container.CosmeticArmorContainer;
 import dev.satherov.epitaphs.common.container.CuriosContainer;
 import dev.satherov.epitaphs.common.container.InventoryContainer;
 import dev.satherov.epitaphs.common.container.PlayerContainer;
+import dev.satherov.epitaphs.common.container.ToolBeltContainer;
 import dev.satherov.epitaphs.compat.AccessoriesHandler;
 import dev.satherov.epitaphs.compat.CosmeticArmorHandler;
 import dev.satherov.epitaphs.compat.CuriosHandler;
+import dev.satherov.epitaphs.compat.ToolbeltHandler;
 import dev.satherov.epitaphs.core.EPRegistry;
 import dev.satherov.epitaphs.util.MathUtils;
 
@@ -45,7 +47,8 @@ public class SoulboundHandler {
         final CuriosContainer curios = CuriosHandler.isLoaded() ? CuriosContainer.createSoulbound(player) : CuriosContainer.empty();
         final AccessoriesContainer accessories = AccessoriesHandler.isLoaded() ? AccessoriesContainer.createSoulbound(player) : AccessoriesContainer.empty();
         final CosmeticArmorContainer cosmeticArmor = CosmeticArmorHandler.isLoaded() ? CosmeticArmorContainer.createSoulbound(player) : CosmeticArmorContainer.empty();
-        final PlayerContainer container = new PlayerContainer(uuid, inventory, curios, accessories, cosmeticArmor);
+        final ToolBeltContainer toolbelt = ToolbeltHandler.isLoaded() ? ToolBeltContainer.createSoulbound(player) : ToolBeltContainer.empty();
+        final PlayerContainer container = new PlayerContainer(uuid, inventory, curios, accessories, cosmeticArmor, toolbelt);
         
         final SoulboundData data = new SoulboundData(container, experience);
         player.setData(EPRegistry.SOULBOUND_DATA, data);

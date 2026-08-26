@@ -131,6 +131,11 @@ dependencies {
     implementation "curse.maven:ftb-teams-forge-404468:6119437"
     implementation "curse.maven:ftb-chunks-forge-314906:6504893"
 
+    implementation "curse.maven:cosmetic-armor-reworked-237307:5610814"
+    implementation "curse.maven:tool-belt-260262:8309722"
+
+    implementation "curse.maven:lendercataclysm-551586:8706841"
+
     runtimeOnly "curse.maven:architectury-api-419699:5786327"
     runtimeOnly "curse.maven:octo-lib-916747:6011408"
     runtimeOnly "curse.maven:relics-mod-445274:6444603"
@@ -158,8 +163,6 @@ dependencies {
     runtimeOnly "curse.maven:kotlin-for-forge-351264:7471280"
     runtimeOnly "curse.maven:fzzy-config-1005914:7568897"
     runtimeOnly "curse.maven:accessorify-1169634:7366899"
-
-    implementation "curse.maven:cosmetic-armor-reworked-237307:5610814"
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
